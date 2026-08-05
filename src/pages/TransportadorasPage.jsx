@@ -120,6 +120,7 @@ export const TransportadorasPage = ({ showToast }) => {
       setFormData({
         ...initialFormState,
         ...item,
+        codigo: item.codigo || item.id,
         nome: item.nome || item.razao || '',
         cnpj: item.cnpj || item.cpfCnpj || '',
         cpfCnpj: item.cpfCnpj || item.cnpj || '',
@@ -127,7 +128,11 @@ export const TransportadorasPage = ({ showToast }) => {
       });
     } else {
       setEditingItem(null);
-      setFormData(initialFormState);
+      const nextNum = 100 + transportadoras.length + 1;
+      setFormData({
+        ...initialFormState,
+        codigo: `TR-${nextNum}`
+      });
     }
     setIsModalOpen(true);
   };
@@ -363,7 +368,7 @@ export const TransportadorasPage = ({ showToast }) => {
                     type="text"
                     className="form-input font-mono"
                     disabled
-                    value={editingItem ? (editingItem.codigo || editingItem.id) : '(autonumeração)'}
+                    value={formData.codigo || (editingItem ? (editingItem.codigo || editingItem.id) : 'TR-101')}
                     style={{ backgroundColor: '#E2E8F0', color: '#64748B', fontWeight: 700 }}
                   />
                 </div>
