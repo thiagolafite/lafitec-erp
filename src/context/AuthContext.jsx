@@ -12,6 +12,9 @@ export const AuthProvider = ({ children }) => {
     const current = storage.getCurrentSession();
     if (current) {
       setSession(current);
+      if (supabaseService.isConfigured() && current.empresa?.id) {
+        supabaseService.syncAllDataFromSupabase(current.empresa.id).catch(() => {});
+      }
     }
     setLoading(false);
   }, []);

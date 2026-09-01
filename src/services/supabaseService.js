@@ -144,11 +144,70 @@ export const supabaseService = {
 
     try {
       await this.logAuditAction(empresa.id, usuario.nome, 'Login efetuado no Supabase');
+      // Sincroniza dados da nuvem em segundo plano para renderização instantânea
+      await this.syncAllDataFromSupabase(empresa.id);
     } catch (e) {
       // ignore
     }
 
     return session;
+  },
+
+  // --- SINCRONIZAÇÃO COMPLETA SUPABASE -> LOCALSTORAGE ---
+  async syncAllDataFromSupabase(empresaId) {
+    if (!supabase || !empresaId) return;
+    try {
+      // 1. Parceiros (Clientes, Fornecedores, Transportadoras)
+      const { data: dbParceiros } = await supabase
+        .from('parceiros')
+        .select('*')
+        .eq('empresa_id', empresaId);
+      
+      if (dbParceiros && dbParceiros.length > 0) {
+        const mapped = dbParceiros.map(this.mapParceiroFromDb);
+        const existing = JSON.parse(localStorage.getItem('lafitec_parceiros_unificados') || '[]');
+        const otherEmpresas = existing.filter(p => p.empresaId !== empresaId);
+        localStorage.setItem('lafitec_parceiros_unificados', JSON.stringify([...otherEmpresas, ...mapped]));
+      }
+
+      // 2. Produtos
+      const { data: dbProdutos } = await supabase
+        .from('produtos')
+        .select('*')
+        .eq('empresa_id', empresaId);
+
+      if (dbProdutos && dbProdutos.length > 0) {
+        const mapped = dbProdutos.map(this.mapProdutoFromDb);
+        const existing = JSON.parse(localStorage.getItem('lafitec_produtos') || '[]');
+        const otherEmpresas = existing.filter(p => p.empresaId !== empresaId);
+        localStorage.setItem('lafitec_produtos', JSON.stringify([...otherEmpresas, ...mapped]));
+      }
+
+      // 3. Condições de Pagamento
+      const { data: dbCondicoes } = await supabase
+        .from('condicoes_pagamento')
+        .select('*')
+        .eq('empresa_id', empresaId);
+
+      if (dbCondicoes && dbCondicoes.length > 0) {
+        const mapped = dbCondicoes.map(c => ({
+          id: c.id,
+          empresaId: c.empresa_id,
+          descricao: c.descricao,
+          intervaloDias: c.intervalo_dias,
+          parcelasCount: c.parcelas_count,
+          percentualCustoFinanceiro: parseFloat(c.percentual_custo_financeiro) || 0,
+          custoFinanceiroFixo: parseFloat(c.custo_financeiro_fixo) || 0,
+          ordem: c.ordem,
+          imprimeNoPedido: c.imprime_no_pedido
+        }));
+        const existing = JSON.parse(localStorage.getItem('lafitec_condicoes_pagamento') || '[]');
+        const otherEmpresas = existing.filter(c => c.empresaId !== empresaId);
+        localStorage.setItem('lafitec_condicoes_pagamento', JSON.stringify([...otherEmpresas, ...mapped]));
+      }
+    } catch (err) {
+      console.warn('[SupabaseService] Erro na sincronização:', err);
+    }
   },
 
   // --- FLUXO DE VERIFICAÇÃO DE E-MAIL 100% SEGURO VIA SUPABASE AUTH OTP ---
