@@ -21,14 +21,16 @@ import {
   CreditCard,
   Zap,
   Sparkles,
-  LogOut
+  LogOut,
+  Crown
 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { storage } from '../services/storage';
 
 export const Sidebar = ({ currentTab, setCurrentTab }) => {
-  const { empresa, switchDemoEmpresa, logout } = useAuth();
+  const { empresa, user, switchDemoEmpresa, logout } = useAuth();
   const empresas = storage.getAllEmpresas();
+  const isMaster = user?.email === 'thiago_lafite@hotmail.com' || user?.tipo === 'Master';
 
   // Accordion open states
   const [openSections, setOpenSections] = useState({
@@ -136,6 +138,29 @@ export const Sidebar = ({ currentTab, setCurrentTab }) => {
       {/* Navigation Links */}
       <nav className="sidebar-nav" style={{ overflowY: 'auto' }}>
         
+        {/* Super-Admin Master Item */}
+        {isMaster && (
+          <div style={{ marginBottom: '1rem' }}>
+            <button
+              onClick={() => setCurrentTab('master_dashboard')}
+              className={`sidebar-item ${currentTab === 'master_dashboard' ? 'active' : ''}`}
+              style={{
+                width: '100%',
+                background: currentTab === 'master_dashboard' 
+                  ? 'linear-gradient(135deg, rgba(255, 215, 0, 0.25) 0%, rgba(245, 158, 11, 0.3) 100%)' 
+                  : 'linear-gradient(135deg, rgba(255, 215, 0, 0.12) 0%, rgba(245, 158, 11, 0.12) 100%)',
+                border: '1px solid rgba(255, 215, 0, 0.35)',
+                color: '#FCD34D',
+                boxShadow: currentTab === 'master_dashboard' ? '0 0 16px rgba(255, 215, 0, 0.3)' : 'none',
+                fontWeight: 800
+              }}
+            >
+              <Crown size={18} style={{ color: '#FCD34D' }} />
+              <span>👑 Painel Master SaaS</span>
+            </button>
+          </div>
+        )}
+
         {/* Direct Link: Dashboard */}
         <button
           className={`sidebar-item ${currentTab === 'dashboard' ? 'active' : ''}`}

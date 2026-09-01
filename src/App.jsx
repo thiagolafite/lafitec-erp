@@ -20,6 +20,7 @@ import { VisitasPage } from './pages/VisitasPage';
 import { EntradaEstoquePage } from './pages/EntradaEstoquePage';
 import { OrcamentosPage } from './pages/OrcamentosPage';
 import { CondicoesPagamentoPage } from './pages/CondicoesPagamentoPage';
+import { MasterDashboardPage } from './pages/MasterDashboardPage';
 
 const AppContent = () => {
   const { isAuthenticated, loading } = useAuth();
@@ -67,6 +68,7 @@ const AppContent = () => {
   }
 
   const tabTitles = {
+    master_dashboard: '👑 Painel Master SaaS • Gestão Global',
     dashboard: 'Dashboard Analítico',
     clientes: 'Gestão de Clientes',
     produtos: 'Produtos & Estoque',
@@ -90,6 +92,7 @@ const AppContent = () => {
         <Navbar currentTabTitle={tabTitles[currentTab] || 'Lafitec ERP'} setCurrentTab={setCurrentTab} />
         
         <main className="page-body">
+          {currentTab === 'master_dashboard' && <MasterDashboardPage showToast={showToast} />}
           {currentTab === 'dashboard' && <DashboardPage onNavigate={setCurrentTab} />}
           {currentTab === 'clientes' && <ClientesPage showToast={showToast} />}
           {currentTab === 'produtos' && <ProdutosPage showToast={showToast} />}

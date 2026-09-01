@@ -69,8 +69,10 @@ export const AuthProvider = ({ children }) => {
     }
 
     if (res) {
-      setSession(res);
-      storage.saveCurrentSession(res);
+      if (!res.pendingApproval) {
+        setSession(res);
+        storage.saveCurrentSession(res);
+      }
       return res;
     } else {
       throw new Error('Não foi possível registrar a empresa no banco de dados.');

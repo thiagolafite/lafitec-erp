@@ -97,6 +97,8 @@ export const supabaseService = {
       return null;
     }
 
+    const isMaster = cleanEmail === 'thiago_lafite@hotmail.com' || usuario.tipo === 'Master';
+
     // 3. Busca os dados da empresa vinculada
     let empresa = null;
     if (usuario.empresa_id) {
@@ -122,8 +124,27 @@ export const supabaseService = {
         id: usuario.empresa_id || 'empresa_padrao',
         nome: 'Lafite Tech Soluções',
         cnpj: '12.345.678/0001-90',
-        plano: 'Premium'
+        plano: 'Premium',
+        status_aprovacao: 'Aprovado'
       };
+    }
+
+    // 4. Verificação de status de aprovação pelo Administrador Master (Master tem acesso irrestrito)
+    if (!isMaster) {
+      const statusEmp = empresa?.status_aprovacao || 'Aprovado';
+      const statusUsr = usuario?.status_aprovacao || 'Aprovado';
+
+      if (statusEmp === 'Pendente' || statusUsr === 'Pendente') {
+        throw new Error('⏳ Seu cadastro está em análise pelo Administrador Master. Em breve seu acesso será liberado!');
+      }
+
+      if (statusEmp === 'Rejeitado' || statusUsr === 'Rejeitado') {
+        throw new Error('❌ Seu cadastro não foi aprovado pelo Administrador. Entre em contato com o suporte.');
+      }
+
+      if (empresa?.ativo === false || usuario?.ativo === false) {
+        throw new Error('🔒 Esta conta ou empresa está temporariamente desativada pelo Administrador.');
+      }
     }
 
     const session = {
@@ -131,7 +152,7 @@ export const supabaseService = {
         id: usuario.id,
         nome: usuario.nome,
         email: usuario.email,
-        tipo: usuario.tipo || 'Admin',
+        tipo: isMaster ? 'Master' : (usuario.tipo || 'Admin'),
         empresaId: empresa.id
       },
       empresa: {
@@ -151,6 +172,183 @@ export const supabaseService = {
     }
 
     return session;
+  },
+
+  // --- PAINEL MASTER: GESTÃO MULTI-TENANT & APROVAÇÃO DE CADASTROS ---
+  async getPendingApprovals() {
+    if (!supabase) return [];
+    try {
+      const { data: emps, error: errEmp } = await supabase
+        .from('empresas')
+        .select('*')
+        .eq('status_aprovacao', 'Pendente')
+        .order('created_at', { ascending: false });
+
+      if (errEmp || !emps) return [];
+
+      const { data: usrs } = await supabase
+        .from('usuarios')
+        .select('*')
+        .in('empresa_id', emps.map(e => e.id));
+
+      return emps.map(emp => {
+        const usr = (usrs || []).find(u => u.empresa_id === emp.id);
+        return {
+          empresa: emp,
+          usuario: usr || null,
+          solicitanteNome: usr?.nome || 'Não informado',
+          solicitanteEmail: usr?.email || emp.email_contato,
+          dataSolicitacao: emp.created_at
+        };
+      });
+    } catch (err) {
+      console.warn('[SupabaseService] Erro ao buscar aprovações pendentes:', err);
+      return [];
+    }
+  },
+
+  async approveCompanyAndUser(empresaId, usuarioId) {
+    if (!supabase) return false;
+    try {
+      await supabase
+        .from('empresas')
+        .update({ status_aprovacao: 'Aprovado', ativo: true })
+        .eq('id', empresaId);
+
+      if (usuarioId) {
+        await supabase
+          .from('usuarios')
+          .update({ status_aprovacao: 'Aprovado', ativo: true })
+          .eq('id', usuarioId);
+      } else {
+        await supabase
+          .from('usuarios')
+          .update({ status_aprovacao: 'Aprovado', ativo: true })
+          .eq('empresa_id', empresaId);
+      }
+      return true;
+    } catch (err) {
+      console.error('[SupabaseService] Erro ao aprovar cadastro:', err);
+      throw err;
+    }
+  },
+
+  async rejectCompanyAndUser(empresaId, usuarioId, motivo) {
+    if (!supabase) return false;
+    try {
+      await supabase
+        .from('empresas')
+        .update({ status_aprovacao: 'Rejeitado', ativo: false })
+        .eq('id', empresaId);
+
+      if (usuarioId) {
+        await supabase
+          .from('usuarios')
+          .update({ status_aprovacao: 'Rejeitado', ativo: false })
+          .eq('id', usuarioId);
+      } else {
+        await supabase
+          .from('usuarios')
+          .update({ status_aprovacao: 'Rejeitado', ativo: false })
+          .eq('empresa_id', empresaId);
+      }
+      return true;
+    } catch (err) {
+      console.error('[SupabaseService] Erro ao rejeitar cadastro:', err);
+      throw err;
+    }
+  },
+
+  async getAllTenantsWithMetrics() {
+    if (!supabase) return [];
+    try {
+      const { data: emps, error } = await supabase
+        .from('empresas')
+        .select('*')
+        .order('created_at', { ascending: false });
+
+      if (error || !emps) return [];
+
+      const { data: usrs } = await supabase.from('usuarios').select('id, empresa_id, nome, email, tipo, ativo, created_at');
+      const { data: parceiros } = await supabase.from('parceiros').select('id, empresa_id, tipo');
+      const { data: produtos } = await supabase.from('produtos').select('id, empresa_id');
+      const { data: vendas } = await supabase.from('vendas').select('id, empresa_id, total');
+      const { data: orcamentos } = await supabase.from('orcamentos').select('id, empresa_id, valor_total');
+
+      return emps.map(emp => {
+        const empUsrs = (usrs || []).filter(u => u.empresa_id === emp.id);
+        const empParceiros = (parceiros || []).filter(p => p.empresa_id === emp.id);
+        const empProdutos = (produtos || []).filter(p => p.empresa_id === emp.id);
+        const empVendas = (vendas || []).filter(v => v.empresa_id === emp.id);
+        const empOrcamentos = (orcamentos || []).filter(o => o.empresa_id === emp.id);
+
+        const totalVendasFat = empVendas.reduce((acc, v) => acc + (parseFloat(v.total) || 0), 0);
+
+        return {
+          ...emp,
+          statusAprovacao: emp.status_aprovacao || 'Aprovado',
+          totalUsuarios: empUsrs.length,
+          usuarios: empUsrs,
+          totalClientes: empParceiros.filter(p => p.tipo === 'Clientes' || p.tipo === 'Parceiro').length,
+          totalFornecedores: empParceiros.filter(p => p.tipo === 'Fornecedores').length,
+          totalTransportadoras: empParceiros.filter(p => p.tipo === 'Transportadoras').length,
+          totalProdutos: empProdutos.length,
+          totalOrcamentos: empOrcamentos.length,
+          totalVendas: empVendas.length,
+          faturamentoTotal: totalVendasFat
+        };
+      });
+    } catch (err) {
+      console.warn('[SupabaseService] Erro ao buscar métricas globais:', err);
+      return [];
+    }
+  },
+
+  async updateCompanyPlan(empresaId, plano) {
+    if (!supabase) return false;
+    const { error } = await supabase
+      .from('empresas')
+      .update({ plano })
+      .eq('id', empresaId);
+    if (error) throw error;
+    return true;
+  },
+
+  async toggleCompanyStatus(empresaId, ativo) {
+    if (!supabase) return false;
+    const { error } = await supabase
+      .from('empresas')
+      .update({ ativo })
+      .eq('id', empresaId);
+    if (error) throw error;
+    return true;
+  },
+
+  async getAllUsersGlobal() {
+    if (!supabase) return [];
+    try {
+      const { data: usrs, error } = await supabase
+        .from('usuarios')
+        .select('*')
+        .order('created_at', { ascending: false });
+
+      if (error || !usrs) return [];
+
+      const { data: emps } = await supabase.from('empresas').select('id, nome, plano, status_aprovacao');
+
+      return usrs.map(u => {
+        const emp = (emps || []).find(e => e.id === u.empresa_id);
+        return {
+          ...u,
+          empresaNome: emp ? emp.nome : 'Sem Empresa',
+          empresaPlano: emp ? emp.plano : 'Básico',
+          empresaStatus: emp ? (emp.status_aprovacao || 'Aprovado') : 'Aprovado'
+        };
+      });
+    } catch (err) {
+      console.warn('[SupabaseService] Erro ao listar usuários globais:', err);
+      return [];
+    }
   },
 
   // --- SINCRONIZAÇÃO COMPLETA SUPABASE -> LOCALSTORAGE ---
@@ -334,6 +532,9 @@ export const supabaseService = {
       // continua para tentativa de inserção
     }
 
+    const isMasterUser = cleanEmail === 'thiago_lafite@hotmail.com';
+    const statusAprovacaoInicial = isMasterUser ? 'Aprovado' : 'Pendente';
+
     // Se não existir, tenta criar a Empresa
     if (!novaEmpresa) {
       const fullPayload = {
@@ -348,7 +549,8 @@ export const supabaseService = {
         bairro: companyData.bairro || '',
         cidade: companyData.cidade || '',
         estado: companyData.estado || '',
-        plano: companyData.plano || 'Premium'
+        plano: companyData.plano || 'Premium',
+        status_aprovacao: statusAprovacaoInicial
       };
 
       let { data: createdEmp, error: errEmp } = await supabase
@@ -357,7 +559,7 @@ export const supabaseService = {
         .select()
         .single();
 
-      // Se der erro de coluna (ex: bairro, cep inexistentes no schema antigo), tenta com colunas básicas
+      // Se der erro de coluna (ex: colunas extras não existentes), tenta com colunas básicas
       if (errEmp) {
         const basicPayload = {
           nome: companyName,
@@ -396,7 +598,8 @@ export const supabaseService = {
         nome: userData.nome,
         email: cleanEmail,
         senha: userData.senha,
-        tipo: 'Admin'
+        tipo: isMasterUser ? 'Master' : 'Admin',
+        status_aprovacao: statusAprovacaoInicial
       })
       .select()
       .single();
@@ -406,7 +609,7 @@ export const supabaseService = {
         // Se o usuário já existia, atualiza sua senha e empresa
         const { data: updatedUsr } = await supabase
           .from('usuarios')
-          .update({ senha: userData.senha, empresa_id: novaEmpresa.id })
+          .update({ senha: userData.senha, empresa_id: novaEmpresa.id, status_aprovacao: statusAprovacaoInicial })
           .eq('email', cleanEmail)
           .select()
           .single();
@@ -427,11 +630,11 @@ export const supabaseService = {
         { empresa_id: novaEmpresa.id, descricao: '30 / 60 Dias (2x)', intervalo_dias: '30, 60', parcelas_count: 2, ordem: 3 }
       ]);
     } catch (e) {
-      // ignore payment terms insert failure
+      // ignore
     }
 
     try {
-      await this.logAuditAction(novaEmpresa.id, novoUsuario.nome, `Empresa ${novaEmpresa.nome} (CNPJ: ${novaEmpresa.cnpj}) criada com sucesso.`);
+      await this.logAuditAction(novaEmpresa.id, novoUsuario.nome, `Solicitação de cadastro da empresa ${novaEmpresa.nome} (CNPJ: ${novaEmpresa.cnpj}) enviada para análise.`);
     } catch (e) {
       // ignore
     }
@@ -440,10 +643,13 @@ export const supabaseService = {
     localStorage.removeItem('lafitec_pending_email');
     localStorage.removeItem('lafitec_pending_email_verification');
 
-    // Sincroniza dados do banco
-    await this.syncAllDataFromSupabase(novaEmpresa.id);
+    // Sincroniza dados do banco se for aprovado
+    if (isMasterUser) {
+      await this.syncAllDataFromSupabase(novaEmpresa.id);
+    }
 
     return {
+      pendingApproval: !isMasterUser,
       user: {
         id: novoUsuario.id,
         nome: novoUsuario.nome,
@@ -460,7 +666,8 @@ export const supabaseService = {
         telefone: novaEmpresa.telefone,
         cep: novaEmpresa.cep,
         cidade: novaEmpresa.cidade,
-        estado: novaEmpresa.estado
+        estado: novaEmpresa.estado,
+        statusAprovacao: statusAprovacaoInicial
       }
     };
   },
