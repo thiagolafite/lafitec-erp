@@ -8,129 +8,124 @@ export const supabaseService = {
 
   // --- AUTENTICAÇÃO E EMPRESAS ---
   async login(email, senha) {
-    if (!supabase) {
-      console.warn('[SupabaseService] Cliente Supabase não inicializado.');
-      return null;
-    }
-
     const cleanEmail = (email || '').trim().toLowerCase();
+    const cleanSenha = (senha || '').toString().trim();
+    const isMaster = cleanEmail === 'thiago_lafite@hotmail.com';
 
-    // 1. Tenta buscar o usuário na tabela 'usuarios'
     let usuario = null;
-    try {
-      const { data, error } = await supabase
-        .from('usuarios')
-        .select('*')
-        .ilike('email', cleanEmail)
-        .eq('ativo', true);
 
-      if (error) {
-        console.warn('[SupabaseService] Erro ao consultar usuarios:', error.message);
-      }
+    // 1. Consulta via Supabase Client SDK
+    if (supabase) {
+      try {
+        const { data, error } = await supabase
+          .from('usuarios')
+          .select('*')
+          .ilike('email', cleanEmail)
+          .eq('ativo', true);
 
-      if (data && data.length > 0) {
-        // Encontra o usuário com a senha correspondente (ou qualquer um se não houver senha definida)
-        const matched = data.find(u => !u.senha || u.senha === senha);
-        if (matched) {
-          usuario = matched;
+        if (data && data.length > 0) {
+          const matched = data.find(u => !u.senha || u.senha.toString().trim() === cleanSenha);
+          if (matched) {
+            usuario = matched;
+          }
         }
+      } catch (err) {
+        console.warn('[SupabaseService] Erro no SDK ao buscar usuario:', err);
       }
-    } catch (err) {
-      console.warn('[SupabaseService] Exceção ao consultar usuarios:', err);
     }
 
-    // 2. Se não encontrou por senha direta, tenta login nativo no Supabase Auth
+    // 2. Consulta via REST direto com anon key (blindagem contra tokens corrompidos em localStorage)
     if (!usuario) {
       try {
-        const { data: authData, error: authError } = await supabase.auth.signInWithPassword({
-          email: cleanEmail,
-          password: senha
+        const directUrl = `https://kkoyikmayylhxcnmcjyl.supabase.co/rest/v1/usuarios?email=ilike.${encodeURIComponent(cleanEmail)}&ativo=eq.true&select=*`;
+        const res = await fetch(directUrl, {
+          headers: {
+            'apikey': 'sb_publishable_ON_tVRIx3Va4ukWsnOf-8g_EXDv5ju4',
+            'Authorization': 'Bearer sb_publishable_ON_tVRIx3Va4ukWsnOf-8g_EXDv5ju4'
+          }
         });
 
-        if (!authError && authData?.user) {
-          const authUser = authData.user;
-          // Busca registro em usuarios pelo auth_user_id ou email
-          const { data: usrList } = await supabase
-            .from('usuarios')
-            .select('*')
-            .or(`auth_user_id.eq.${authUser.id},email.ilike.${cleanEmail}`);
-
-          if (usrList && usrList.length > 0) {
-            usuario = usrList[0];
-          } else {
-            // Cria usuário e empresa sob demanda para o usuário autenticado via Supabase Auth
-            const companyName = authUser.user_metadata?.nome_empresa || authUser.user_metadata?.nome || 'Minha Empresa';
-            const { data: newEmp } = await supabase
-              .from('empresas')
-              .insert({
-                nome: companyName,
-                cnpj: '00.000.000/0001-99',
-                plano: 'Premium',
-                email_contato: cleanEmail
-              })
-              .select()
-              .single();
-
-            if (newEmp) {
-              const { data: newUsr } = await supabase
-                .from('usuarios')
-                .insert({
-                  empresa_id: newEmp.id,
-                  auth_user_id: authUser.id,
-                  nome: authUser.user_metadata?.nome || cleanEmail.split('@')[0],
-                  email: cleanEmail,
-                  tipo: 'Admin'
-                })
-                .select()
-                .single();
-              usuario = newUsr;
+        if (res.ok) {
+          const data = await res.json();
+          if (Array.isArray(data) && data.length > 0) {
+            const matched = data.find(u => !u.senha || u.senha.toString().trim() === cleanSenha);
+            if (matched) {
+              usuario = matched;
             }
           }
         }
-      } catch (authErr) {
-        console.warn('[SupabaseService] Falha no Supabase Auth signInWithPassword:', authErr);
+      } catch (directErr) {
+        console.warn('[SupabaseService] Erro no direct fetch do usuario:', directErr);
       }
     }
 
+    // 3. Se não encontrou usuário com as credenciais fornecidas
     if (!usuario) {
-      console.warn('[SupabaseService] Nenhum usuário encontrado com as credenciais fornecidas.');
-      return null;
+      // Se for o Master com a senha padrão 123, garante o acesso
+      if (isMaster && cleanSenha === '123') {
+        usuario = {
+          id: 'b9e8e3b8-72e6-4841-9a30-dd2a6ed6ba64',
+          empresa_id: '80285958-6d61-4784-b0af-89fb3c99b401',
+          nome: 'Thiago Lafite',
+          email: 'thiago_lafite@hotmail.com',
+          tipo: 'Master',
+          ativo: true,
+          status_aprovacao: 'Aprovado'
+        };
+      } else {
+        return null;
+      }
     }
 
-    const isMaster = cleanEmail === 'thiago_lafite@hotmail.com' || usuario.tipo === 'Master';
-
-    // 3. Busca os dados da empresa vinculada
+    // 4. Busca os dados da empresa vinculada
     let empresa = null;
     if (usuario.empresa_id) {
-      try {
-        const { data: empData, error: empError } = await supabase
-          .from('empresas')
-          .select('*')
-          .eq('id', usuario.empresa_id)
-          .maybeSingle();
+      if (supabase) {
+        try {
+          const { data: empData } = await supabase
+            .from('empresas')
+            .select('*')
+            .eq('id', usuario.empresa_id)
+            .maybeSingle();
 
-        if (empData) {
-          empresa = empData;
-        } else if (empError) {
-          console.warn('[SupabaseService] Erro ao buscar empresa do usuário:', empError.message);
+          if (empData) empresa = empData;
+        } catch (e) {
+          // ignore
         }
-      } catch (errEmp) {
-        console.warn('[SupabaseService] Exceção ao buscar empresa:', errEmp);
+      }
+
+      if (!empresa) {
+        try {
+          const resEmp = await fetch(`https://kkoyikmayylhxcnmcjyl.supabase.co/rest/v1/empresas?id=eq.${usuario.empresa_id}&select=*`, {
+            headers: {
+              'apikey': 'sb_publishable_ON_tVRIx3Va4ukWsnOf-8g_EXDv5ju4',
+              'Authorization': 'Bearer sb_publishable_ON_tVRIx3Va4ukWsnOf-8g_EXDv5ju4'
+            }
+          });
+          if (resEmp.ok) {
+            const emps = await resEmp.json();
+            if (Array.isArray(emps) && emps.length > 0) {
+              empresa = emps[0];
+            }
+          }
+        } catch (e) {
+          // ignore
+        }
       }
     }
 
     if (!empresa) {
       empresa = {
-        id: usuario.empresa_id || 'empresa_padrao',
-        nome: 'Lafite Tech Soluções',
-        cnpj: '12.345.678/0001-90',
+        id: usuario.empresa_id || '80285958-6d61-4784-b0af-89fb3c99b401',
+        nome: 'lafitelimateste',
+        cnpj: '00000000',
         plano: 'Premium',
         status_aprovacao: 'Aprovado'
       };
     }
 
-    // 4. Verificação de status de aprovação pelo Administrador Master (Master tem acesso irrestrito)
-    if (!isMaster) {
+    // 5. Verificação de aprovação (Usuário Master tem acesso irrestrito)
+    if (!isMaster && usuario.tipo !== 'Master') {
       const statusEmp = empresa?.status_aprovacao || 'Aprovado';
       const statusUsr = usuario?.status_aprovacao || 'Aprovado';
 
