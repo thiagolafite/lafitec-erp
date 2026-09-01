@@ -20,6 +20,7 @@ import {
   KeyRound
 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
+import { supabase } from '../services/supabaseClient';
 import { 
   formatPhone, 
   formatCEP, 
@@ -79,6 +80,76 @@ export const LoginPage = ({ onGoToLanding }) => {
     }
     return () => clearTimeout(timer);
   }, [resendCooldown]);
+
+  // Detecta confirmação automática de e-mail / Magic Link via URL Hash ou Supabase Auth
+  useEffect(() => {
+    const hash = window.location.hash || '';
+    const search = window.location.search || '';
+
+    if (hash.includes('access_token') || hash.includes('type=magiclink') || hash.includes('type=signup') || search.includes('type=magiclink')) {
+      if (hash.includes('error_description')) {
+        const params = new URLSearchParams(hash.substring(1));
+        const desc = params.get('error_description') || 'Link de confirmação expirado ou inválido.';
+        setErrorMsg(desc.replace(/\+/g, ' '));
+        return;
+      }
+
+      setLoading(true);
+      if (supabase && supabase.auth) {
+        supabase.auth.getSession().then(async ({ data: { session } }) => {
+          if (session?.user) {
+            const confirmedEmail = session.user.email;
+            const confirmedName = session.user.user_metadata?.nome || confirmedEmail.split('@')[0];
+
+            setUserEmail(confirmedEmail);
+            setUserNome(confirmedName);
+
+            // Verifica se este usuário já tem uma empresa cadastrada no banco
+            try {
+              const { data: existingUser } = await supabase
+                .from('usuarios')
+                .select('*, empresas(*)')
+                .or(`auth_user_id.eq.${session.user.id},email.ilike.${confirmedEmail}`)
+                .maybeSingle();
+
+              if (existingUser && existingUser.empresas) {
+                setSuccessMsg(`Bem-vindo, ${confirmedName}! Entrando no sistema...`);
+                // Salva a sessão no storage e loga
+                const appSession = {
+                  user: {
+                    id: existingUser.id,
+                    nome: existingUser.nome,
+                    email: existingUser.email,
+                    tipo: existingUser.tipo || 'Admin',
+                    empresaId: existingUser.empresa_id
+                  },
+                  empresa: {
+                    id: existingUser.empresas.id,
+                    nome: existingUser.empresas.nome,
+                    cnpj: existingUser.empresas.cnpj,
+                    plano: existingUser.empresas.plano || 'Premium'
+                  }
+                };
+                localStorage.setItem('lafitec_current_user', JSON.stringify(appSession));
+                window.location.href = window.location.origin + window.location.pathname;
+                return;
+              }
+            } catch (e) {
+              console.warn('Erro ao checar empresa existente:', e);
+            }
+
+            // E-mail verificado -> avança para o cadastro dos dados da empresa
+            setSuccessMsg('E-mail confirmado com sucesso! Agora informe os dados da sua empresa para concluir.');
+            setStep('company_setup');
+          }
+          setLoading(false);
+        }).catch(() => setLoading(false));
+      } else {
+        setStep('company_setup');
+        setLoading(false);
+      }
+    }
+  }, []);
 
   // 1. SUBMIT LOGIN
   const handleLoginSubmit = async (e) => {
