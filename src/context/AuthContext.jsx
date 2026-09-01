@@ -56,10 +56,8 @@ export const AuthProvider = ({ children }) => {
 
     if (supabaseService.isConfigured()) {
       res = await supabaseService.registerEmpresaWithCompany(userData, companyData);
-    }
-
-    if (!res) {
-      // Local storage fallback
+    } else {
+      // Local storage fallback somente se Supabase não estiver configurado
       res = storage.registerEmpresa({
         nomeEmpresa: companyData.razaoSocial || companyData.nomeEmpresa,
         cnpj: companyData.cnpj,
@@ -75,7 +73,7 @@ export const AuthProvider = ({ children }) => {
       storage.saveCurrentSession(res);
       return res;
     } else {
-      throw new Error('Não foi possível registrar a empresa.');
+      throw new Error('Não foi possível registrar a empresa no banco de dados.');
     }
   };
 

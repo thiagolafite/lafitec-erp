@@ -310,66 +310,91 @@ export const supabaseService = {
 
   // --- CADASTRO COMPLETO DA EMPRESA E USUÁRIO ---
   async registerEmpresaWithCompany(userData, companyData) {
-    if (!supabase) return null;
+    if (!supabase) {
+      throw new Error('Serviço Supabase não está conectado.');
+    }
 
-    // 1. Tenta criar Empresa com endereço completo
-    const fullPayload = {
-      nome: companyData.razaoSocial || companyData.nomeEmpresa,
-      cnpj: companyData.cnpj,
-      email_contato: companyData.emailEmpresa || userData.email,
-      telefone: companyData.celular || companyData.telefone,
-      cep: companyData.cep || '',
-      endereco: companyData.endereco || '',
-      numero: companyData.numero || '',
-      complemento: companyData.complemento || '',
-      bairro: companyData.bairro || '',
-      cidade: companyData.cidade || '',
-      estado: companyData.estado || '',
-      plano: companyData.plano || 'Premium'
-    };
+    const cleanEmail = userData.email.trim().toLowerCase();
+    const cleanCNPJ = (companyData.cnpj || '').toString().trim();
+    const companyName = companyData.razaoSocial || companyData.nomeEmpresa || 'Minha Empresa';
 
-    let { data: novaEmpresa, error: errEmp } = await supabase
-      .from('empresas')
-      .insert(fullPayload)
-      .select()
-      .single();
+    // 1. Verifica se a empresa já existe por CNPJ
+    let novaEmpresa = null;
+    try {
+      const { data: existingEmp } = await supabase
+        .from('empresas')
+        .select('*')
+        .eq('cnpj', cleanCNPJ)
+        .maybeSingle();
 
-    // Se houver erro de coluna inexistente no cache do Supabase (ex: bairro, cep, endereco), faz retry automático com campos essenciais
-    if (errEmp && (errEmp.message.includes('column') || errEmp.code === 'PGRST204')) {
-      const basicPayload = {
-        nome: companyData.razaoSocial || companyData.nomeEmpresa,
-        cnpj: companyData.cnpj,
-        email_contato: companyData.emailEmpresa || userData.email,
-        telefone: companyData.celular || companyData.telefone,
+      if (existingEmp) {
+        novaEmpresa = existingEmp;
+      }
+    } catch (e) {
+      // continua para tentativa de inserção
+    }
+
+    // Se não existir, tenta criar a Empresa
+    if (!novaEmpresa) {
+      const fullPayload = {
+        nome: companyName,
+        cnpj: cleanCNPJ,
+        email_contato: companyData.emailEmpresa || cleanEmail,
+        telefone: companyData.celular || companyData.telefone || '',
+        cep: companyData.cep || '',
+        endereco: companyData.endereco || '',
+        numero: companyData.numero || '',
+        complemento: companyData.complemento || '',
+        bairro: companyData.bairro || '',
         cidade: companyData.cidade || '',
         estado: companyData.estado || '',
         plano: companyData.plano || 'Premium'
       };
 
-      const retryRes = await supabase
+      let { data: createdEmp, error: errEmp } = await supabase
         .from('empresas')
-        .insert(basicPayload)
+        .insert(fullPayload)
         .select()
         .single();
 
-      novaEmpresa = retryRes.data;
-      errEmp = retryRes.error;
-    }
+      // Se der erro de coluna (ex: bairro, cep inexistentes no schema antigo), tenta com colunas básicas
+      if (errEmp) {
+        const basicPayload = {
+          nome: companyName,
+          cnpj: cleanCNPJ,
+          email_contato: companyData.emailEmpresa || cleanEmail,
+          telefone: companyData.celular || companyData.telefone || '',
+          cidade: companyData.cidade || '',
+          estado: companyData.estado || '',
+          plano: companyData.plano || 'Premium'
+        };
 
-    if (errEmp) {
-      if (errEmp.message && errEmp.message.includes('duplicate key') && errEmp.message.includes('cnpj')) {
-        throw new Error('Este CNPJ já está cadastrado no sistema.');
+        const retryRes = await supabase
+          .from('empresas')
+          .insert(basicPayload)
+          .select()
+          .single();
+
+        createdEmp = retryRes.data;
+        errEmp = retryRes.error;
       }
-      throw new Error(errEmp.message || 'Erro ao cadastrar empresa no banco de dados.');
+
+      if (errEmp) {
+        console.error('[SupabaseService] Erro ao cadastrar empresa:', errEmp);
+        throw new Error(errEmp.message || 'Erro ao cadastrar empresa no Supabase.');
+      }
+
+      novaEmpresa = createdEmp;
     }
 
-    // 2. Cria Usuário Admin
-    const { data: novoUsuario, error: errUsr } = await supabase
+    // 2. Cria Usuário Admin vinculado à empresa
+    let novoUsuario = null;
+    const { data: createdUsr, error: errUsr } = await supabase
       .from('usuarios')
       .insert({
         empresa_id: novaEmpresa.id,
         nome: userData.nome,
-        email: userData.email.trim().toLowerCase(),
+        email: cleanEmail,
         senha: userData.senha,
         tipo: 'Admin'
       })
@@ -378,36 +403,59 @@ export const supabaseService = {
 
     if (errUsr) {
       if (errUsr.message && errUsr.message.includes('duplicate key')) {
-        throw new Error('Este e-mail já está cadastrado em outra conta.');
+        // Se o usuário já existia, atualiza sua senha e empresa
+        const { data: updatedUsr } = await supabase
+          .from('usuarios')
+          .update({ senha: userData.senha, empresa_id: novaEmpresa.id })
+          .eq('email', cleanEmail)
+          .select()
+          .single();
+        novoUsuario = updatedUsr;
+      } else {
+        console.error('[SupabaseService] Erro ao cadastrar usuário:', errUsr);
+        throw new Error(errUsr.message || 'Erro ao registrar usuário no Supabase.');
       }
-      throw errUsr;
+    } else {
+      novoUsuario = createdUsr;
     }
 
-    // 3. Cria Condições de Pagamento Padrão para o Tenant
-    await supabase.from('condicoes_pagamento').insert([
-      { empresa_id: novaEmpresa.id, descricao: 'À Vista (PIX / Dinheiro)', intervalo_dias: '0', parcelas_count: 1, ordem: 1 },
-      { empresa_id: novaEmpresa.id, descricao: 'Boleto Bancário 30 Dias', intervalo_dias: '30', parcelas_count: 1, ordem: 2 },
-      { empresa_id: novaEmpresa.id, descricao: '30 / 60 Dias (2x)', intervalo_dias: '30, 60', parcelas_count: 2, ordem: 3 }
-    ]);
+    // 3. Cria Condições de Pagamento Padrão para a Empresa
+    try {
+      await supabase.from('condicoes_pagamento').insert([
+        { empresa_id: novaEmpresa.id, descricao: 'À Vista (PIX / Dinheiro)', intervalo_dias: '0', parcelas_count: 1, ordem: 1 },
+        { empresa_id: novaEmpresa.id, descricao: 'Boleto Bancário 30 Dias', intervalo_dias: '30', parcelas_count: 1, ordem: 2 },
+        { empresa_id: novaEmpresa.id, descricao: '30 / 60 Dias (2x)', intervalo_dias: '30, 60', parcelas_count: 2, ordem: 3 }
+      ]);
+    } catch (e) {
+      // ignore payment terms insert failure
+    }
 
-    await this.logAuditAction(novaEmpresa.id, novoUsuario.nome, `Empresa ${novaEmpresa.nome} (CNPJ: ${novaEmpresa.cnpj}) criada com sucesso.`);
+    try {
+      await this.logAuditAction(novaEmpresa.id, novoUsuario.nome, `Empresa ${novaEmpresa.nome} (CNPJ: ${novaEmpresa.cnpj}) criada com sucesso.`);
+    } catch (e) {
+      // ignore
+    }
 
     // Limpa estado temporário de verificação
+    localStorage.removeItem('lafitec_pending_email');
     localStorage.removeItem('lafitec_pending_email_verification');
+
+    // Sincroniza dados do banco
+    await this.syncAllDataFromSupabase(novaEmpresa.id);
 
     return {
       user: {
         id: novoUsuario.id,
         nome: novoUsuario.nome,
         email: novoUsuario.email,
-        tipo: novoUsuario.tipo,
+        tipo: novoUsuario.tipo || 'Admin',
         empresaId: novaEmpresa.id
       },
       empresa: {
         id: novaEmpresa.id,
         nome: novaEmpresa.nome,
         cnpj: novaEmpresa.cnpj,
-        plano: novaEmpresa.plano,
+        plano: novaEmpresa.plano || 'Premium',
         emailContato: novaEmpresa.email_contato,
         telefone: novaEmpresa.telefone,
         cep: novaEmpresa.cep,
