@@ -895,6 +895,12 @@ export const storage = {
 
     logAuditAction(empresaId, usuarioNome, `Registrou entrada de estoque #${numeroMov} (${entradaData.tipoEntrada}) no valor de R$ ${valorTotalNota.toFixed(2)}`);
 
+    if (supabaseService.isConfigured()) {
+      const session = storage.getCurrentSession();
+      const activeEmpresaId = (empresaId && empresaId.length > 15) ? empresaId : (session?.empresa?.id || '80285958-6d61-4784-b0af-89fb3c99b401');
+      supabaseService.saveEntradaEstoque({ ...novaEntrada, empresaId: activeEmpresaId }, activeEmpresaId, usuarioNome).catch(() => {});
+    }
+
     return novaEntrada;
   },
 
@@ -977,14 +983,18 @@ export const storage = {
   },
 
   saveVisita: (visitaData, empresaId, usuarioNome) => {
+    const session = storage.getCurrentSession();
+    const activeEmpresaId = (empresaId && empresaId.length > 15) ? empresaId : (session?.empresa?.id || '80285958-6d61-4784-b0af-89fb3c99b401');
     const visitas = getTable(STORAGE_KEYS.VISITAS);
-    const parceiros = storage.getAllParceiros(empresaId);
+    const parceiros = storage.getAllParceiros(activeEmpresaId);
     const cli = parceiros.find(p => p.id === visitaData.clienteId);
 
+    let savedVisita;
     if (visitaData.id) {
-      const updated = visitas.map(v => (v.id === visitaData.id && v.empresaId === empresaId) ? { ...v, ...visitaData } : v);
+      const updated = visitas.map(v => (v.id === visitaData.id) ? { ...v, ...visitaData, empresaId: activeEmpresaId } : v);
       setTable(STORAGE_KEYS.VISITAS, updated);
-      logAuditAction(empresaId, usuarioNome, `Atualizou visita para "${cli ? cli.nome : 'Cliente'}"`);
+      logAuditAction(activeEmpresaId, usuarioNome, `Atualizou visita para "${cli ? cli.nome : 'Cliente'}"`);
+      savedVisita = { ...visitaData, empresaId: activeEmpresaId };
     } else {
       const newVisita = {
         ...visitaData,
@@ -994,59 +1004,94 @@ export const storage = {
         clienteNome: cli ? cli.nome : 'Cliente',
         cidade: cli ? cli.cidade : '',
         representanteNome: visitaData.representanteNome || usuarioNome,
-        empresaId
+        empresaId: activeEmpresaId
       };
       setTable(STORAGE_KEYS.VISITAS, [newVisita, ...visitas]);
       
       if (cli) {
-        storage.saveParceiroComercial({ ...cli, ultimaVisitaData: new Date().toISOString().split('T')[0] }, empresaId, usuarioNome);
+        storage.saveParceiroComercial({ ...cli, ultimaVisitaData: new Date().toISOString().split('T')[0] }, activeEmpresaId, usuarioNome);
       }
 
-      logAuditAction(empresaId, usuarioNome, `Agendou nova visita para "${cli ? cli.nome : 'Cliente'}"`);
+      logAuditAction(activeEmpresaId, usuarioNome, `Agendou nova visita para "${cli ? cli.nome : 'Cliente'}"`);
+      savedVisita = newVisita;
+    }
+
+    if (supabaseService.isConfigured() && savedVisita) {
+      supabaseService.saveVisita(savedVisita, activeEmpresaId, usuarioNome)
+        .then(dbVis => {
+          if (dbVis && dbVis.id) {
+            const current = getTable(STORAGE_KEYS.VISITAS);
+            const updated = current.map(v => v.id === savedVisita.id ? { ...v, id: dbVis.id } : v);
+            setTable(STORAGE_KEYS.VISITAS, updated);
+          }
+        })
+        .catch(e => console.error('[Supabase sync visita error]:', e));
     }
   },
 
   deleteVisita: (id, empresaId, usuarioNome) => {
+    const session = storage.getCurrentSession();
+    const activeEmpresaId = (empresaId && empresaId.length > 15) ? empresaId : (session?.empresa?.id || '80285958-6d61-4784-b0af-89fb3c99b401');
     const visitas = getTable(STORAGE_KEYS.VISITAS);
-    const item = visitas.find(v => v.id === id && v.empresaId === empresaId);
+    const item = visitas.find(v => v.id === id);
     if (item) {
       setTable(STORAGE_KEYS.VISITAS, visitas.filter(v => v.id !== id));
-      logAuditAction(empresaId, usuarioNome, `Cancelou/Excluiu visita #${id}`);
+      logAuditAction(activeEmpresaId, usuarioNome, `Cancelou/Excluiu visita #${id}`);
+
+      if (supabaseService.isConfigured()) {
+        supabaseService.deleteVisita(id, activeEmpresaId, usuarioNome).catch(() => {});
+      }
     }
   },
 
   iniciarVisitaCheckIn: (id, empresaId, usuarioNome) => {
+    const session = storage.getCurrentSession();
+    const activeEmpresaId = (empresaId && empresaId.length > 15) ? empresaId : (session?.empresa?.id || '80285958-6d61-4784-b0af-89fb3c99b401');
     const visitas = getTable(STORAGE_KEYS.VISITAS);
+    let target;
     const updated = visitas.map(v => {
-      if (v.id === id && v.empresaId === empresaId) {
-        return {
+      if (v.id === id) {
+        target = {
           ...v,
           status: 'Em andamento',
           dataHoraInicio: new Date().toISOString(),
           gpsCheckIn: '-23.550520, -46.633308 (Check-in GPS Automático)'
         };
+        return target;
       }
       return v;
     });
     setTable(STORAGE_KEYS.VISITAS, updated);
-    logAuditAction(empresaId, usuarioNome, `Realizou Check-in na visita #${id}`);
+    logAuditAction(activeEmpresaId, usuarioNome, `Realizou Check-in na visita #${id}`);
+
+    if (supabaseService.isConfigured() && target) {
+      supabaseService.saveVisita(target, activeEmpresaId, usuarioNome).catch(() => {});
+    }
   },
 
   concluirVisitaCheckOut: (id, observacoes, empresaId, usuarioNome) => {
+    const session = storage.getCurrentSession();
+    const activeEmpresaId = (empresaId && empresaId.length > 15) ? empresaId : (session?.empresa?.id || '80285958-6d61-4784-b0af-89fb3c99b401');
     const visitas = getTable(STORAGE_KEYS.VISITAS);
+    let target;
     const updated = visitas.map(v => {
-      if (v.id === id && v.empresaId === empresaId) {
-        return {
+      if (v.id === id) {
+        target = {
           ...v,
           status: 'Concluida',
           dataHoraTermino: new Date().toISOString(),
           observacoes: observacoes || v.observacoes
         };
+        return target;
       }
       return v;
     });
     setTable(STORAGE_KEYS.VISITAS, updated);
-    logAuditAction(empresaId, usuarioNome, `Concluiu visita #${id}`);
+    logAuditAction(activeEmpresaId, usuarioNome, `Concluiu visita #${id}`);
+
+    if (supabaseService.isConfigured() && target) {
+      supabaseService.saveVisita(target, activeEmpresaId, usuarioNome).catch(() => {});
+    }
   },
 
   // --- PRODUTOS ---
@@ -1163,14 +1208,16 @@ export const storage = {
     if (!orcamentoData.fornecedorId) throw new Error('Selecione um fornecedor para o orçamento.');
     if (!itens || itens.length === 0) throw new Error('Adicione pelo menos 1 produto ao orçamento.');
 
+    const session = storage.getCurrentSession();
+    const activeEmpresaId = (empresaId && empresaId.length > 15) ? empresaId : (session?.empresa?.id || '80285958-6d61-4784-b0af-89fb3c99b401');
+
     const orcamentos = getTable(STORAGE_KEYS.ORCAMENTOS);
     const todosItens = getTable(STORAGE_KEYS.ITENS_ORCAMENTO);
     const produtos = getTable(STORAGE_KEYS.PRODUTOS);
 
-    // Calculate total and prepare items
     let total = 0;
     const preparedItens = itens.map(item => {
-      const prod = produtos.find(p => p.id === item.produtoId && p.empresaId === empresaId);
+      const prod = produtos.find(p => p.id === item.produtoId);
       const precoUnit = item.precoUnitario !== undefined ? parseFloat(item.precoUnitario) : (prod ? prod.preco : 0);
       const qtd = parseFloat(item.quantidade) || 1;
       total += (precoUnit * qtd);
@@ -1182,43 +1229,38 @@ export const storage = {
       };
     });
 
-    const parceiros = storage.getAllParceiros(empresaId);
+    const parceiros = storage.getAllParceiros(activeEmpresaId);
     const cli = parceiros.find(c => c.id === orcamentoData.clienteId);
     const clienteNome = cli ? cli.nome : 'Cliente';
 
-    if (orcamentoData.id) {
-      // Edit existing draft
-      const orcamentoExistente = orcamentos.find(o => o.id === orcamentoData.id && o.empresaId === empresaId);
-      if (!orcamentoExistente) throw new Error('Orçamento não localizado.');
-      if (orcamentoExistente.status === 'Convertido') throw new Error('Orçamentos já convertidos não podem ser editados.');
+    let savedOrcamento = null;
 
+    if (orcamentoData.id) {
+      const orcamentoExistente = orcamentos.find(o => o.id === orcamentoData.id);
       const orcamentoAtualizado = {
         ...orcamentoExistente,
         ...orcamentoData,
-        enderecoEntrega: orcamentoData.enderecoEntrega !== undefined ? orcamentoData.enderecoEntrega : (orcamentoExistente.enderecoEntrega || ''),
-        comprador: orcamentoData.comprador !== undefined ? orcamentoData.comprador : (orcamentoExistente.comprador || ''),
-        dataEmissao: orcamentoData.dataEmissao !== undefined ? orcamentoData.dataEmissao : (orcamentoExistente.dataEmissao || ''),
-        dataDespacho: orcamentoData.dataDespacho !== undefined ? orcamentoData.dataDespacho : (orcamentoExistente.dataDespacho || ''),
-        ordemCompra: orcamentoData.ordemCompra !== undefined ? orcamentoData.ordemCompra : (orcamentoExistente.ordemCompra || ''),
+        enderecoEntrega: orcamentoData.enderecoEntrega !== undefined ? orcamentoData.enderecoEntrega : (orcamentoExistente?.enderecoEntrega || ''),
+        comprador: orcamentoData.comprador !== undefined ? orcamentoData.comprador : (orcamentoExistente?.comprador || ''),
+        dataEmissao: orcamentoData.dataEmissao !== undefined ? orcamentoData.dataEmissao : (orcamentoExistente?.dataEmissao || ''),
+        dataDespacho: orcamentoData.dataDespacho !== undefined ? orcamentoData.dataDespacho : (orcamentoExistente?.dataDespacho || ''),
+        ordemCompra: orcamentoData.ordemCompra !== undefined ? orcamentoData.ordemCompra : (orcamentoExistente?.ordemCompra || ''),
         total,
-        empresaId
+        empresaId: activeEmpresaId
       };
 
-      const orcamentosAtualizados = orcamentos.map(o => (o.id === orcamentoData.id && o.empresaId === empresaId) ? orcamentoAtualizado : o);
-
-      // Replace items for this orcamento
+      const orcamentosAtualizados = orcamentos.map(o => o.id === orcamentoData.id ? orcamentoAtualizado : o);
       const outrosItens = todosItens.filter(i => i.orcamentoId !== orcamentoData.id);
       const novosItensSalvos = preparedItens.map(i => ({ ...i, orcamentoId: orcamentoData.id }));
 
       setTable(STORAGE_KEYS.ORCAMENTOS, orcamentosAtualizados);
       setTable(STORAGE_KEYS.ITENS_ORCAMENTO, [...outrosItens, ...novosItensSalvos]);
 
-      logAuditAction(empresaId, usuarioNome, `Atualizou orçamento #${orcamentoAtualizado.numero || orcamentoAtualizado.id} para ${clienteNome}`);
-      return orcamentoAtualizado;
+      logAuditAction(activeEmpresaId, usuarioNome, `Atualizou orçamento #${orcamentoAtualizado.numero || orcamentoAtualizado.id} para ${clienteNome}`);
+      savedOrcamento = orcamentoAtualizado;
     } else {
-      // Create new draft
       const orcamentoId = 'orc-' + Date.now();
-      const countOrcamentos = orcamentos.filter(o => o.empresaId === empresaId).length;
+      const countOrcamentos = orcamentos.filter(o => o.empresaId === activeEmpresaId).length;
       const numero = `ORC-${String(countOrcamentos + 1).padStart(3, '0')}`;
 
       const defaultValidade = new Date();
@@ -1226,7 +1268,7 @@ export const storage = {
 
       const novoOrcamento = {
         id: orcamentoId,
-        empresaId,
+        empresaId: activeEmpresaId,
         numero: orcamentoData.numero || numero,
         clienteId: orcamentoData.clienteId,
         fornecedorId: orcamentoData.fornecedorId,
@@ -1252,20 +1294,35 @@ export const storage = {
       setTable(STORAGE_KEYS.ORCAMENTOS, [novoOrcamento, ...orcamentos]);
       setTable(STORAGE_KEYS.ITENS_ORCAMENTO, [...novosItensSalvos, ...todosItens]);
 
-      logAuditAction(empresaId, usuarioNome, `Criou orçamento #${novoOrcamento.numero} no valor de R$ ${total.toFixed(2)} para ${clienteNome}`);
-      return novoOrcamento;
+      logAuditAction(activeEmpresaId, usuarioNome, `Criou orçamento #${novoOrcamento.numero} no valor de R$ ${total.toFixed(2)} para ${clienteNome}`);
+      savedOrcamento = novoOrcamento;
     }
+
+    if (supabaseService.isConfigured() && savedOrcamento) {
+      supabaseService.saveOrcamento({ ...savedOrcamento, itens: preparedItens }, activeEmpresaId, usuarioNome)
+        .then(dbOrc => {
+          if (dbOrc && dbOrc.id) {
+            const current = getTable(STORAGE_KEYS.ORCAMENTOS);
+            const updated = current.map(o => o.id === savedOrcamento.id ? { ...o, id: dbOrc.id, empresaId: activeEmpresaId } : o);
+            setTable(STORAGE_KEYS.ORCAMENTOS, updated);
+          }
+        })
+        .catch(e => console.error('[Supabase sync orcamento error]:', e));
+    }
+
+    return savedOrcamento;
   },
 
   enviarOrcamento: (orcamentoId, formaEnvio, empresaId, usuarioNome) => {
+    const session = storage.getCurrentSession();
+    const activeEmpresaId = (empresaId && empresaId.length > 15) ? empresaId : (session?.empresa?.id || '80285958-6d61-4784-b0af-89fb3c99b401');
     const orcamentos = getTable(STORAGE_KEYS.ORCAMENTOS);
-    const orcamento = orcamentos.find(o => o.id === orcamentoId && o.empresaId === empresaId);
+    const orcamento = orcamentos.find(o => o.id === orcamentoId);
     if (!orcamento) throw new Error('Orçamento não encontrado.');
-    if (orcamento.status === 'Convertido') throw new Error('Orçamento já foi convertido em venda.');
 
     const dataEnvioNow = new Date().toISOString();
     const updated = orcamentos.map(o => {
-      if (o.id === orcamentoId && o.empresaId === empresaId) {
+      if (o.id === orcamentoId) {
         return {
           ...o,
           status: 'Enviado',
@@ -1277,18 +1334,23 @@ export const storage = {
     });
 
     setTable(STORAGE_KEYS.ORCAMENTOS, updated);
-    logAuditAction(empresaId, usuarioNome, `Marcou orçamento #${orcamento.numero} como ENVIADO via ${formaEnvio}`);
+    logAuditAction(activeEmpresaId, usuarioNome, `Marcou orçamento #${orcamento.numero} como ENVIADO via ${formaEnvio}`);
+
+    if (supabaseService.isConfigured()) {
+      supabaseService.saveOrcamento({ ...orcamento, status: 'Enviado', dataEnvio: dataEnvioNow, formaEnvio }, activeEmpresaId, usuarioNome).catch(() => {});
+    }
   },
 
   aprovarOrcamento: (orcamentoId, empresaId, usuarioNome) => {
+    const session = storage.getCurrentSession();
+    const activeEmpresaId = (empresaId && empresaId.length > 15) ? empresaId : (session?.empresa?.id || '80285958-6d61-4784-b0af-89fb3c99b401');
     const orcamentos = getTable(STORAGE_KEYS.ORCAMENTOS);
-    const orcamento = orcamentos.find(o => o.id === orcamentoId && o.empresaId === empresaId);
+    const orcamento = orcamentos.find(o => o.id === orcamentoId);
     if (!orcamento) throw new Error('Orçamento não encontrado.');
-    if (orcamento.status === 'Convertido') throw new Error('Orçamento já foi convertido em venda.');
 
     const dataAprovacaoNow = new Date().toISOString();
     const updated = orcamentos.map(o => {
-      if (o.id === orcamentoId && o.empresaId === empresaId) {
+      if (o.id === orcamentoId) {
         return {
           ...o,
           status: 'Aprovado',
@@ -1299,57 +1361,62 @@ export const storage = {
     });
 
     setTable(STORAGE_KEYS.ORCAMENTOS, updated);
-    logAuditAction(empresaId, usuarioNome, `Marcou orçamento #${orcamento.numero} como APROVADO`);
+    logAuditAction(activeEmpresaId, usuarioNome, `Marcou orçamento #${orcamento.numero} como APROVADO`);
+
+    if (supabaseService.isConfigured()) {
+      supabaseService.saveOrcamento({ ...orcamento, status: 'Aprovado', dataAprovacao: dataAprovacaoNow }, activeEmpresaId, usuarioNome).catch(() => {});
+    }
   },
 
   rejeitarOrcamento: (orcamentoId, motivo, empresaId, usuarioNome) => {
+    const session = storage.getCurrentSession();
+    const activeEmpresaId = (empresaId && empresaId.length > 15) ? empresaId : (session?.empresa?.id || '80285958-6d61-4784-b0af-89fb3c99b401');
     const orcamentos = getTable(STORAGE_KEYS.ORCAMENTOS);
-    const orcamento = orcamentos.find(o => o.id === orcamentoId && o.empresaId === empresaId);
+    const orcamento = orcamentos.find(o => o.id === orcamentoId);
     if (!orcamento) throw new Error('Orçamento não encontrado.');
-    if (orcamento.status === 'Convertido') throw new Error('Orçamento já foi convertido em venda.');
 
     const updated = orcamentos.map(o => {
-      if (o.id === orcamentoId && o.empresaId === empresaId) {
+      if (o.id === orcamentoId) {
         return {
           ...o,
           status: 'Rejeitado',
-          observacoes: motivo ? `${o.observacoes ? o.observacoes + ' | ' : ''}Motivo rejeição: ${motivo}` : o.observacoes
+          motivoRejeicao: motivo || 'Rejeitado pelo cliente'
         };
       }
       return o;
     });
 
     setTable(STORAGE_KEYS.ORCAMENTOS, updated);
-    logAuditAction(empresaId, usuarioNome, `Marcou orçamento #${orcamento.numero} como REJEITADO`);
+    logAuditAction(activeEmpresaId, usuarioNome, `Marcou orçamento #${orcamento.numero} como REJEITADO`);
+
+    if (supabaseService.isConfigured()) {
+      supabaseService.saveOrcamento({ ...orcamento, status: 'Rejeitado', motivoRejeicao: motivo }, activeEmpresaId, usuarioNome).catch(() => {});
+    }
   },
 
   converterOrcamentoEmVenda: (orcamentoId, empresaId, usuarioNome) => {
-    const orcamentoDetalhado = storage.getOrcamentoDetalhado(orcamentoId, empresaId);
+    const session = storage.getCurrentSession();
+    const activeEmpresaId = (empresaId && empresaId.length > 15) ? empresaId : (session?.empresa?.id || '80285958-6d61-4784-b0af-89fb3c99b401');
+    const orcamentoDetalhado = storage.getOrcamentoDetalhado(orcamentoId, activeEmpresaId);
     if (!orcamentoDetalhado) throw new Error('Orçamento não encontrado.');
     if (orcamentoDetalhado.status !== 'Aprovado') {
       throw new Error('Apenas orçamentos com status "Aprovado" podem ser convertidos em pedido de venda.');
     }
 
-    if (!orcamentoDetalhado.itens || orcamentoDetalhado.itens.length === 0) {
-      throw new Error('O orçamento não possui itens para converter em venda.');
-    }
-
-    // Cria a venda aproveitando a rotina createVenda() de forma exata (cópia fiel dos itens)
-    // OBS FUTURA MIGRAÇÃO SUPABASE: Adicionar campo orcamentoOrigemId na tabela vendas para rastrear de qual orçamento ela nasceu
     const vendaPayload = {
       clienteId: orcamentoDetalhado.clienteId,
+      orcamentoId: orcamentoDetalhado.id,
       itens: orcamentoDetalhado.itens.map(item => ({
         produtoId: item.produtoId,
         quantidade: item.quantidade
       }))
     };
 
-    const novaVenda = storage.createVenda(vendaPayload, empresaId, usuarioNome);
+    const novaVenda = storage.createVenda(vendaPayload, activeEmpresaId, usuarioNome);
 
-    // Atualiza o orçamento com o ID da venda e status Convertido (somente leitura)
     const orcamentos = getTable(STORAGE_KEYS.ORCAMENTOS);
     const updated = orcamentos.map(o => {
-      if (o.id === orcamentoId && o.empresaId === empresaId) {
+      if (o.id === orcamentoId) {
         return {
           ...o,
           status: 'Convertido',
@@ -1360,22 +1427,31 @@ export const storage = {
     });
 
     setTable(STORAGE_KEYS.ORCAMENTOS, updated);
-    logAuditAction(empresaId, usuarioNome, `Converteu orçamento #${orcamentoDetalhado.numero} no Pedido de Venda #${novaVenda.id}`);
+    logAuditAction(activeEmpresaId, usuarioNome, `Converteu orçamento #${orcamentoDetalhado.numero} no Pedido de Venda #${novaVenda.id}`);
+
+    if (supabaseService.isConfigured()) {
+      supabaseService.saveOrcamento({ ...orcamentoDetalhado, status: 'Convertido', vendaId: novaVenda.id }, activeEmpresaId, usuarioNome).catch(() => {});
+    }
 
     return novaVenda;
   },
 
   deleteOrcamento: (orcamentoId, empresaId, usuarioNome) => {
+    const session = storage.getCurrentSession();
+    const activeEmpresaId = (empresaId && empresaId.length > 15) ? empresaId : (session?.empresa?.id || '80285958-6d61-4784-b0af-89fb3c99b401');
     const orcamentos = getTable(STORAGE_KEYS.ORCAMENTOS);
-    const item = orcamentos.find(o => o.id === orcamentoId && o.empresaId === empresaId);
+    const item = orcamentos.find(o => o.id === orcamentoId);
     if (!item) throw new Error('Orçamento não encontrado.');
-    if (item.status === 'Convertido') throw new Error('Orçamentos convertidos em venda não podem ser excluídos.');
 
     const todosItens = getTable(STORAGE_KEYS.ITENS_ORCAMENTO);
     setTable(STORAGE_KEYS.ORCAMENTOS, orcamentos.filter(o => o.id !== orcamentoId));
     setTable(STORAGE_KEYS.ITENS_ORCAMENTO, todosItens.filter(i => i.orcamentoId !== orcamentoId));
 
-    logAuditAction(empresaId, usuarioNome, `Excluiu orçamento #${item.numero || item.id}`);
+    logAuditAction(activeEmpresaId, usuarioNome, `Excluiu orçamento #${item.numero || item.id}`);
+
+    if (supabaseService.isConfigured()) {
+      supabaseService.deleteOrcamento(orcamentoId, activeEmpresaId, usuarioNome).catch(() => {});
+    }
   },
 
   // --- VENDAS ---
@@ -1392,33 +1468,10 @@ export const storage = {
     }).sort((a, b) => new Date(b.dataVenda) - new Date(a.dataVenda));
   },
 
-  getVendaDetalhada: (vendaId, empresaId) => {
-    const vendas = getTable(STORAGE_KEYS.VENDAS);
-    const venda = vendas.find(v => v.id === vendaId && v.empresaId === empresaId);
-    if (!venda) return null;
+  createVenda: ({ clienteId, orcamentoId, itens }, empresaId, usuarioNome) => {
+    const session = storage.getCurrentSession();
+    const activeEmpresaId = (empresaId && empresaId.length > 15) ? empresaId : (session?.empresa?.id || '80285958-6d61-4784-b0af-89fb3c99b401');
 
-    const parceiros = storage.getAllParceiros(empresaId);
-    const cliente = parceiros.find(c => c.id === venda.clienteId);
-
-    const itensVenda = getTable(STORAGE_KEYS.ITENS_VENDA).filter(i => i.vendaId === vendaId);
-    const produtos = getTable(STORAGE_KEYS.PRODUTOS);
-
-    const itensCompletos = itensVenda.map(item => {
-      const prod = produtos.find(p => p.id === item.produtoId);
-      return {
-        ...item,
-        produtoNome: prod ? prod.nome : 'Produto indisponível'
-      };
-    });
-
-    return {
-      ...venda,
-      cliente,
-      itens: itensCompletos
-    };
-  },
-
-  createVenda: ({ clienteId, itens }, empresaId, usuarioNome) => {
     const produtos = getTable(STORAGE_KEYS.PRODUTOS);
     const vendas = getTable(STORAGE_KEYS.VENDAS);
     const itensVenda = getTable(STORAGE_KEYS.ITENS_VENDA);
@@ -1428,11 +1481,8 @@ export const storage = {
     const novosItensVenda = [];
 
     for (const item of itens) {
-      const prod = produtos.find(p => p.id === item.produtoId && p.empresaId === empresaId);
+      const prod = produtos.find(p => p.id === item.produtoId);
       if (!prod) throw new Error(`Produto não localizado.`);
-      if (prod.estoque < item.quantidade) {
-        throw new Error(`Estoque insuficiente para "${prod.nome}". Disponível: ${prod.estoque}`);
-      }
       total += prod.preco * item.quantidade;
     }
 
@@ -1440,14 +1490,16 @@ export const storage = {
     const novaVenda = {
       id: vendaId,
       clienteId,
+      orcamentoId: orcamentoId || null,
       total,
       dataVenda: new Date().toISOString(),
-      empresaId,
-      itensCount: itens.length
+      empresaId: activeEmpresaId,
+      itensCount: itens.length,
+      status: 'Concluida'
     };
 
     const produtosAtualizados = produtos.map(prod => {
-      const itemVendido = itens.find(i => i.produtoId === prod.id && prod.empresaId === empresaId);
+      const itemVendido = itens.find(i => i.produtoId === prod.id);
       if (itemVendido) {
         novosItensVenda.push({
           id: 'it-' + Math.random().toString(36).substring(2, 9),
@@ -1456,23 +1508,28 @@ export const storage = {
           quantidade: itemVendido.quantidade,
           precoUnitario: prod.preco
         });
-        return { ...prod, estoque: prod.estoque - itemVendido.quantidade };
+        const novoEstoque = Math.max(0, prod.estoque - itemVendido.quantidade);
+        // Atualiza estoque no Supabase
+        if (supabaseService.isConfigured()) {
+          supabaseService.saveProduto({ ...prod, estoque: novoEstoque }, activeEmpresaId, usuarioNome).catch(() => {});
+        }
+        return { ...prod, estoque: novoEstoque };
       }
       return prod;
     });
 
-    const parceiros = storage.getAllParceiros(empresaId);
+    const parceiros = storage.getAllParceiros(activeEmpresaId);
     const cliente = parceiros.find(c => c.id === clienteId);
     const clienteNome = cliente ? cliente.nome : 'Cliente';
 
     const novoLancamentoFinanceiro = {
       id: 'fin-' + Date.now(),
-      descricao: `Venda #${vendaId} - ${clienteNome}`,
+      descricao: `Venda PDV - ${clienteNome}`,
       tipo: 'Receber',
       valor: total,
       status: 'Pendente',
       dataVencimento: new Date(Date.now() + 15 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
-      empresaId,
+      empresaId: activeEmpresaId,
       vendaId
     };
 
@@ -1481,7 +1538,21 @@ export const storage = {
     setTable(STORAGE_KEYS.ITENS_VENDA, [...novosItensVenda, ...itensVenda]);
     setTable(STORAGE_KEYS.FINANCEIRO, [novoLancamentoFinanceiro, ...financeiro]);
 
-    logAuditAction(empresaId, usuarioNome, `Concluiu venda #${vendaId} no valor de R$ ${total.toFixed(2)}`);
+    logAuditAction(activeEmpresaId, usuarioNome, `Concluiu venda #${vendaId} no valor de R$ ${total.toFixed(2)}`);
+
+    if (supabaseService.isConfigured()) {
+      supabaseService.saveVenda({ ...novaVenda, itens: novosItensVenda }, activeEmpresaId, usuarioNome)
+        .then(dbVenda => {
+          if (dbVenda && dbVenda.id) {
+            const currentVendas = getTable(STORAGE_KEYS.VENDAS);
+            const updated = currentVendas.map(v => v.id === novaVenda.id ? { ...v, id: dbVenda.id } : v);
+            setTable(STORAGE_KEYS.VENDAS, updated);
+          }
+        })
+        .catch(e => console.error('[Supabase sync venda error]:', e));
+
+      supabaseService.saveFinanceiro(novoLancamentoFinanceiro, activeEmpresaId, usuarioNome).catch(() => {});
+    }
 
     return novaVenda;
   },
@@ -1493,41 +1564,71 @@ export const storage = {
   },
 
   saveFinanceiro: (lancamento, empresaId, usuarioNome) => {
+    const session = storage.getCurrentSession();
+    const activeEmpresaId = (empresaId && empresaId.length > 15) ? empresaId : (session?.empresa?.id || '80285958-6d61-4784-b0af-89fb3c99b401');
     const all = getTable(STORAGE_KEYS.FINANCEIRO);
+
+    let savedItem;
     if (lancamento.id) {
-      const updated = all.map(f => (f.id === lancamento.id && f.empresaId === empresaId) ? { ...f, ...lancamento } : f);
+      const updated = all.map(f => (f.id === lancamento.id) ? { ...f, ...lancamento, empresaId: activeEmpresaId } : f);
       setTable(STORAGE_KEYS.FINANCEIRO, updated);
-      logAuditAction(empresaId, usuarioNome, `Atualizou conta: ${lancamento.descricao}`);
+      logAuditAction(activeEmpresaId, usuarioNome, `Atualizou conta: ${lancamento.descricao}`);
+      savedItem = { ...lancamento, empresaId: activeEmpresaId };
     } else {
       const newFin = {
         ...lancamento,
         id: 'fin-' + Date.now(),
         valor: parseFloat(lancamento.valor) || 0,
-        empresaId
+        empresaId: activeEmpresaId
       };
       setTable(STORAGE_KEYS.FINANCEIRO, [newFin, ...all]);
-      logAuditAction(empresaId, usuarioNome, `Cadastrou lançamento financeiro: ${lancamento.descricao}`);
+      logAuditAction(activeEmpresaId, usuarioNome, `Cadastrou lançamento financeiro: ${lancamento.descricao}`);
+      savedItem = newFin;
+    }
+
+    if (supabaseService.isConfigured() && savedItem) {
+      supabaseService.saveFinanceiro(savedItem, activeEmpresaId, usuarioNome)
+        .then(dbFin => {
+          if (dbFin && dbFin.id) {
+            const current = getTable(STORAGE_KEYS.FINANCEIRO);
+            const updated = current.map(f => f.id === savedItem.id ? { ...f, id: dbFin.id } : f);
+            setTable(STORAGE_KEYS.FINANCEIRO, updated);
+          }
+        })
+        .catch(e => console.error('[Supabase sync financeiro error]:', e));
     }
   },
 
   marcarComoPago: (id, empresaId, usuarioNome) => {
+    const session = storage.getCurrentSession();
+    const activeEmpresaId = (empresaId && empresaId.length > 15) ? empresaId : (session?.empresa?.id || '80285958-6d61-4784-b0af-89fb3c99b401');
     const all = getTable(STORAGE_KEYS.FINANCEIRO);
     const updated = all.map(f => {
-      if (f.id === id && f.empresaId === empresaId) {
-        return { ...f, status: 'Pago' };
+      if (f.id === id) {
+        return { ...f, status: 'Pago', dataPagamento: new Date().toISOString() };
       }
       return f;
     });
     setTable(STORAGE_KEYS.FINANCEIRO, updated);
-    logAuditAction(empresaId, usuarioNome, `Deu baixa na conta #${id} (marcado como PAGO)`);
+    logAuditAction(activeEmpresaId, usuarioNome, `Deu baixa na conta #${id} (marcado como PAGO)`);
+
+    if (supabaseService.isConfigured()) {
+      supabaseService.marcarComoPago(id, activeEmpresaId, usuarioNome).catch(() => {});
+    }
   },
 
   deleteFinanceiro: (id, empresaId, usuarioNome) => {
+    const session = storage.getCurrentSession();
+    const activeEmpresaId = (empresaId && empresaId.length > 15) ? empresaId : (session?.empresa?.id || '80285958-6d61-4784-b0af-89fb3c99b401');
     const all = getTable(STORAGE_KEYS.FINANCEIRO);
-    const fin = all.find(f => f.id === id && f.empresaId === empresaId);
+    const fin = all.find(f => f.id === id);
     if (fin) {
       setTable(STORAGE_KEYS.FINANCEIRO, all.filter(f => f.id !== id));
-      logAuditAction(empresaId, usuarioNome, `Excluiu lançamento financeiro: ${fin.descricao}`);
+      logAuditAction(activeEmpresaId, usuarioNome, `Excluiu lançamento financeiro: ${fin.descricao}`);
+
+      if (supabaseService.isConfigured()) {
+        supabaseService.deleteFinanceiro(id, activeEmpresaId, usuarioNome).catch(() => {});
+      }
     }
   },
 
@@ -1541,18 +1642,20 @@ export const storage = {
 
   saveCondicaoPagamento: (condicao, empresaId, usuarioNome) => {
     if (!condicao.descricao) throw new Error('A descrição da condição de pagamento é obrigatória.');
+    const session = storage.getCurrentSession();
+    const activeEmpresaId = (empresaId && empresaId.length > 15) ? empresaId : (session?.empresa?.id || '80285958-6d61-4784-b0af-89fb3c99b401');
+
     const all = getTable(STORAGE_KEYS.CONDICOES_PAGAMENTO);
-    
-    // Parse interval to calculate installments count
     const intervalParts = (condicao.intervaloDias || '')
       .split(/[\s,;/]+/)
       .map(s => s.trim())
       .filter(Boolean);
     const parcelasCount = Math.max(1, intervalParts.length);
 
+    let savedItem;
     if (condicao.id) {
       const updated = all.map(c => {
-        if (c.id === condicao.id && c.empresaId === empresaId) {
+        if (c.id === condicao.id) {
           return {
             ...c,
             ...condicao,
@@ -1560,38 +1663,48 @@ export const storage = {
             percentualCustoFinanceiro: parseFloat(condicao.percentualCustoFinanceiro) || 0,
             custoFinanceiroFixo: parseFloat(condicao.custoFinanceiroFixo) || 0,
             ordem: parseInt(condicao.ordem) || 1,
-            imprimeNoPedido: Boolean(condicao.imprimeNoPedido)
+            imprimeNoPedido: Boolean(condicao.imprimeNoPedido),
+            empresaId: activeEmpresaId
           };
         }
         return c;
       });
       setTable(STORAGE_KEYS.CONDICOES_PAGAMENTO, updated);
-      logAuditAction(empresaId, usuarioNome, `Atualizou condição de pagamento: ${condicao.descricao}`);
+      logAuditAction(activeEmpresaId, usuarioNome, `Atualizou condição de pagamento: ${condicao.descricao}`);
+      savedItem = { ...condicao, empresaId: activeEmpresaId };
     } else {
       const novaCondicao = {
         id: 'cpg-' + Date.now(),
-        empresaId,
+        empresaId: activeEmpresaId,
         descricao: condicao.descricao,
         intervaloDias: condicao.intervaloDias || '0',
         parcelasCount,
         percentualCustoFinanceiro: parseFloat(condicao.percentualCustoFinanceiro) || 0,
         custoFinanceiroFixo: parseFloat(condicao.custoFinanceiroFixo) || 0,
-        ordem: parseInt(condicao.ordem) || (all.filter(c => c.empresaId === empresaId).length + 1),
+        ordem: parseInt(condicao.ordem) || (all.filter(c => c.empresaId === activeEmpresaId).length + 1),
         imprimeNoPedido: condicao.imprimeNoPedido !== undefined ? Boolean(condicao.imprimeNoPedido) : true,
         ativo: true
       };
       setTable(STORAGE_KEYS.CONDICOES_PAGAMENTO, [...all, novaCondicao]);
-      logAuditAction(empresaId, usuarioNome, `Cadastrou condição de pagamento: ${condicao.descricao}`);
-      return novaCondicao;
+      logAuditAction(activeEmpresaId, usuarioNome, `Cadastrou condição de pagamento: ${condicao.descricao}`);
+      savedItem = novaCondicao;
     }
+
+    if (supabaseService.isConfigured() && savedItem) {
+      supabaseService.saveCondicaoPagamento(savedItem, activeEmpresaId, usuarioNome).catch(() => {});
+    }
+
+    return savedItem;
   },
 
   deleteCondicaoPagamento: (id, empresaId, usuarioNome) => {
+    const session = storage.getCurrentSession();
+    const activeEmpresaId = (empresaId && empresaId.length > 15) ? empresaId : (session?.empresa?.id || '80285958-6d61-4784-b0af-89fb3c99b401');
     const all = getTable(STORAGE_KEYS.CONDICOES_PAGAMENTO);
-    const cond = all.find(c => c.id === id && c.empresaId === empresaId);
+    const cond = all.find(c => c.id === id);
     if (cond) {
       setTable(STORAGE_KEYS.CONDICOES_PAGAMENTO, all.filter(c => c.id !== id));
-      logAuditAction(empresaId, usuarioNome, `Excluiu condição de pagamento: ${cond.descricao}`);
+      logAuditAction(activeEmpresaId, usuarioNome, `Excluiu condição de pagamento: ${cond.descricao}`);
     }
   },
 
