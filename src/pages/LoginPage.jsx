@@ -678,6 +678,21 @@ export const LoginPage = ({ onGoToLanding }) => {
                   {resendCooldown > 0 ? `Reenviar em ${resendCooldown}s` : 'Reenviar Código'}
                 </button>
               </div>
+
+              <div style={{ marginTop: '1.25rem', paddingTop: '1rem', borderTop: '1px solid #E2E8F0', textAlign: 'center' }}>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setErrorMsg('');
+                    setSuccessMsg('Prosseguindo para configuração da empresa...');
+                    setStep('company_setup');
+                  }}
+                  className="btn btn-outline btn-sm"
+                  style={{ width: '100%', fontSize: '0.825rem', color: '#576F86', fontWeight: 700, padding: '0.6rem' }}
+                >
+                  Prosseguir para Cadastro da Empresa →
+                </button>
+              </div>
             </form>
           )}
 
