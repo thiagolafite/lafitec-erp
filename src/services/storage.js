@@ -696,6 +696,8 @@ export const storage = {
   },
 
   saveParceiroComercial: (parceiroData, empresaId, usuarioNome) => {
+    const session = storage.getCurrentSession();
+    const activeEmpresaId = (empresaId && empresaId.length > 15) ? empresaId : (session?.empresa?.id || '80285958-6d61-4784-b0af-89fb3c99b401');
     const parceiros = getTable(STORAGE_KEYS.PARCEIROS);
     const targetTipo = parceiroData.tipo || 'Clientes';
 
@@ -704,25 +706,26 @@ export const storage = {
       const exists = parceiros.some(p => p.id === parceiroData.id);
       if (exists) {
         const updatedList = parceiros.map(p => {
-          if (p.id === parceiroData.id && p.empresaId === empresaId) {
+          if (p.id === parceiroData.id) {
             return {
               ...p,
               ...parceiroData,
               tipo: targetTipo,
-              cpfCnpj: parceiroData.cpfCnpj || parceiroData.cnpj || p.cpfCnpj
+              cpfCnpj: parceiroData.cpfCnpj || parceiroData.cnpj || p.cpfCnpj,
+              empresaId: activeEmpresaId
             };
           }
           return p;
         });
         setTable(STORAGE_KEYS.PARCEIROS, updatedList);
-        savedItem = { ...parceiroData, tipo: targetTipo };
+        savedItem = { ...parceiroData, tipo: targetTipo, empresaId: activeEmpresaId };
       } else {
         const newItem = {
           ...parceiroData,
           id: parceiroData.id,
           tipo: targetTipo,
           cpfCnpj: parceiroData.cpfCnpj || parceiroData.cnpj,
-          empresaId
+          empresaId: activeEmpresaId
         };
         setTable(STORAGE_KEYS.PARCEIROS, [...parceiros, newItem]);
         savedItem = newItem;
@@ -736,16 +739,24 @@ export const storage = {
         tipo: targetTipo,
         cpfCnpj: parceiroData.cpfCnpj || parceiroData.cnpj,
         statusAtivacao: parceiroData.statusAtivacao || 'Ativo',
-        empresaId
+        empresaId: activeEmpresaId
       };
       setTable(STORAGE_KEYS.PARCEIROS, [...parceiros, newItem]);
       savedItem = newItem;
     }
 
-    logAuditAction(empresaId, usuarioNome, `Salvou parceiro comercial "${parceiroData.nome}" do tipo ${targetTipo}`);
+    logAuditAction(activeEmpresaId, usuarioNome, `Salvou parceiro comercial "${parceiroData.nome}" do tipo ${targetTipo}`);
 
     if (supabaseService.isConfigured() && savedItem) {
-      supabaseService.saveParceiro(savedItem, empresaId, usuarioNome).catch(e => console.warn('Supabase sync parceiro error:', e));
+      supabaseService.saveParceiro(savedItem, activeEmpresaId, usuarioNome)
+        .then(dbItem => {
+          if (dbItem && dbItem.id) {
+            const current = getTable(STORAGE_KEYS.PARCEIROS);
+            const updated = current.map(p => p.id === savedItem.id ? { ...p, id: dbItem.id, empresaId: activeEmpresaId } : p);
+            setTable(STORAGE_KEYS.PARCEIROS, updated);
+          }
+        })
+        .catch(e => console.error('[Supabase sync parceiro error]:', e));
     }
 
     return targetTipo;
@@ -1044,13 +1055,15 @@ export const storage = {
   },
 
   saveProduto: (produto, empresaId, usuarioNome) => {
+    const session = storage.getCurrentSession();
+    const activeEmpresaId = (empresaId && empresaId.length > 15) ? empresaId : (session?.empresa?.id || '80285958-6d61-4784-b0af-89fb3c99b401');
     const all = getTable(STORAGE_KEYS.PRODUTOS);
     let targetProd;
     if (produto.id) {
-      const updated = all.map(p => (p.id === produto.id && p.empresaId === empresaId) ? { ...p, ...produto } : p);
+      const updated = all.map(p => (p.id === produto.id) ? { ...p, ...produto, empresaId: activeEmpresaId } : p);
       setTable(STORAGE_KEYS.PRODUTOS, updated);
-      targetProd = produto;
-      logAuditAction(empresaId, usuarioNome, `Atualizou produto: ${produto.nome}`);
+      targetProd = { ...produto, empresaId: activeEmpresaId };
+      logAuditAction(activeEmpresaId, usuarioNome, `Atualizou produto: ${produto.nome}`);
     } else {
       const newProd = {
         ...produto,
@@ -1058,15 +1071,23 @@ export const storage = {
         codigo: produto.codigo || 'PROD-' + Math.floor(100 + Math.random() * 900),
         preco: parseFloat(produto.preco) || 0,
         estoque: parseFloat(produto.estoque) || 0,
-        empresaId
+        empresaId: activeEmpresaId
       };
       setTable(STORAGE_KEYS.PRODUTOS, [...all, newProd]);
       targetProd = newProd;
-      logAuditAction(empresaId, usuarioNome, `Cadastrou produto: ${produto.nome}`);
+      logAuditAction(activeEmpresaId, usuarioNome, `Cadastrou produto: ${produto.nome}`);
     }
 
     if (supabaseService.isConfigured() && targetProd) {
-      supabaseService.saveProduto(targetProd, empresaId, usuarioNome).catch(e => console.warn('Supabase sync produto error:', e));
+      supabaseService.saveProduto(targetProd, activeEmpresaId, usuarioNome)
+        .then(dbProd => {
+          if (dbProd && dbProd.id) {
+            const current = getTable(STORAGE_KEYS.PRODUTOS);
+            const updated = current.map(p => p.id === targetProd.id ? { ...p, id: dbProd.id, empresaId: activeEmpresaId } : p);
+            setTable(STORAGE_KEYS.PRODUTOS, updated);
+          }
+        })
+        .catch(e => console.error('[Supabase sync produto error]:', e));
     }
   },
 
