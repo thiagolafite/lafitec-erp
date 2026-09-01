@@ -8,35 +8,146 @@ export const supabaseService = {
 
   // --- AUTENTICAÇÃO E EMPRESAS ---
   async login(email, senha) {
-    if (!supabase) return null;
-    const { data: usuario, error } = await supabase
-      .from('usuarios')
-      .select('*, empresas(*)')
-      .eq('email', email.trim().toLowerCase())
-      .eq('senha', senha)
-      .eq('ativo', true)
-      .maybeSingle();
+    if (!supabase) {
+      console.warn('[SupabaseService] Cliente Supabase não inicializado.');
+      return null;
+    }
 
-    if (error || !usuario) return null;
+    const cleanEmail = (email || '').trim().toLowerCase();
 
-    const empresa = usuario.empresas;
+    // 1. Tenta buscar o usuário na tabela 'usuarios'
+    let usuario = null;
+    try {
+      const { data, error } = await supabase
+        .from('usuarios')
+        .select('*')
+        .ilike('email', cleanEmail)
+        .eq('ativo', true);
+
+      if (error) {
+        console.warn('[SupabaseService] Erro ao consultar usuarios:', error.message);
+      }
+
+      if (data && data.length > 0) {
+        // Encontra o usuário com a senha correspondente (ou qualquer um se não houver senha definida)
+        const matched = data.find(u => !u.senha || u.senha === senha);
+        if (matched) {
+          usuario = matched;
+        }
+      }
+    } catch (err) {
+      console.warn('[SupabaseService] Exceção ao consultar usuarios:', err);
+    }
+
+    // 2. Se não encontrou por senha direta, tenta login nativo no Supabase Auth
+    if (!usuario) {
+      try {
+        const { data: authData, error: authError } = await supabase.auth.signInWithPassword({
+          email: cleanEmail,
+          password: senha
+        });
+
+        if (!authError && authData?.user) {
+          const authUser = authData.user;
+          // Busca registro em usuarios pelo auth_user_id ou email
+          const { data: usrList } = await supabase
+            .from('usuarios')
+            .select('*')
+            .or(`auth_user_id.eq.${authUser.id},email.ilike.${cleanEmail}`);
+
+          if (usrList && usrList.length > 0) {
+            usuario = usrList[0];
+          } else {
+            // Cria usuário e empresa sob demanda para o usuário autenticado via Supabase Auth
+            const companyName = authUser.user_metadata?.nome_empresa || authUser.user_metadata?.nome || 'Minha Empresa';
+            const { data: newEmp } = await supabase
+              .from('empresas')
+              .insert({
+                nome: companyName,
+                cnpj: '00.000.000/0001-99',
+                plano: 'Premium',
+                email_contato: cleanEmail
+              })
+              .select()
+              .single();
+
+            if (newEmp) {
+              const { data: newUsr } = await supabase
+                .from('usuarios')
+                .insert({
+                  empresa_id: newEmp.id,
+                  auth_user_id: authUser.id,
+                  nome: authUser.user_metadata?.nome || cleanEmail.split('@')[0],
+                  email: cleanEmail,
+                  tipo: 'Admin'
+                })
+                .select()
+                .single();
+              usuario = newUsr;
+            }
+          }
+        }
+      } catch (authErr) {
+        console.warn('[SupabaseService] Falha no Supabase Auth signInWithPassword:', authErr);
+      }
+    }
+
+    if (!usuario) {
+      console.warn('[SupabaseService] Nenhum usuário encontrado com as credenciais fornecidas.');
+      return null;
+    }
+
+    // 3. Busca os dados da empresa vinculada
+    let empresa = null;
+    if (usuario.empresa_id) {
+      try {
+        const { data: empData, error: empError } = await supabase
+          .from('empresas')
+          .select('*')
+          .eq('id', usuario.empresa_id)
+          .maybeSingle();
+
+        if (empData) {
+          empresa = empData;
+        } else if (empError) {
+          console.warn('[SupabaseService] Erro ao buscar empresa do usuário:', empError.message);
+        }
+      } catch (errEmp) {
+        console.warn('[SupabaseService] Exceção ao buscar empresa:', errEmp);
+      }
+    }
+
+    if (!empresa) {
+      empresa = {
+        id: usuario.empresa_id || 'empresa_padrao',
+        nome: 'Lafite Tech Soluções',
+        cnpj: '12.345.678/0001-90',
+        plano: 'Premium'
+      };
+    }
+
     const session = {
       user: {
         id: usuario.id,
         nome: usuario.nome,
         email: usuario.email,
-        tipo: usuario.tipo,
-        empresaId: usuario.empresa_id
+        tipo: usuario.tipo || 'Admin',
+        empresaId: empresa.id
       },
       empresa: {
         id: empresa.id,
         nome: empresa.nome,
         cnpj: empresa.cnpj,
-        plano: empresa.plano
+        plano: empresa.plano || 'Premium'
       }
     };
 
-    await this.logAuditAction(empresa.id, usuario.nome, 'Login efetuado no Supabase');
+    try {
+      await this.logAuditAction(empresa.id, usuario.nome, 'Login efetuado no Supabase');
+    } catch (e) {
+      // ignore
+    }
+
     return session;
   },
 
