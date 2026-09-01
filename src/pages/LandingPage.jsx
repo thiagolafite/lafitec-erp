@@ -17,10 +17,13 @@ import {
   FileCheck
 } from 'lucide-react';
 import { storage } from '../services/storage';
+import { useAuth } from '../context/AuthContext';
 
 export const LandingPage = ({ onGoToLogin, onSelectPlanRegister }) => {
+  const { registerEmpresa } = useAuth();
   const [registroModal, setRegistroModal] = useState(false);
-  const [selectedPlan, setSelectedPlan] = useState('Free');
+  const [selectedPlan, setSelectedPlan] = useState('Premium');
+  const [loading, setLoading] = useState(false);
   const [formData, setFormData] = useState({
     nomeEmpresa: '',
     cnpj: '',
@@ -30,19 +33,22 @@ export const LandingPage = ({ onGoToLogin, onSelectPlanRegister }) => {
   });
   const [errorMsg, setErrorMsg] = useState('');
 
-  const handleOpenRegister = (plan = 'Free') => {
+  const handleOpenRegister = (plan = 'Premium') => {
     setSelectedPlan(plan);
     setRegistroModal(true);
   };
 
-  const handleRegisterSubmit = (e) => {
+  const handleRegisterSubmit = async (e) => {
     e.preventDefault();
     setErrorMsg('');
+    setLoading(true);
     try {
-      storage.registerEmpresa({ ...formData, plano: selectedPlan });
-      window.location.reload(); // Atualiza a página e já entra autenticado!
+      await registerEmpresa({ ...formData, plano: selectedPlan });
+      setRegistroModal(false);
     } catch (err) {
       setErrorMsg(err.message || 'Erro ao registrar empresa.');
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -670,7 +676,9 @@ export const LandingPage = ({ onGoToLogin, onSelectPlanRegister }) => {
               </div>
               <div className="modal-footer">
                 <button type="button" className="btn btn-outline" onClick={() => setRegistroModal(false)}>Cancelar</button>
-                <button type="submit" className="btn btn-accent">Criar Conta & Acessar</button>
+                <button type="submit" className="btn btn-accent" disabled={loading}>
+                  {loading ? 'Criando Conta no Supabase...' : 'Criar Conta & Acessar'}
+                </button>
               </div>
             </form>
           </div>

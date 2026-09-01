@@ -221,40 +221,70 @@ export const DashboardPage = ({ onNavigate }) => {
 
   return (
     <div style={{ maxWidth: '100%', overflowX: 'hidden' }}>
-      {/* 1. Header welcome banner */}
+      {/* 1. Header welcome banner - Executive Command Center */}
       <div style={{
-        backgroundColor: '#0A2540',
-        borderRadius: '12px',
-        padding: '1.75rem 2rem',
+        background: 'linear-gradient(135deg, #071527 0%, #0A1E35 60%, #102A48 100%)',
+        borderRadius: '16px',
+        padding: '2rem 2.25rem',
         color: '#FFFFFF',
-        marginBottom: '2rem',
-        backgroundImage: 'linear-gradient(135deg, #0A2540 0%, #1E3A5F 100%)',
-        boxShadow: '0 10px 20px -5px rgba(10, 37, 64, 0.2)',
+        marginBottom: '2.25rem',
+        boxShadow: '0 12px 32px -4px rgba(7, 21, 39, 0.35)',
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'space-between',
         flexWrap: 'wrap',
-        gap: '1rem'
+        gap: '1.5rem',
+        border: '1px solid rgba(255, 255, 255, 0.1)',
+        position: 'relative',
+        overflow: 'hidden'
       }}>
-        <div>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '4px' }}>
-            <span style={{ fontSize: '0.8rem', color: '#00C896', fontWeight: 700, textTransform: 'uppercase' }}>
-              Painel de Controle Multi-tenant
+        {/* Glow backdrop effect */}
+        <div style={{
+          position: 'absolute',
+          top: '-40px',
+          right: '-40px',
+          width: '180px',
+          height: '180px',
+          borderRadius: '50%',
+          background: 'radial-gradient(circle, rgba(0, 245, 160, 0.25) 0%, transparent 70%)',
+          pointerEvents: 'none'
+        }}></div>
+
+        <div style={{ position: 'relative', zIndex: 1 }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '6px' }}>
+            <span style={{ width: '8px', height: '8px', borderRadius: '50%', backgroundColor: '#00F5A0', boxShadow: '0 0 10px #00F5A0' }}></span>
+            <span style={{ fontSize: '0.75rem', color: '#00F5A0', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.08em' }}>
+              Painel de Controle Executivo • Multi-tenant
             </span>
           </div>
-          <h2 style={{ fontSize: '1.5rem', fontWeight: 800 }}>
+          <h2 style={{ fontFamily: 'Outfit', fontSize: '1.75rem', fontWeight: 900, letterSpacing: '-0.02em' }}>
             Olá, {user?.nome}! Bem-vindo ao {empresa.nome}
           </h2>
-          <p style={{ color: '#94A3B8', fontSize: '0.875rem', marginTop: '4px' }}>
-            Aqui está o resumo executivo e financeiro da sua empresa hoje.
+          <p style={{ color: '#94A3B8', fontSize: '0.9rem', marginTop: '4px' }}>
+            Visão consolidada de faturamento, clientes, propostas comerciais e estoque em tempo real.
           </p>
         </div>
 
-        <div style={{ display: 'flex', gap: '0.75rem' }}>
-          <button onClick={() => onNavigate('vendas')} className="btn btn-accent">
-            <PlusCircle size={18} /> Nova Venda (PDV)
+        <div style={{ display: 'flex', gap: '0.85rem', flexWrap: 'wrap', position: 'relative', zIndex: 1 }}>
+          <button 
+            onClick={() => onNavigate('orcamentos')} 
+            className="btn btn-accent"
+            style={{ fontWeight: 800, display: 'inline-flex', alignItems: 'center', gap: '8px', padding: '0.75rem 1.4rem' }}
+          >
+            <PlusCircle size={19} /> + Novo Orçamento
           </button>
-          <button onClick={() => onNavigate('financeiro')} className="btn btn-outline" style={{ color: '#FFFFFF', borderColor: 'rgba(255,255,255,0.3)' }}>
+          <button 
+            onClick={() => onNavigate('vendas')} 
+            className="btn btn-outline" 
+            style={{ backgroundColor: 'rgba(255,255,255,0.06)', color: '#FFFFFF', borderColor: 'rgba(255,255,255,0.15)', fontWeight: 700 }}
+          >
+            <ShoppingCart size={18} /> Nova Venda (PDV)
+          </button>
+          <button 
+            onClick={() => onNavigate('financeiro')} 
+            className="btn btn-outline" 
+            style={{ backgroundColor: 'rgba(255,255,255,0.06)', color: '#FFFFFF', borderColor: 'rgba(255,255,255,0.15)', fontWeight: 700 }}
+          >
             <DollarSign size={18} /> Lançar Conta
           </button>
         </div>
@@ -266,12 +296,12 @@ export const DashboardPage = ({ onNavigate }) => {
           <div>
             <div className="stat-label">Total de Vendas</div>
             <div className="stat-val">{totalVendasCount}</div>
-            <div style={{ fontSize: '0.75rem', color: '#00C896', marginTop: '4px', fontWeight: 600 }}>
+            <div style={{ fontSize: '0.75rem', color: '#008764', marginTop: '6px', fontWeight: 700 }}>
               Faturamento: {formatCurrency(receitaTotalVendas)}
             </div>
           </div>
-          <div className="stat-icon-wrapper" style={{ backgroundColor: 'rgba(0, 200, 150, 0.12)', color: '#00C896' }}>
-            <ShoppingCart size={24} />
+          <div className="stat-icon-wrapper" style={{ backgroundColor: 'rgba(0, 245, 160, 0.14)', color: '#008764', border: '1px solid rgba(0, 245, 160, 0.3)' }}>
+            <ShoppingCart size={26} />
           </div>
         </div>
 
@@ -279,38 +309,38 @@ export const DashboardPage = ({ onNavigate }) => {
           <div>
             <div className="stat-label">Total de Clientes</div>
             <div className="stat-val">{totalClientes}</div>
-            <div style={{ fontSize: '0.75rem', color: '#64748B', marginTop: '4px' }}>
+            <div style={{ fontSize: '0.75rem', color: '#576F86', marginTop: '6px', fontWeight: 600 }}>
               Cadastrados e ativos
             </div>
           </div>
-          <div className="stat-icon-wrapper" style={{ backgroundColor: 'rgba(59, 130, 246, 0.12)', color: '#3B82F6' }}>
-            <Users size={24} />
+          <div className="stat-icon-wrapper" style={{ backgroundColor: 'rgba(56, 189, 248, 0.14)', color: '#0284C7', border: '1px solid rgba(56, 189, 248, 0.3)' }}>
+            <Users size={26} />
           </div>
         </div>
 
         <div className="stat-card">
           <div>
             <div className="stat-label">Contas a Receber</div>
-            <div className="stat-val" style={{ color: '#10B981' }}>{formatCurrency(contasReceberPendente)}</div>
-            <div style={{ fontSize: '0.75rem', color: '#64748B', marginTop: '4px' }}>
+            <div className="stat-val" style={{ color: '#059669' }}>{formatCurrency(contasReceberPendente)}</div>
+            <div style={{ fontSize: '0.75rem', color: '#576F86', marginTop: '6px', fontWeight: 600 }}>
               Valores a liquidar
             </div>
           </div>
-          <div className="stat-icon-wrapper" style={{ backgroundColor: 'rgba(16, 185, 129, 0.12)', color: '#10B981' }}>
-            <TrendingUp size={24} />
+          <div className="stat-icon-wrapper" style={{ backgroundColor: 'rgba(16, 185, 129, 0.14)', color: '#059669', border: '1px solid rgba(16, 185, 129, 0.3)' }}>
+            <TrendingUp size={26} />
           </div>
         </div>
 
         <div className="stat-card">
           <div>
             <div className="stat-label">Contas a Pagar</div>
-            <div className="stat-val" style={{ color: '#EF4444' }}>{formatCurrency(contasPagarPendente)}</div>
-            <div style={{ fontSize: '0.75rem', color: '#EF4444', marginTop: '4px', fontWeight: 600 }}>
+            <div className="stat-val" style={{ color: '#DC2626' }}>{formatCurrency(contasPagarPendente)}</div>
+            <div style={{ fontSize: '0.75rem', color: '#DC2626', marginTop: '6px', fontWeight: 700 }}>
               Pendente de quitação
             </div>
           </div>
-          <div className="stat-icon-wrapper" style={{ backgroundColor: 'rgba(239, 68, 68, 0.12)', color: '#EF4444' }}>
-            <DollarSign size={24} />
+          <div className="stat-icon-wrapper" style={{ backgroundColor: 'rgba(239, 68, 68, 0.14)', color: '#DC2626', border: '1px solid rgba(239, 68, 68, 0.3)' }}>
+            <DollarSign size={26} />
           </div>
         </div>
       </div>

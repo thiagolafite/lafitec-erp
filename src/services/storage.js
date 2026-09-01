@@ -1,5 +1,6 @@
 // Lafitec ERP Data Storage & Multi-tenant Data Engine
 // Single Unified Commercial Partner Architecture & Field Sales Visitas Engine + Stock Receiving (Entradas de Estoque & Rastreabilidade)
+import { supabaseService } from './supabaseService';
 
 const STORAGE_KEYS = {
   EMPRESAS: 'lafitec_empresas',
@@ -9,6 +10,9 @@ const STORAGE_KEYS = {
   TRANSPORTADORAS: 'lafitec_transportadoras',
   FORNECEDORES: 'lafitec_fornecedores',
   PRODUTOS: 'lafitec_produtos',
+  ORCAMENTOS: 'lafitec_orcamentos',
+  ITENS_ORCAMENTO: 'lafitec_itens_orcamento',
+  CONDICOES_PAGAMENTO: 'lafitec_condicoes_pagamento',
   VENDAS: 'lafitec_vendas',
   ITENS_VENDA: 'lafitec_itens_venda',
   FINANCEIRO: 'lafitec_financeiro',
@@ -20,6 +24,11 @@ const STORAGE_KEYS = {
 };
 
 export const seedInitialData = () => {
+  // Se o Supabase estiver configurado com chaves reais, não insere dados fictícios
+  if (supabaseService.isConfigured()) {
+    return;
+  }
+
   if (!localStorage.getItem(STORAGE_KEYS.EMPRESAS)) {
     const defaultEmpresas = [
       {
@@ -332,6 +341,132 @@ export const seedInitialData = () => {
     localStorage.setItem(STORAGE_KEYS.MOVIMENTACOES_ESTOQUE, JSON.stringify(defaultMovs));
   }
 
+  if (!localStorage.getItem(STORAGE_KEYS.ORCAMENTOS)) {
+    const defaultOrcamentos = [
+      {
+        id: 'orc-101',
+        empresaId: 'emp-1',
+        numero: 'ORC-001',
+        clienteId: 'cli-101',
+        fornecedorId: 'forn-101',
+        status: 'Aprovado',
+        total: 2980.00,
+        dataCriacao: '2026-08-10T09:00:00.000Z',
+        dataEnvio: '2026-08-10T09:15:00.000Z',
+        formaEnvio: 'WhatsApp',
+        dataValidade: '2026-09-10',
+        dataAprovacao: '2026-08-12T14:30:00.000Z',
+        observacoes: 'Orçamento para aquisição de 2 licenças ERP adicionais com suporte anual.',
+        vendedorResponsavel: 'Lafite Admin',
+        vendaId: null
+      },
+      {
+        id: 'orc-102',
+        empresaId: 'emp-1',
+        numero: 'ORC-002',
+        clienteId: 'cli-101',
+        fornecedorId: 'forn-101',
+        status: 'Rascunho',
+        total: 1490.00,
+        dataCriacao: '2026-08-16T15:00:00.000Z',
+        dataEnvio: '',
+        formaEnvio: '',
+        dataValidade: '2026-09-15',
+        dataAprovacao: '',
+        observacoes: 'Aguardando validação do departamento técnico para envio.',
+        vendedorResponsavel: 'Lafite Admin',
+        vendaId: null
+      }
+    ];
+    localStorage.setItem(STORAGE_KEYS.ORCAMENTOS, JSON.stringify(defaultOrcamentos));
+  }
+
+  if (!localStorage.getItem(STORAGE_KEYS.ITENS_ORCAMENTO)) {
+    const defaultItensOrcamento = [
+      { id: 'it-orc-1', orcamentoId: 'orc-101', produtoId: 'prod-101', quantidade: 2, precoUnitario: 1490.00 },
+      { id: 'it-orc-2', orcamentoId: 'orc-102', produtoId: 'prod-101', quantidade: 1, precoUnitario: 1490.00 }
+    ];
+    localStorage.setItem(STORAGE_KEYS.ITENS_ORCAMENTO, JSON.stringify(defaultItensOrcamento));
+  }
+
+  if (!localStorage.getItem(STORAGE_KEYS.CONDICOES_PAGAMENTO)) {
+    const defaultCondicoes = [
+      {
+        id: 'cpg-101',
+        empresaId: 'emp-1',
+        descricao: 'À Vista (PIX / Dinheiro)',
+        intervaloDias: '0',
+        parcelasCount: 1,
+        percentualCustoFinanceiro: 0.0,
+        custoFinanceiroFixo: 0.0,
+        ordem: 1,
+        imprimeNoPedido: true,
+        ativo: true
+      },
+      {
+        id: 'cpg-102',
+        empresaId: 'emp-1',
+        descricao: 'Boleto Bancário 28 Dias',
+        intervaloDias: '28',
+        parcelasCount: 1,
+        percentualCustoFinanceiro: 0.0,
+        custoFinanceiroFixo: 3.50,
+        ordem: 2,
+        imprimeNoPedido: true,
+        ativo: true
+      },
+      {
+        id: 'cpg-103',
+        empresaId: 'emp-1',
+        descricao: 'Boleto Bancário 30 Dias',
+        intervaloDias: '30',
+        parcelasCount: 1,
+        percentualCustoFinanceiro: 0.0,
+        custoFinanceiroFixo: 3.50,
+        ordem: 3,
+        imprimeNoPedido: true,
+        ativo: true
+      },
+      {
+        id: 'cpg-104',
+        empresaId: 'emp-1',
+        descricao: '30 / 60 Dias (2x)',
+        intervaloDias: '30, 60',
+        parcelasCount: 2,
+        percentualCustoFinanceiro: 1.5,
+        custoFinanceiroFixo: 0.0,
+        ordem: 4,
+        imprimeNoPedido: true,
+        ativo: true
+      },
+      {
+        id: 'cpg-105',
+        empresaId: 'emp-1',
+        descricao: '30 / 60 / 90 Dias (3x)',
+        intervaloDias: '30, 60, 90',
+        parcelasCount: 3,
+        percentualCustoFinanceiro: 2.5,
+        custoFinanceiroFixo: 0.0,
+        ordem: 5,
+        imprimeNoPedido: true,
+        ativo: true
+      },
+      {
+        id: 'cpg-106',
+        empresaId: 'emp-1',
+        descricao: 'Cartão de Crédito 1x',
+        intervaloDias: '30',
+        parcelasCount: 1,
+        percentualCustoFinanceiro: 2.99,
+        custoFinanceiroFixo: 0.0,
+        ordem: 6,
+        imprimeNoPedido: true,
+        ativo: true
+      }
+    ];
+    localStorage.setItem(STORAGE_KEYS.CONDICOES_PAGAMENTO, JSON.stringify(defaultCondicoes));
+  }
+
   if (!localStorage.getItem(STORAGE_KEYS.VENDAS)) {
     const defaultVendas = [
       { id: 'ven-101', clienteId: 'cli-101', total: 5290.00, dataVenda: '2026-08-01T10:30:00.000Z', empresaId: 'emp-1', itensCount: 2 }
@@ -475,6 +610,12 @@ export const storage = {
     return raw ? JSON.parse(raw) : null;
   },
 
+  saveCurrentSession: (session) => {
+    if (session) {
+      localStorage.setItem(STORAGE_KEYS.CURRENT_USER, JSON.stringify(session));
+    }
+  },
+
   logout: () => {
     const session = storage.getCurrentSession();
     if (session) {
@@ -573,6 +714,11 @@ export const storage = {
     }
 
     logAuditAction(empresaId, usuarioNome, `Salvou parceiro comercial "${parceiroData.nome}" do tipo ${targetTipo}`);
+
+    if (supabaseService.isConfigured() && savedItem) {
+      supabaseService.saveParceiro(savedItem, empresaId, usuarioNome).catch(e => console.warn('Supabase sync parceiro error:', e));
+    }
+
     return targetTipo;
   },
 
@@ -591,6 +737,10 @@ export const storage = {
     if (item) {
       setTable(STORAGE_KEYS.PARCEIROS, parceiros.filter(p => p.id !== id));
       logAuditAction(empresaId, usuarioNome, `Excluiu parceiro comercial: ${item.nome}`);
+
+      if (supabaseService.isConfigured()) {
+        supabaseService.deleteParceiro(id, empresaId, usuarioNome).catch(e => console.warn('Supabase delete parceiro error:', e));
+      }
     }
   },
 
@@ -866,9 +1016,11 @@ export const storage = {
 
   saveProduto: (produto, empresaId, usuarioNome) => {
     const all = getTable(STORAGE_KEYS.PRODUTOS);
+    let targetProd;
     if (produto.id) {
       const updated = all.map(p => (p.id === produto.id && p.empresaId === empresaId) ? { ...p, ...produto } : p);
       setTable(STORAGE_KEYS.PRODUTOS, updated);
+      targetProd = produto;
       logAuditAction(empresaId, usuarioNome, `Atualizou produto: ${produto.nome}`);
     } else {
       const newProd = {
@@ -880,7 +1032,12 @@ export const storage = {
         empresaId
       };
       setTable(STORAGE_KEYS.PRODUTOS, [...all, newProd]);
+      targetProd = newProd;
       logAuditAction(empresaId, usuarioNome, `Cadastrou produto: ${produto.nome}`);
+    }
+
+    if (supabaseService.isConfigured() && targetProd) {
+      supabaseService.saveProduto(targetProd, empresaId, usuarioNome).catch(e => console.warn('Supabase sync produto error:', e));
     }
   },
 
@@ -890,7 +1047,285 @@ export const storage = {
     if (prod) {
       setTable(STORAGE_KEYS.PRODUTOS, all.filter(p => p.id !== id));
       logAuditAction(empresaId, usuarioNome, `Excluiu produto: ${prod.nome}`);
+
+      if (supabaseService.isConfigured()) {
+        supabaseService.deleteProduto(id, empresaId, usuarioNome).catch(e => console.warn('Supabase delete produto error:', e));
+      }
     }
+  },
+
+  // --- ORÇAMENTOS ---
+  getOrcamentos: (empresaId) => {
+    const orcamentos = getTable(STORAGE_KEYS.ORCAMENTOS).filter(o => o.empresaId === empresaId);
+    const parceiros = storage.getAllParceiros(empresaId);
+
+    return orcamentos.map(o => {
+      const cli = parceiros.find(c => c.id === o.clienteId);
+      const forn = parceiros.find(f => f.id === o.fornecedorId);
+      return {
+        ...o,
+        clienteNome: cli ? (cli.fantasia || cli.nome) : 'Cliente não identificado',
+        clienteTelefone: cli ? cli.telefone : '',
+        clienteEmail: cli ? cli.email : '',
+        fornecedorNome: forn ? (forn.fantasia || forn.nome) : 'Fornecedor não identificado'
+      };
+    }).sort((a, b) => new Date(b.dataCriacao) - new Date(a.dataCriacao));
+  },
+
+  getOrcamentoDetalhado: (orcamentoId, empresaId) => {
+    const orcamentos = getTable(STORAGE_KEYS.ORCAMENTOS);
+    const orcamento = orcamentos.find(o => o.id === orcamentoId && o.empresaId === empresaId);
+    if (!orcamento) return null;
+
+    const parceiros = storage.getAllParceiros(empresaId);
+    const cliente = parceiros.find(c => c.id === orcamento.clienteId);
+    const fornecedor = parceiros.find(f => f.id === orcamento.fornecedorId);
+
+    const itensOrcamento = getTable(STORAGE_KEYS.ITENS_ORCAMENTO).filter(i => i.orcamentoId === orcamentoId);
+    const produtos = getTable(STORAGE_KEYS.PRODUTOS);
+
+    const itensCompletos = itensOrcamento.map(item => {
+      const prod = produtos.find(p => p.id === item.produtoId);
+      return {
+        ...item,
+        produtoNome: prod ? prod.nome : 'Produto indisponível',
+        codigo: prod ? prod.codigo : '',
+        unidade: prod ? prod.unidade : 'UN',
+        subtotal: (parseFloat(item.quantidade) || 0) * (parseFloat(item.precoUnitario) || 0)
+      };
+    });
+
+    return {
+      ...orcamento,
+      cliente,
+      fornecedor,
+      itens: itensCompletos
+    };
+  },
+
+  getItensOrcamento: (orcamentoId) => {
+    const allItens = getTable(STORAGE_KEYS.ITENS_ORCAMENTO);
+    return allItens.filter(i => i.orcamentoId === orcamentoId);
+  },
+
+  saveOrcamento: (orcamentoData, itens = [], empresaId, usuarioNome) => {
+    if (!orcamentoData.clienteId) throw new Error('Selecione um cliente para o orçamento.');
+    if (!orcamentoData.fornecedorId) throw new Error('Selecione um fornecedor para o orçamento.');
+    if (!itens || itens.length === 0) throw new Error('Adicione pelo menos 1 produto ao orçamento.');
+
+    const orcamentos = getTable(STORAGE_KEYS.ORCAMENTOS);
+    const todosItens = getTable(STORAGE_KEYS.ITENS_ORCAMENTO);
+    const produtos = getTable(STORAGE_KEYS.PRODUTOS);
+
+    // Calculate total and prepare items
+    let total = 0;
+    const preparedItens = itens.map(item => {
+      const prod = produtos.find(p => p.id === item.produtoId && p.empresaId === empresaId);
+      const precoUnit = item.precoUnitario !== undefined ? parseFloat(item.precoUnitario) : (prod ? prod.preco : 0);
+      const qtd = parseFloat(item.quantidade) || 1;
+      total += (precoUnit * qtd);
+      return {
+        id: item.id || ('it-orc-' + Math.random().toString(36).substring(2, 9)),
+        produtoId: item.produtoId,
+        quantidade: qtd,
+        precoUnitario: precoUnit
+      };
+    });
+
+    const parceiros = storage.getAllParceiros(empresaId);
+    const cli = parceiros.find(c => c.id === orcamentoData.clienteId);
+    const clienteNome = cli ? cli.nome : 'Cliente';
+
+    if (orcamentoData.id) {
+      // Edit existing draft
+      const orcamentoExistente = orcamentos.find(o => o.id === orcamentoData.id && o.empresaId === empresaId);
+      if (!orcamentoExistente) throw new Error('Orçamento não localizado.');
+      if (orcamentoExistente.status === 'Convertido') throw new Error('Orçamentos já convertidos não podem ser editados.');
+
+      const orcamentoAtualizado = {
+        ...orcamentoExistente,
+        ...orcamentoData,
+        enderecoEntrega: orcamentoData.enderecoEntrega !== undefined ? orcamentoData.enderecoEntrega : (orcamentoExistente.enderecoEntrega || ''),
+        comprador: orcamentoData.comprador !== undefined ? orcamentoData.comprador : (orcamentoExistente.comprador || ''),
+        dataEmissao: orcamentoData.dataEmissao !== undefined ? orcamentoData.dataEmissao : (orcamentoExistente.dataEmissao || ''),
+        dataDespacho: orcamentoData.dataDespacho !== undefined ? orcamentoData.dataDespacho : (orcamentoExistente.dataDespacho || ''),
+        ordemCompra: orcamentoData.ordemCompra !== undefined ? orcamentoData.ordemCompra : (orcamentoExistente.ordemCompra || ''),
+        total,
+        empresaId
+      };
+
+      const orcamentosAtualizados = orcamentos.map(o => (o.id === orcamentoData.id && o.empresaId === empresaId) ? orcamentoAtualizado : o);
+
+      // Replace items for this orcamento
+      const outrosItens = todosItens.filter(i => i.orcamentoId !== orcamentoData.id);
+      const novosItensSalvos = preparedItens.map(i => ({ ...i, orcamentoId: orcamentoData.id }));
+
+      setTable(STORAGE_KEYS.ORCAMENTOS, orcamentosAtualizados);
+      setTable(STORAGE_KEYS.ITENS_ORCAMENTO, [...outrosItens, ...novosItensSalvos]);
+
+      logAuditAction(empresaId, usuarioNome, `Atualizou orçamento #${orcamentoAtualizado.numero || orcamentoAtualizado.id} para ${clienteNome}`);
+      return orcamentoAtualizado;
+    } else {
+      // Create new draft
+      const orcamentoId = 'orc-' + Date.now();
+      const countOrcamentos = orcamentos.filter(o => o.empresaId === empresaId).length;
+      const numero = `ORC-${String(countOrcamentos + 1).padStart(3, '0')}`;
+
+      const defaultValidade = new Date();
+      defaultValidade.setDate(defaultValidade.getDate() + 15);
+
+      const novoOrcamento = {
+        id: orcamentoId,
+        empresaId,
+        numero: orcamentoData.numero || numero,
+        clienteId: orcamentoData.clienteId,
+        fornecedorId: orcamentoData.fornecedorId,
+        enderecoEntrega: orcamentoData.enderecoEntrega || '',
+        comprador: orcamentoData.comprador || '',
+        dataEmissao: orcamentoData.dataEmissao || new Date().toISOString().split('T')[0],
+        dataDespacho: orcamentoData.dataDespacho || '',
+        ordemCompra: orcamentoData.ordemCompra || '',
+        status: 'Rascunho',
+        total,
+        dataCriacao: new Date().toISOString(),
+        dataEnvio: '',
+        formaEnvio: '',
+        dataValidade: orcamentoData.dataValidade || defaultValidade.toISOString().split('T')[0],
+        dataAprovacao: '',
+        observacoes: orcamentoData.observacoes || '',
+        vendedorResponsavel: orcamentoData.vendedorResponsavel || usuarioNome,
+        vendaId: null
+      };
+
+      const novosItensSalvos = preparedItens.map(i => ({ ...i, orcamentoId }));
+
+      setTable(STORAGE_KEYS.ORCAMENTOS, [novoOrcamento, ...orcamentos]);
+      setTable(STORAGE_KEYS.ITENS_ORCAMENTO, [...novosItensSalvos, ...todosItens]);
+
+      logAuditAction(empresaId, usuarioNome, `Criou orçamento #${novoOrcamento.numero} no valor de R$ ${total.toFixed(2)} para ${clienteNome}`);
+      return novoOrcamento;
+    }
+  },
+
+  enviarOrcamento: (orcamentoId, formaEnvio, empresaId, usuarioNome) => {
+    const orcamentos = getTable(STORAGE_KEYS.ORCAMENTOS);
+    const orcamento = orcamentos.find(o => o.id === orcamentoId && o.empresaId === empresaId);
+    if (!orcamento) throw new Error('Orçamento não encontrado.');
+    if (orcamento.status === 'Convertido') throw new Error('Orçamento já foi convertido em venda.');
+
+    const dataEnvioNow = new Date().toISOString();
+    const updated = orcamentos.map(o => {
+      if (o.id === orcamentoId && o.empresaId === empresaId) {
+        return {
+          ...o,
+          status: 'Enviado',
+          dataEnvio: dataEnvioNow,
+          formaEnvio: formaEnvio || 'WhatsApp'
+        };
+      }
+      return o;
+    });
+
+    setTable(STORAGE_KEYS.ORCAMENTOS, updated);
+    logAuditAction(empresaId, usuarioNome, `Marcou orçamento #${orcamento.numero} como ENVIADO via ${formaEnvio}`);
+  },
+
+  aprovarOrcamento: (orcamentoId, empresaId, usuarioNome) => {
+    const orcamentos = getTable(STORAGE_KEYS.ORCAMENTOS);
+    const orcamento = orcamentos.find(o => o.id === orcamentoId && o.empresaId === empresaId);
+    if (!orcamento) throw new Error('Orçamento não encontrado.');
+    if (orcamento.status === 'Convertido') throw new Error('Orçamento já foi convertido em venda.');
+
+    const dataAprovacaoNow = new Date().toISOString();
+    const updated = orcamentos.map(o => {
+      if (o.id === orcamentoId && o.empresaId === empresaId) {
+        return {
+          ...o,
+          status: 'Aprovado',
+          dataAprovacao: dataAprovacaoNow
+        };
+      }
+      return o;
+    });
+
+    setTable(STORAGE_KEYS.ORCAMENTOS, updated);
+    logAuditAction(empresaId, usuarioNome, `Marcou orçamento #${orcamento.numero} como APROVADO`);
+  },
+
+  rejeitarOrcamento: (orcamentoId, motivo, empresaId, usuarioNome) => {
+    const orcamentos = getTable(STORAGE_KEYS.ORCAMENTOS);
+    const orcamento = orcamentos.find(o => o.id === orcamentoId && o.empresaId === empresaId);
+    if (!orcamento) throw new Error('Orçamento não encontrado.');
+    if (orcamento.status === 'Convertido') throw new Error('Orçamento já foi convertido em venda.');
+
+    const updated = orcamentos.map(o => {
+      if (o.id === orcamentoId && o.empresaId === empresaId) {
+        return {
+          ...o,
+          status: 'Rejeitado',
+          observacoes: motivo ? `${o.observacoes ? o.observacoes + ' | ' : ''}Motivo rejeição: ${motivo}` : o.observacoes
+        };
+      }
+      return o;
+    });
+
+    setTable(STORAGE_KEYS.ORCAMENTOS, updated);
+    logAuditAction(empresaId, usuarioNome, `Marcou orçamento #${orcamento.numero} como REJEITADO`);
+  },
+
+  converterOrcamentoEmVenda: (orcamentoId, empresaId, usuarioNome) => {
+    const orcamentoDetalhado = storage.getOrcamentoDetalhado(orcamentoId, empresaId);
+    if (!orcamentoDetalhado) throw new Error('Orçamento não encontrado.');
+    if (orcamentoDetalhado.status !== 'Aprovado') {
+      throw new Error('Apenas orçamentos com status "Aprovado" podem ser convertidos em pedido de venda.');
+    }
+
+    if (!orcamentoDetalhado.itens || orcamentoDetalhado.itens.length === 0) {
+      throw new Error('O orçamento não possui itens para converter em venda.');
+    }
+
+    // Cria a venda aproveitando a rotina createVenda() de forma exata (cópia fiel dos itens)
+    // OBS FUTURA MIGRAÇÃO SUPABASE: Adicionar campo orcamentoOrigemId na tabela vendas para rastrear de qual orçamento ela nasceu
+    const vendaPayload = {
+      clienteId: orcamentoDetalhado.clienteId,
+      itens: orcamentoDetalhado.itens.map(item => ({
+        produtoId: item.produtoId,
+        quantidade: item.quantidade
+      }))
+    };
+
+    const novaVenda = storage.createVenda(vendaPayload, empresaId, usuarioNome);
+
+    // Atualiza o orçamento com o ID da venda e status Convertido (somente leitura)
+    const orcamentos = getTable(STORAGE_KEYS.ORCAMENTOS);
+    const updated = orcamentos.map(o => {
+      if (o.id === orcamentoId && o.empresaId === empresaId) {
+        return {
+          ...o,
+          status: 'Convertido',
+          vendaId: novaVenda.id
+        };
+      }
+      return o;
+    });
+
+    setTable(STORAGE_KEYS.ORCAMENTOS, updated);
+    logAuditAction(empresaId, usuarioNome, `Converteu orçamento #${orcamentoDetalhado.numero} no Pedido de Venda #${novaVenda.id}`);
+
+    return novaVenda;
+  },
+
+  deleteOrcamento: (orcamentoId, empresaId, usuarioNome) => {
+    const orcamentos = getTable(STORAGE_KEYS.ORCAMENTOS);
+    const item = orcamentos.find(o => o.id === orcamentoId && o.empresaId === empresaId);
+    if (!item) throw new Error('Orçamento não encontrado.');
+    if (item.status === 'Convertido') throw new Error('Orçamentos convertidos em venda não podem ser excluídos.');
+
+    const todosItens = getTable(STORAGE_KEYS.ITENS_ORCAMENTO);
+    setTable(STORAGE_KEYS.ORCAMENTOS, orcamentos.filter(o => o.id !== orcamentoId));
+    setTable(STORAGE_KEYS.ITENS_ORCAMENTO, todosItens.filter(i => i.orcamentoId !== orcamentoId));
+
+    logAuditAction(empresaId, usuarioNome, `Excluiu orçamento #${item.numero || item.id}`);
   },
 
   // --- VENDAS ---
@@ -1046,6 +1481,70 @@ export const storage = {
     }
   },
 
+  // --- CONDIÇÕES DE PAGAMENTO ---
+  getCondicoesPagamento: (empresaId) => {
+    const all = getTable(STORAGE_KEYS.CONDICOES_PAGAMENTO);
+    return all
+      .filter(c => c.empresaId === empresaId)
+      .sort((a, b) => (parseInt(a.ordem) || 999) - (parseInt(b.ordem) || 999));
+  },
+
+  saveCondicaoPagamento: (condicao, empresaId, usuarioNome) => {
+    if (!condicao.descricao) throw new Error('A descrição da condição de pagamento é obrigatória.');
+    const all = getTable(STORAGE_KEYS.CONDICOES_PAGAMENTO);
+    
+    // Parse interval to calculate installments count
+    const intervalParts = (condicao.intervaloDias || '')
+      .split(/[\s,;/]+/)
+      .map(s => s.trim())
+      .filter(Boolean);
+    const parcelasCount = Math.max(1, intervalParts.length);
+
+    if (condicao.id) {
+      const updated = all.map(c => {
+        if (c.id === condicao.id && c.empresaId === empresaId) {
+          return {
+            ...c,
+            ...condicao,
+            parcelasCount,
+            percentualCustoFinanceiro: parseFloat(condicao.percentualCustoFinanceiro) || 0,
+            custoFinanceiroFixo: parseFloat(condicao.custoFinanceiroFixo) || 0,
+            ordem: parseInt(condicao.ordem) || 1,
+            imprimeNoPedido: Boolean(condicao.imprimeNoPedido)
+          };
+        }
+        return c;
+      });
+      setTable(STORAGE_KEYS.CONDICOES_PAGAMENTO, updated);
+      logAuditAction(empresaId, usuarioNome, `Atualizou condição de pagamento: ${condicao.descricao}`);
+    } else {
+      const novaCondicao = {
+        id: 'cpg-' + Date.now(),
+        empresaId,
+        descricao: condicao.descricao,
+        intervaloDias: condicao.intervaloDias || '0',
+        parcelasCount,
+        percentualCustoFinanceiro: parseFloat(condicao.percentualCustoFinanceiro) || 0,
+        custoFinanceiroFixo: parseFloat(condicao.custoFinanceiroFixo) || 0,
+        ordem: parseInt(condicao.ordem) || (all.filter(c => c.empresaId === empresaId).length + 1),
+        imprimeNoPedido: condicao.imprimeNoPedido !== undefined ? Boolean(condicao.imprimeNoPedido) : true,
+        ativo: true
+      };
+      setTable(STORAGE_KEYS.CONDICOES_PAGAMENTO, [...all, novaCondicao]);
+      logAuditAction(empresaId, usuarioNome, `Cadastrou condição de pagamento: ${condicao.descricao}`);
+      return novaCondicao;
+    }
+  },
+
+  deleteCondicaoPagamento: (id, empresaId, usuarioNome) => {
+    const all = getTable(STORAGE_KEYS.CONDICOES_PAGAMENTO);
+    const cond = all.find(c => c.id === id && c.empresaId === empresaId);
+    if (cond) {
+      setTable(STORAGE_KEYS.CONDICOES_PAGAMENTO, all.filter(c => c.id !== id));
+      logAuditAction(empresaId, usuarioNome, `Excluiu condição de pagamento: ${cond.descricao}`);
+    }
+  },
+
   // --- AUDITORIA E USUÁRIOS ---
   getAuditLogs: (empresaId) => {
     return getTable(STORAGE_KEYS.AUDIT_LOGS).filter(l => l.empresaId === empresaId);
@@ -1080,5 +1579,7 @@ export const storage = {
       localStorage.setItem(STORAGE_KEYS.CURRENT_USER, JSON.stringify(session));
     }
     logAuditAction(empresaId, adminNome, `Upgrade de plano para: ${novoPlano}`);
-  }
+  },
+
+  supabase: supabaseService
 };

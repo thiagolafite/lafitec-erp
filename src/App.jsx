@@ -3,6 +3,7 @@ import { AuthProvider, useAuth } from './context/AuthContext';
 import { Sidebar } from './components/Sidebar';
 import { Navbar } from './components/Navbar';
 import { Toast } from './components/Toast';
+import { AIAssistantWidget } from './components/AIAssistantWidget';
 
 import { LandingPage } from './pages/LandingPage';
 import { LoginPage } from './pages/LoginPage';
@@ -17,6 +18,8 @@ import { RelatoriosPage } from './pages/RelatoriosPage';
 import { SegurancaPage } from './pages/SegurancaPage';
 import { VisitasPage } from './pages/VisitasPage';
 import { EntradaEstoquePage } from './pages/EntradaEstoquePage';
+import { OrcamentosPage } from './pages/OrcamentosPage';
+import { CondicoesPagamentoPage } from './pages/CondicoesPagamentoPage';
 
 const AppContent = () => {
   const { isAuthenticated, loading } = useAuth();
@@ -70,6 +73,8 @@ const AppContent = () => {
     entradas_estoque: 'Entrada de Estoque & Rastreabilidade',
     transportadoras: 'Cadastro de Transportadoras',
     fornecedores: 'Cadastro de Fornecedores',
+    orcamentos: 'Gestão de Orçamentos Comerciais',
+    condicoes_pagamento: 'Condições & Formas de Pagamento',
     vendas: 'Ponto de Venda (PDV)',
     visitas: 'Gestão de Visitas & Rotas Comerciais',
     financeiro: 'Gestão Financeira (Contas)',
@@ -91,6 +96,8 @@ const AppContent = () => {
           {currentTab === 'entradas_estoque' && <EntradaEstoquePage showToast={showToast} />}
           {currentTab === 'transportadoras' && <TransportadorasPage showToast={showToast} />}
           {currentTab === 'fornecedores' && <FornecedoresPage showToast={showToast} />}
+          {currentTab === 'orcamentos' && <OrcamentosPage showToast={showToast} />}
+          {currentTab === 'condicoes_pagamento' && <CondicoesPagamentoPage showToast={showToast} />}
           {currentTab === 'vendas' && <VendasPage showToast={showToast} />}
           {currentTab === 'visitas' && <VisitasPage showToast={showToast} />}
           {currentTab === 'financeiro' && <FinanceiroPage showToast={showToast} />}
@@ -99,6 +106,7 @@ const AppContent = () => {
         </main>
       </div>
 
+      <AIAssistantWidget onNavigate={setCurrentTab} showToast={showToast} />
       <Toast toast={toast} onClose={() => setToast(null)} />
     </div>
   );

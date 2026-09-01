@@ -23,7 +23,8 @@ import {
   Loader2,
   Filter,
   Truck,
-  Building2
+  Building2,
+  Upload
 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { storage, calculateIndiceRelacionamento } from '../services/storage';
@@ -94,6 +95,8 @@ export const ClientesPage = ({ showToast }) => {
     bairro: '',
     regiao: '',
     setor: '',
+    logomarca: '',
+    logomarcaNome: '',
     anexoNome: '',
     // Contatos
     contatos: [],
@@ -188,6 +191,18 @@ export const ClientesPage = ({ showToast }) => {
     const clean = value.replace(/\D/g, '');
     if (clean.length === 8) {
       handleFetchViaCep(clean);
+    }
+  };
+
+  const handleLogoUpload = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setFormData(prev => ({ ...prev, logomarca: reader.result, logomarcaNome: file.name }));
+        showToast('success', `Logomarca "${file.name}" importada com sucesso!`);
+      };
+      reader.readAsDataURL(file);
     }
   };
 
@@ -851,7 +866,44 @@ export const ClientesPage = ({ showToast }) => {
                   </div>
                 </div>
 
-                <div className="form-group" style={{ marginBottom: 0 }}>
+                <div className="form-group" style={{ marginTop: '0.875rem' }}>
+                  <label className="form-label">Logomarca / Foto do Cliente:</label>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                    <label 
+                      className="btn btn-outline btn-sm" 
+                      style={{ cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: '6px', fontWeight: 600 }}
+                    >
+                      <Upload size={14} /> Escolher Arquivo
+                      <input
+                        type="file"
+                        accept="image/*"
+                        onChange={handleLogoUpload}
+                        style={{ display: 'none' }}
+                      />
+                    </label>
+                    <span style={{ fontSize: '0.8rem', color: '#64748B', fontFamily: 'monospace' }}>
+                      {formData.logomarcaNome || (formData.logomarca ? 'Logo carregada' : 'Nenhum arquivo escolhido')}
+                    </span>
+                    {formData.logomarca && (
+                      <button
+                        type="button"
+                        className="btn-icon"
+                        onClick={() => setFormData({ ...formData, logomarca: '', logomarcaNome: '' })}
+                        title="Remover Logomarca"
+                        style={{ color: '#DC2626' }}
+                      >
+                        <Trash2 size={14} />
+                      </button>
+                    )}
+                  </div>
+                  {formData.logomarca && (
+                    <div style={{ marginTop: '8px', padding: '6px', backgroundColor: '#FFFFFF', borderRadius: '4px', border: '1px solid #E2E8F0', display: 'inline-block' }}>
+                      <img src={formData.logomarca} alt="Preview Logo" style={{ maxHeight: '44px', objectFit: 'contain' }} />
+                    </div>
+                  )}
+                </div>
+
+                <div className="form-group" style={{ marginBottom: 0, marginTop: '0.875rem' }}>
                   <label className="form-label">Anexo (PDF / JPEG)</label>
                   <input
                     type="file"
