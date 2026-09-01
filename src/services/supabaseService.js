@@ -3,6 +3,13 @@
 
 import { supabase, isSupabaseConfigured } from './supabaseClient';
 
+export const toValidUuidOrNull = (val) => {
+  if (!val || typeof val !== 'string') return null;
+  const clean = val.trim();
+  const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+  return uuidRegex.test(clean) ? clean : null;
+};
+
 export const supabaseService = {
   isConfigured: () => isSupabaseConfigured(),
 
@@ -1154,8 +1161,8 @@ export const supabaseService = {
     const payload = {
       empresa_id: validEmpresaId,
       numero: orc.numero,
-      cliente_id: (orc.clienteId && orc.clienteId.length > 15) ? orc.clienteId : null,
-      fornecedor_id: (orc.fornecedorId && orc.fornecedorId.length > 15) ? orc.fornecedorId : null,
+      cliente_id: toValidUuidOrNull(orc.clienteId),
+      fornecedor_id: toValidUuidOrNull(orc.fornecedorId),
       endereco_entrega: orc.enderecoEntrega || '',
       comprador: orc.comprador || '',
       vendedor_responsavel: orc.vendedorResponsavel || usuarioNome,
@@ -1254,8 +1261,8 @@ export const supabaseService = {
     const validEmpresaId = (empresaId && empresaId.length > 15) ? empresaId : '80285958-6d61-4784-b0af-89fb3c99b401';
     const payload = {
       empresa_id: validEmpresaId,
-      cliente_id: (venda.clienteId && venda.clienteId.length > 15) ? venda.clienteId : null,
-      orcamento_id: (venda.orcamentoId && venda.orcamentoId.length > 15) ? venda.orcamentoId : null,
+      cliente_id: toValidUuidOrNull(venda.clienteId),
+      orcamento_id: toValidUuidOrNull(venda.orcamentoId),
       total: parseFloat(venda.total) || 0,
       itens_count: parseInt(venda.itensCount) || (venda.itens ? venda.itens.length : 1),
       data_venda: venda.dataVenda || new Date().toISOString(),
@@ -1333,7 +1340,7 @@ export const supabaseService = {
       data_vencimento: lancamento.dataVencimento || new Date().toISOString().split('T')[0],
       data_pagamento: lancamento.dataPagamento || null,
       origem_tipo: lancamento.origemTipo || 'Manual',
-      origem_id: lancamento.origemId || null,
+      origem_id: toValidUuidOrNull(lancamento.origemId),
       observacoes: lancamento.observacoes || ''
     };
 
@@ -1434,7 +1441,7 @@ export const supabaseService = {
     const payload = {
       empresa_id: validEmpresaId,
       codigo: visita.codigo || `VIS-${Math.floor(100 + Math.random() * 900)}`,
-      cliente_id: (visita.clienteId && visita.clienteId.length > 15) ? visita.clienteId : null,
+      cliente_id: toValidUuidOrNull(visita.clienteId),
       cliente_nome: visita.clienteNome || 'Cliente',
       representante_nome: visita.representanteNome || usuarioNome,
       data_hora_programada: visita.dataHoraProgramada || new Date().toISOString(),
@@ -1580,7 +1587,7 @@ export const supabaseService = {
       email: p.email || '',
       site_page: p.sitePage || '',
       email_xml_nfe: p.emailXmlNfe || '',
-      transportadora_id: p.transportadoraId || null,
+      transportadora_id: toValidUuidOrNull(p.transportadoraId),
       ramo_atividade: p.ramoAtividade || '',
       categoria: p.categoria || '',
       cep: p.cep || '',
@@ -1657,7 +1664,7 @@ export const supabaseService = {
       vendedor_comissao: parseFloat(prod.vendedorComissao) || 0,
       ipi: parseFloat(prod.ipi) || 0,
       st: parseFloat(prod.st) || 0,
-      fornecedor_id: prod.fornecedorId || null,
+      fornecedor_id: toValidUuidOrNull(prod.fornecedorId),
       unidade: prod.unidade || 'Unidade',
       grupo: prod.grupo || '',
       sub_grupo: prod.subGrupo || '',
