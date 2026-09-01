@@ -425,6 +425,18 @@ body {
   overflow: hidden;
   border: 1px solid rgba(255, 255, 255, 0.2);
   animation: slideUp 0.28s cubic-bezier(0.16, 1, 0.3, 1);
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+
+@keyframes modalShake {
+  0%, 100% { transform: scale(1); }
+  20%, 60% { transform: scale(1.01) translateX(-6px); }
+  40%, 80% { transform: scale(1.01) translateX(6px); }
+}
+
+.modal-shake {
+  animation: modalShake 0.35s ease-in-out !important;
+  box-shadow: 0 0 0 3px rgba(0, 200, 150, 0.5), var(--shadow-xl) !important;
 }
 
 .modal-header {

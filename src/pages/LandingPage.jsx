@@ -605,11 +605,11 @@ export const LandingPage = ({ onGoToLogin, onSelectPlanRegister }) => {
 
       {/* Registration Modal */}
       {registroModal && (
-        <div className="modal-overlay" onClick={() => setRegistroModal(false)}>
+        <div className="modal-overlay">
           <div className="modal-content" onClick={e => e.stopPropagation()}>
             <div className="modal-header">
               <h3 className="modal-title">Criar Conta no Lafitec ERP ({selectedPlan})</h3>
-              <button className="modal-close" onClick={() => setRegistroModal(false)}>✕</button>
+              <button className="modal-close" onClick={() => setRegistroModal(false)} title="Fechar">✕</button>
             </div>
             <form onSubmit={handleRegisterSubmit}>
               <div className="modal-body">
