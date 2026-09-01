@@ -802,6 +802,63 @@ export const supabaseService = {
     );
   },
 
+  // --- RESOLUÇÃO AUTOMÁTICA DE UUIDs PARA PARCEIROS E PRODUTOS ---
+  async ensurePartnerUuid(partnerId, empresaId, usuarioNome) {
+    if (!partnerId) return null;
+    const directUuid = toValidUuidOrNull(partnerId);
+    if (directUuid) return directUuid;
+
+    const validEmpresaId = (empresaId && empresaId.length > 15) ? empresaId : '80285958-6d61-4784-b0af-89fb3c99b401';
+    try {
+      const localPartners = JSON.parse(localStorage.getItem('lafitec_parceiros_unificados') || '[]');
+      const localP = localPartners.find(p => p.id === partnerId);
+      if (localP) {
+        if (supabase) {
+          const { data } = await supabase
+            .from('parceiros')
+            .select('id')
+            .eq('empresa_id', validEmpresaId)
+            .ilike('nome', localP.nome.trim())
+            .maybeSingle();
+          if (data && data.id) return data.id;
+        }
+        const saved = await this.saveParceiro(localP, validEmpresaId, usuarioNome);
+        if (saved && saved.id) return saved.id;
+      }
+    } catch (e) {
+      console.warn('[SupabaseService] Erro ao resolver UUID do parceiro:', e);
+    }
+    return null;
+  },
+
+  async ensureProductUuid(prodId, empresaId, usuarioNome) {
+    if (!prodId) return null;
+    const directUuid = toValidUuidOrNull(prodId);
+    if (directUuid) return directUuid;
+
+    const validEmpresaId = (empresaId && empresaId.length > 15) ? empresaId : '80285958-6d61-4784-b0af-89fb3c99b401';
+    try {
+      const localProds = JSON.parse(localStorage.getItem('lafitec_produtos') || '[]');
+      const localProd = localProds.find(p => p.id === prodId);
+      if (localProd) {
+        if (supabase) {
+          const { data } = await supabase
+            .from('produtos')
+            .select('id')
+            .eq('empresa_id', validEmpresaId)
+            .ilike('nome', localProd.nome.trim())
+            .maybeSingle();
+          if (data && data.id) return data.id;
+        }
+        const saved = await this.saveProduto(localProd, validEmpresaId, usuarioNome);
+        if (saved && saved.id) return saved.id;
+      }
+    } catch (e) {
+      console.warn('[SupabaseService] Erro ao resolver UUID do produto:', e);
+    }
+    return null;
+  },
+
   // --- PARCEIROS (CLIENTES, FORNECEDORES, TRANSPORTADORAS) ---
   async getParceiros(empresaId) {
     if (!supabase) return [];
@@ -884,23 +941,35 @@ export const supabaseService = {
   },
 
   async deleteParceiro(id, empresaId, usuarioNome) {
-    if (!supabase) return;
-    const { error } = await supabase
-      .from('parceiros')
-      .delete()
-      .eq('id', id)
-      .eq('empresa_id', empresaId);
-    if (error) throw error;
-    await this.logAuditAction(empresaId, usuarioNome, `Excluiu parceiro #${id}`);
+    const validEmpresaId = (empresaId && empresaId.length > 15) ? empresaId : '80285958-6d61-4784-b0af-89fb3c99b401';
+    const targetUuid = toValidUuidOrNull(id);
+    if (!targetUuid) return;
+
+    if (supabase) {
+      try {
+        await supabase.from('parceiros').delete().eq('id', targetUuid).eq('empresa_id', validEmpresaId);
+      } catch (e) {}
+    }
+
+    try {
+      const url = 'https://kkoyikmayylhxcnmcjyl.supabase.co';
+      const key = 'sb_publishable_ON_tVRIx3Va4ukWsnOf-8g_EXDv5ju4';
+      await fetch(`${url}/rest/v1/parceiros?id=eq.${targetUuid}&empresa_id=eq.${validEmpresaId}`, {
+        method: 'DELETE',
+        headers: { 'apikey': key, 'Authorization': `Bearer ${key}` }
+      });
+      await this.logAuditAction(validEmpresaId, usuarioNome, `Excluiu parceiro #${targetUuid}`);
+    } catch (e) {}
   },
 
   // --- PRODUTOS ---
   async getProdutos(empresaId) {
     if (!supabase) return [];
+    const validEmpresaId = (empresaId && empresaId.length > 15) ? empresaId : '80285958-6d61-4784-b0af-89fb3c99b401';
     const { data, error } = await supabase
       .from('produtos')
       .select('*')
-      .eq('empresa_id', empresaId)
+      .eq('empresa_id', validEmpresaId)
       .order('nome');
     if (error) throw error;
     return data.map(this.mapProdutoFromDb);
@@ -974,14 +1043,25 @@ export const supabaseService = {
   },
 
   async deleteProduto(id, empresaId, usuarioNome) {
-    if (!supabase) return;
-    const { error } = await supabase
-      .from('produtos')
-      .delete()
-      .eq('id', id)
-      .eq('empresa_id', empresaId);
-    if (error) throw error;
-    await this.logAuditAction(empresaId, usuarioNome, `Excluiu produto #${id}`);
+    const validEmpresaId = (empresaId && empresaId.length > 15) ? empresaId : '80285958-6d61-4784-b0af-89fb3c99b401';
+    const targetUuid = toValidUuidOrNull(id);
+    if (!targetUuid) return;
+
+    if (supabase) {
+      try {
+        await supabase.from('produtos').delete().eq('id', targetUuid).eq('empresa_id', validEmpresaId);
+      } catch (e) {}
+    }
+
+    try {
+      const url = 'https://kkoyikmayylhxcnmcjyl.supabase.co';
+      const key = 'sb_publishable_ON_tVRIx3Va4ukWsnOf-8g_EXDv5ju4';
+      await fetch(`${url}/rest/v1/produtos?id=eq.${targetUuid}&empresa_id=eq.${validEmpresaId}`, {
+        method: 'DELETE',
+        headers: { 'apikey': key, 'Authorization': `Bearer ${key}` }
+      });
+      await this.logAuditAction(validEmpresaId, usuarioNome, `Excluiu produto #${targetUuid}`);
+    } catch (e) {}
   },
 
   // --- CONDIÇÕES DE PAGAMENTO ---
@@ -1075,15 +1155,18 @@ export const supabaseService = {
 
   async saveEntradaEstoque(entradaData, empresaId, usuarioNome) {
     if (!supabase) return null;
+    const validEmpresaId = (empresaId && empresaId.length > 15) ? empresaId : '80285958-6d61-4784-b0af-89fb3c99b401';
+    const resolvedFornecedorId = await this.ensurePartnerUuid(entradaData.fornecedorId, validEmpresaId, usuarioNome);
+
     const { data: entrada, error } = await supabase
       .from('entradas_estoque')
       .insert({
-        empresa_id: empresaId,
+        empresa_id: validEmpresaId,
         numero_movimentacao: entradaData.numeroMovimentacao || `ENT-${Date.now().toString().slice(-4)}`,
         usuario_responsavel: usuarioNome,
         tipo_entrada: entradaData.tipoEntrada,
         motivo: entradaData.motivo,
-        fornecedor_id: entradaData.fornecedorId || null,
+        fornecedor_id: resolvedFornecedorId,
         fornecedor_nome: entradaData.fornecedorNome,
         numero_nota_fiscal: entradaData.numeroNotaFiscal,
         serie_nota_fiscal: entradaData.serieNotaFiscal || '1',
@@ -1158,11 +1241,14 @@ export const supabaseService = {
     const validEmpresaId = (empresaId && empresaId.length > 15) ? empresaId : '80285958-6d61-4784-b0af-89fb3c99b401';
     const isUpdate = orc.id && !orc.id.startsWith('orc-');
 
+    const resolvedClienteId = await this.ensurePartnerUuid(orc.clienteId, validEmpresaId, usuarioNome);
+    const resolvedFornecedorId = await this.ensurePartnerUuid(orc.fornecedorId, validEmpresaId, usuarioNome);
+
     const payload = {
       empresa_id: validEmpresaId,
       numero: orc.numero,
-      cliente_id: toValidUuidOrNull(orc.clienteId),
-      fornecedor_id: toValidUuidOrNull(orc.fornecedorId),
+      cliente_id: resolvedClienteId,
+      fornecedor_id: resolvedFornecedorId,
       endereco_entrega: orc.enderecoEntrega || '',
       comprador: orc.comprador || '',
       vendedor_responsavel: orc.vendedorResponsavel || usuarioNome,
@@ -1259,9 +1345,11 @@ export const supabaseService = {
 
   async saveVenda(venda, empresaId, usuarioNome) {
     const validEmpresaId = (empresaId && empresaId.length > 15) ? empresaId : '80285958-6d61-4784-b0af-89fb3c99b401';
+    const resolvedClienteId = await this.ensurePartnerUuid(venda.clienteId, validEmpresaId, usuarioNome);
+
     const payload = {
       empresa_id: validEmpresaId,
-      cliente_id: toValidUuidOrNull(venda.clienteId),
+      cliente_id: resolvedClienteId,
       orcamento_id: toValidUuidOrNull(venda.orcamentoId),
       total: parseFloat(venda.total) || 0,
       itens_count: parseInt(venda.itensCount) || (venda.itens ? venda.itens.length : 1),
@@ -1438,10 +1526,12 @@ export const supabaseService = {
   async saveVisita(visita, empresaId, usuarioNome) {
     const validEmpresaId = (empresaId && empresaId.length > 15) ? empresaId : '80285958-6d61-4784-b0af-89fb3c99b401';
     const isUpdate = visita.id && !visita.id.startsWith('vis-');
+    const resolvedClienteId = await this.ensurePartnerUuid(visita.clienteId, validEmpresaId, usuarioNome);
+
     const payload = {
       empresa_id: validEmpresaId,
       codigo: visita.codigo || `VIS-${Math.floor(100 + Math.random() * 900)}`,
-      cliente_id: toValidUuidOrNull(visita.clienteId),
+      cliente_id: resolvedClienteId,
       cliente_nome: visita.clienteNome || 'Cliente',
       representante_nome: visita.representanteNome || usuarioNome,
       data_hora_programada: visita.dataHoraProgramada || new Date().toISOString(),
