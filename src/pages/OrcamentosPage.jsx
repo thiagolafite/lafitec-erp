@@ -50,6 +50,7 @@ export const OrcamentosPage = ({ showToast }) => {
   const [envioModal, setEnvioModal] = useState(null); // { orcamento, canal: 'WhatsApp' | 'Email' }
   const [rejeicaoModal, setRejeicaoModal] = useState(null); // { orcamentoId, motivo: '' }
   const [historicoClienteModal, setHistoricoClienteModal] = useState(null); // cliente
+  const [converterModal, setConverterModal] = useState(null); // { orcamento, condicaoPagamento, dataVenda, baixarEstoque, gerarFinanceiro }
 
   // Quick Inline Creation Modals
   const [quickClienteModal, setQuickClienteModal] = useState(false);
@@ -618,20 +619,41 @@ export const OrcamentosPage = ({ showToast }) => {
     }
   };
 
-  // --- CONVERT TO SALE (PDV) ---
-  const handleConverterEmVenda = (orcamentoId) => {
-    if (!window.confirm('Deseja converter este orçamento em um Pedido de Venda oficial? Isso dará baixa automática no estoque e gerará a conta a receber no financeiro.')) {
-      return;
-    }
+  // --- CONVERT TO SALE (INTUITIVE WORKFLOW) ---
+  const handleOpenConverterModal = (orc) => {
+    const detalhado = storage.getOrcamentoDetalhado(orc.id, empresa.id) || orc;
+    setConverterModal({
+      orcamento: detalhado,
+      condicaoPagamento: detalhado.condicaoPagamento || 'À Vista',
+      dataVenda: new Date().toISOString().split('T')[0],
+      baixarEstoque: true,
+      gerarFinanceiro: true
+    });
+  };
 
+  const handleConfirmConverter = (e) => {
+    if (e) e.preventDefault();
+    if (!converterModal || !converterModal.orcamento) return;
     try {
-      const novaVenda = storage.converterOrcamentoEmVenda(orcamentoId, empresa.id, user.nome);
-      showToast('success', `Sucesso! Orçamento convertido no Pedido de Venda #${novaVenda.id}.`);
-      if (detalhesModal && detalhesModal.id === orcamentoId) {
-        setDetalhesModal(storage.getOrcamentoDetalhado(orcamentoId, empresa.id));
+      const novaVenda = storage.converterOrcamentoEmVenda(
+        converterModal.orcamento.id,
+        empresa.id,
+        user.nome,
+        {
+          condicaoPagamento: converterModal.condicaoPagamento,
+          dataVenda: converterModal.dataVenda,
+          baixarEstoque: converterModal.baixarEstoque,
+          gerarFinanceiro: converterModal.gerarFinanceiro
+        }
+      );
+      showToast('success', `🎉 Sucesso! Orçamento transformado no Pedido de Venda #${novaVenda.numero || novaVenda.id}!`);
+      const convertedId = converterModal.orcamento.id;
+      setConverterModal(null);
+      if (detalhesModal && detalhesModal.id === convertedId) {
+        setDetalhesModal(storage.getOrcamentoDetalhado(convertedId, empresa.id));
       }
     } catch (err) {
-      showToast('error', err.message || 'Erro ao converter orçamento em venda.');
+      showToast('error', err.message || 'Erro ao transformar orçamento em pedido de venda.');
     }
   };
 
@@ -902,15 +924,15 @@ export const OrcamentosPage = ({ showToast }) => {
                           </button>
                         )}
 
-                        {/* Convert to Sale Action (if Aprovado) */}
-                        {orc.status === 'Aprovado' && (
+                        {/* Convert to Sale Action (Transformar em Pedido de Venda) */}
+                        {orc.status !== 'Convertido' && orc.status !== 'Rejeitado' && (
                           <button
                             className="btn btn-accent btn-sm"
-                            title="Converter em Pedido de Venda"
-                            onClick={() => handleConverterEmVenda(orc.id)}
-                            style={{ display: 'inline-flex', alignItems: 'center', gap: '4px' }}
+                            title="Transformar Orçamento em Pedido de Venda Oficial"
+                            onClick={() => handleOpenConverterModal(orc)}
+                            style={{ display: 'inline-flex', alignItems: 'center', gap: '4px', fontWeight: 700 }}
                           >
-                            <ArrowRightCircle size={14} /> Converter
+                            <ArrowRightCircle size={14} /> Faturar Pedido
                           </button>
                         )}
 
@@ -1997,15 +2019,19 @@ export const OrcamentosPage = ({ showToast }) => {
                 </>
               )}
 
-              {/* Aprovado actions (Convert to Sale) */}
-              {detalhesModal.status === 'Aprovado' && (
+              {/* Converter em Pedido de Venda */}
+              {detalhesModal.status !== 'Convertido' && detalhesModal.status !== 'Rejeitado' && (
                 <button
                   type="button"
                   className="btn btn-accent"
-                  onClick={() => handleConverterEmVenda(detalhesModal.id)}
+                  onClick={() => {
+                    const orc = detalhesModal;
+                    setDetalhesModal(null);
+                    handleOpenConverterModal(orc);
+                  }}
                   style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', fontWeight: 800 }}
                 >
-                  <ArrowRightCircle size={18} /> Converter em Pedido de Venda
+                  <ArrowRightCircle size={18} /> Transformar em Pedido de Venda
                 </button>
               )}
 
@@ -2102,6 +2128,20 @@ export const OrcamentosPage = ({ showToast }) => {
                 </div>
 
                 <div style={{ display: 'flex', gap: '8px' }}>
+                  {pdfModal.status !== 'Convertido' && pdfModal.status !== 'Rejeitado' && (
+                    <button
+                      type="button"
+                      className="btn btn-accent"
+                      onClick={() => {
+                        const orcToConvert = pdfModal;
+                        setPdfModal(null);
+                        handleOpenConverterModal(orcToConvert);
+                      }}
+                      style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', fontWeight: 700 }}
+                    >
+                      <ArrowRightCircle size={16} /> Transformar em Pedido de Venda
+                    </button>
+                  )}
                   <button
                     type="button"
                     className="btn btn-primary"
@@ -2680,6 +2720,163 @@ export const OrcamentosPage = ({ showToast }) => {
             <button type="submit" className="btn btn-accent">Cadastrar e Selecionar Vendedor</button>
           </div>
         </form>
+      </Modal>
+
+      {/* MODAL: TRANSFORMAR ORÇAMENTO EM PEDIDO DE VENDA */}
+      <Modal
+        isOpen={Boolean(converterModal)}
+        onClose={() => setConverterModal(null)}
+        title={`🛍️ Gerar Pedido de Venda - Orçamento #${converterModal?.orcamento?.numero || ''}`}
+        maxWidth="740px"
+      >
+        {converterModal && (
+          <form onSubmit={handleConfirmConverter}>
+            <div style={{ backgroundColor: '#F0FDF4', border: '1px solid #86EFAC', padding: '1rem 1.25rem', borderRadius: '8px', marginBottom: '1.25rem' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '10px', color: '#166534', fontWeight: 700, fontSize: '0.95rem' }}>
+                <CheckCircle2 size={20} style={{ color: '#16A34A' }} />
+                <span>Transformação de Orçamento Comercial em Faturamento Oficial</span>
+              </div>
+              <p style={{ margin: '4px 0 0 0', fontSize: '0.8rem', color: '#15803D' }}>
+                Ao confirmar, o orçamento será marcado como <strong>Convertido</strong> e um Pedido de Venda oficial será gerado no módulo de Vendas (PDV).
+              </p>
+            </div>
+
+            {/* Resumo do Cliente & Valores */}
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem', marginBottom: '1.25rem' }}>
+              <div style={{ backgroundColor: '#F8FAFC', padding: '1rem', borderRadius: '8px', border: '1px solid #E2E8F0' }}>
+                <div style={{ fontSize: '0.75rem', textTransform: 'uppercase', color: '#64748B', fontWeight: 700, marginBottom: '6px' }}>
+                  Dados do Cliente & Proposta
+                </div>
+                <div style={{ fontSize: '0.95rem', fontWeight: 700, color: '#0F172A' }}>
+                  {converterModal.orcamento.cliente?.nome || converterModal.orcamento.clienteNome || 'Cliente'}
+                </div>
+                <div style={{ fontSize: '0.8rem', color: '#64748B', marginTop: '2px' }}>
+                  CNPJ/CPF: {converterModal.orcamento.cliente?.cpfCnpj || 'Não informado'}
+                </div>
+                <div style={{ fontSize: '0.8rem', color: '#64748B' }}>
+                  Vendedor: <strong>{converterModal.orcamento.vendedorResponsavel || user.nome}</strong>
+                </div>
+                <div style={{ fontSize: '0.8rem', color: '#64748B' }}>
+                  Fornecedor: <strong>{converterModal.orcamento.fornecedor?.nome || 'Geral'}</strong>
+                </div>
+              </div>
+
+              <div style={{ backgroundColor: '#F8FAFC', padding: '1rem', borderRadius: '8px', border: '1px solid #E2E8F0', display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
+                <div style={{ fontSize: '0.75rem', textTransform: 'uppercase', color: '#64748B', fontWeight: 700 }}>
+                  Valor Total do Pedido
+                </div>
+                <div className="font-mono" style={{ fontSize: '1.6rem', fontWeight: 800, color: '#008764', marginTop: '4px' }}>
+                  {formatCurrency(converterModal.orcamento.total)}
+                </div>
+                <div style={{ fontSize: '0.8rem', color: '#64748B', marginTop: '2px' }}>
+                  {converterModal.orcamento.itens?.length || 0} produto(s) inclusos no pedido
+                </div>
+              </div>
+            </div>
+
+            {/* Tabela de Itens */}
+            <div style={{ marginBottom: '1.25rem' }}>
+              <label className="form-label" style={{ fontWeight: 700 }}>Itens que serão faturados:</label>
+              <div style={{ maxHeight: '180px', overflowY: 'auto', border: '1px solid #E2E8F0', borderRadius: '6px' }}>
+                <table className="table" style={{ margin: 0, fontSize: '0.8rem' }}>
+                  <thead>
+                    <tr style={{ backgroundColor: '#F8FAFC' }}>
+                      <th>Código</th>
+                      <th>Produto</th>
+                      <th style={{ textAlign: 'center' }}>Qtd</th>
+                      <th style={{ textAlign: 'right' }}>Preço Unit.</th>
+                      <th style={{ textAlign: 'right' }}>Total</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {(converterModal.orcamento.itens || []).map((it, idx) => (
+                      <tr key={idx}>
+                        <td className="font-mono">{it.codigo || '-'}</td>
+                        <td style={{ fontWeight: 600 }}>{it.produtoNome}</td>
+                        <td style={{ textAlign: 'center' }}>{it.quantidade}</td>
+                        <td className="font-mono" style={{ textAlign: 'right' }}>{formatCurrency(it.precoUnitario)}</td>
+                        <td className="font-mono" style={{ textAlign: 'right', fontWeight: 700, color: '#0F172A' }}>
+                          {formatCurrency(it.subtotal || (it.quantidade * it.precoUnitario))}
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+
+            {/* Configurações de Faturamento */}
+            <div style={{ backgroundColor: '#F8FAFC', padding: '1rem', borderRadius: '8px', border: '1px solid #E2E8F0', marginBottom: '1.25rem' }}>
+              <div className="form-row">
+                <div className="form-group" style={{ marginBottom: 0 }}>
+                  <label className="form-label">Data do Faturamento / Venda:</label>
+                  <input
+                    type="date"
+                    className="form-input"
+                    value={converterModal.dataVenda}
+                    onChange={(e) => setConverterModal({ ...converterModal, dataVenda: e.target.value })}
+                    required
+                  />
+                </div>
+                <div className="form-group" style={{ marginBottom: 0 }}>
+                  <label className="form-label">Condição de Pagamento:</label>
+                  <select
+                    className="form-select"
+                    value={converterModal.condicaoPagamento}
+                    onChange={(e) => setConverterModal({ ...converterModal, condicaoPagamento: e.target.value })}
+                  >
+                    <option value="À Vista">À Vista</option>
+                    <option value="A Prazo">A Prazo</option>
+                    <option value="30 dias">30 dias</option>
+                    <option value="28/42/56dd">28/42/56dd</option>
+                    {condicoesPagamento.map(c => (
+                      <option key={c.id} value={c.descricao}>{c.descricao}</option>
+                    ))}
+                  </select>
+                </div>
+              </div>
+
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px', marginTop: '1rem', paddingTop: '0.75rem', borderTop: '1px solid #E2E8F0' }}>
+                <label style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '0.825rem', cursor: 'pointer', userSelect: 'none' }}>
+                  <input
+                    type="checkbox"
+                    checked={converterModal.baixarEstoque}
+                    onChange={(e) => setConverterModal({ ...converterModal, baixarEstoque: e.target.checked })}
+                    style={{ width: '16px', height: '16px', accentColor: '#008764' }}
+                  />
+                  <span>Dar <strong>baixa imediata</strong> no estoque dos produtos</span>
+                </label>
+
+                <label style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '0.825rem', cursor: 'pointer', userSelect: 'none' }}>
+                  <input
+                    type="checkbox"
+                    checked={converterModal.gerarFinanceiro}
+                    onChange={(e) => setConverterModal({ ...converterModal, gerarFinanceiro: e.target.checked })}
+                    style={{ width: '16px', height: '16px', accentColor: '#008764' }}
+                  />
+                  <span>Lançar no <strong>Contas a Receber</strong> (Financeiro)</span>
+                </label>
+              </div>
+            </div>
+
+            <div className="modal-footer" style={{ padding: '1rem 0 0 0', borderTop: '1px solid #E2E8F0', display: 'flex', justifyContent: 'flex-end', gap: '0.75rem' }}>
+              <button
+                type="button"
+                className="btn btn-outline"
+                onClick={() => setConverterModal(null)}
+              >
+                Cancelar
+              </button>
+              <button
+                type="submit"
+                className="btn btn-accent"
+                style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', padding: '0.65rem 1.25rem', fontSize: '0.95rem', fontWeight: 700 }}
+              >
+                <CheckCircle2 size={18} /> Confirmar e Faturar Pedido de Venda
+              </button>
+            </div>
+          </form>
+        )}
       </Modal>
     </div>
   );

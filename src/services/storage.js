@@ -1437,22 +1437,22 @@ export const storage = {
     }
   },
 
-  converterOrcamentoEmVenda: (orcamentoId, empresaId, usuarioNome) => {
+  converterOrcamentoEmVenda: (orcamentoId, empresaId, usuarioNome, opcoes = {}) => {
     const session = storage.getCurrentSession();
     const activeEmpresaId = (empresaId && empresaId.length > 15) ? empresaId : (session?.empresa?.id || '80285958-6d61-4784-b0af-89fb3c99b401');
     const orcamentoDetalhado = storage.getOrcamentoDetalhado(orcamentoId, activeEmpresaId);
     if (!orcamentoDetalhado) throw new Error('Orçamento não encontrado.');
-    if (orcamentoDetalhado.status !== 'Aprovado') {
-      throw new Error('Apenas orçamentos com status "Aprovado" podem ser convertidos em pedido de venda.');
-    }
 
     const vendaPayload = {
       clienteId: orcamentoDetalhado.clienteId,
       orcamentoId: orcamentoDetalhado.id,
-      itens: orcamentoDetalhado.itens.map(item => ({
-        produtoId: item.produtoId,
-        quantidade: item.quantidade
-      }))
+      total: orcamentoDetalhado.total,
+      condicaoPagamento: opcoes.condicaoPagamento || orcamentoDetalhado.condicaoPagamento || 'À Vista',
+      vendedorResponsavel: orcamentoDetalhado.vendedorResponsavel || usuarioNome,
+      dataVenda: opcoes.dataVenda || new Date().toISOString(),
+      baixarEstoque: opcoes.baixarEstoque !== false,
+      gerarFinanceiro: opcoes.gerarFinanceiro !== false,
+      itens: orcamentoDetalhado.itens || []
     };
 
     const novaVenda = storage.createVenda(vendaPayload, activeEmpresaId, usuarioNome);
@@ -1463,17 +1463,18 @@ export const storage = {
         return {
           ...o,
           status: 'Convertido',
-          vendaId: novaVenda.id
+          vendaId: novaVenda.id,
+          dataAprovacao: o.dataAprovacao || new Date().toISOString()
         };
       }
       return o;
     });
 
     setTable(STORAGE_KEYS.ORCAMENTOS, updated);
-    logAuditAction(activeEmpresaId, usuarioNome, `Converteu orçamento #${orcamentoDetalhado.numero} no Pedido de Venda #${novaVenda.id}`);
+    logAuditAction(activeEmpresaId, usuarioNome, `Converteu orçamento #${orcamentoDetalhado.numero} no Pedido de Venda #${novaVenda.numero || novaVenda.id}`);
 
     if (supabaseService.isConfigured()) {
-      supabaseService.saveOrcamento({ ...orcamentoDetalhado, status: 'Convertido', vendaId: novaVenda.id }, activeEmpresaId, usuarioNome).catch(() => {});
+      supabaseService.saveOrcamento({ ...orcamentoDetalhado, status: 'Convertido', vendaId: novaVenda.id, dataAprovacao: new Date().toISOString() }, activeEmpresaId, usuarioNome).catch(() => {});
     }
 
     return novaVenda;
@@ -1511,7 +1512,46 @@ export const storage = {
     }).sort((a, b) => new Date(b.dataVenda) - new Date(a.dataVenda));
   },
 
-  createVenda: ({ clienteId, orcamentoId, itens }, empresaId, usuarioNome) => {
+  getVendaDetalhada: (vendaId, empresaId) => {
+    const vendas = getTable(STORAGE_KEYS.VENDAS);
+    const venda = vendas.find(v => v.id === vendaId && (empresaId ? v.empresaId === empresaId : true));
+    if (!venda) return null;
+
+    const parceiros = storage.getAllParceiros(venda.empresaId || empresaId);
+    const cliente = parceiros.find(c => c.id === venda.clienteId);
+
+    let rawItens = getTable(STORAGE_KEYS.ITENS_VENDA).filter(i => i.vendaId === vendaId);
+    if (rawItens.length === 0 && Array.isArray(venda.itens) && venda.itens.length > 0) {
+      rawItens = venda.itens;
+    }
+
+    const produtos = getTable(STORAGE_KEYS.PRODUTOS);
+    const itensCompletos = rawItens.map((it, idx) => {
+      const prod = produtos.find(p => p.id === it.produtoId || (it.codigo && p.codigo === it.codigo) || (it.produtoNome && p.nome === it.produtoNome));
+      const preco = it.precoUnitario !== undefined ? parseFloat(it.precoUnitario) : (prod ? prod.preco : 0);
+      const qtd = parseFloat(it.quantidade) || 1;
+      const sub = it.subtotal !== undefined ? parseFloat(it.subtotal) : (qtd * preco);
+      return {
+        ...it,
+        id: it.id || `it-ven-${idx}`,
+        produtoNome: it.produtoNome || (prod ? prod.nome : 'Produto'),
+        codigo: it.codigo || (prod ? prod.codigo : ''),
+        unidade: it.unidade || (prod ? prod.unidade : 'UN'),
+        quantidade: qtd,
+        precoUnitario: preco,
+        subtotal: sub
+      };
+    });
+
+    return {
+      ...venda,
+      cliente,
+      clienteNome: cliente ? cliente.nome : 'Cliente',
+      itens: itensCompletos
+    };
+  },
+
+  createVenda: ({ clienteId, orcamentoId, itens = [], total: customTotal, condicaoPagamento, vendedorResponsavel, dataVenda, baixarEstoque = true, gerarFinanceiro = true }, empresaId, usuarioNome) => {
     const session = storage.getCurrentSession();
     const activeEmpresaId = (empresaId && empresaId.length > 15) ? empresaId : (session?.empresa?.id || '80285958-6d61-4784-b0af-89fb3c99b401');
 
@@ -1523,65 +1563,109 @@ export const storage = {
     let total = 0;
     const novosItensVenda = [];
 
-    for (const item of itens) {
-      const prod = produtos.find(p => p.id === item.produtoId);
-      if (!prod) throw new Error(`Produto não localizado.`);
-      total += prod.preco * item.quantidade;
-    }
-
-    const vendaId = 'ven-' + Date.now();
-    const novaVenda = {
-      id: vendaId,
-      clienteId,
-      orcamentoId: orcamentoId || null,
-      total,
-      dataVenda: new Date().toISOString(),
-      empresaId: activeEmpresaId,
-      itensCount: itens.length,
-      status: 'Concluida'
-    };
-
     const produtosAtualizados = produtos.map(prod => {
-      const itemVendido = itens.find(i => i.produtoId === prod.id);
+      const itemVendido = itens.find(i => i.produtoId === prod.id || (i.codigo && prod.codigo === i.codigo) || (i.produtoNome && prod.nome === i.produtoNome));
       if (itemVendido) {
+        const preco = itemVendido.precoUnitario !== undefined ? parseFloat(itemVendido.precoUnitario) : prod.preco;
+        const qtd = parseFloat(itemVendido.quantidade) || 1;
+        const sub = (qtd * preco) - (parseFloat(itemVendido.desconto) || 0);
+        total += sub;
+
         novosItensVenda.push({
-          id: 'it-' + Math.random().toString(36).substring(2, 9),
-          vendaId,
+          id: 'it-ven-' + Math.random().toString(36).substring(2, 9),
           produtoId: prod.id,
-          quantidade: itemVendido.quantidade,
-          precoUnitario: prod.preco
+          produtoNome: prod.nome,
+          codigo: prod.codigo,
+          unidade: prod.unidade || 'UN',
+          quantidade: qtd,
+          precoUnitario: preco,
+          subtotal: sub
         });
-        const novoEstoque = Math.max(0, prod.estoque - itemVendido.quantidade);
-        // Atualiza estoque no Supabase
-        if (supabaseService.isConfigured()) {
-          supabaseService.saveProduto({ ...prod, estoque: novoEstoque }, activeEmpresaId, usuarioNome).catch(() => {});
+
+        if (baixarEstoque) {
+          const novoEstoque = Math.max(0, prod.estoque - qtd);
+          if (supabaseService.isConfigured()) {
+            supabaseService.saveProduto({ ...prod, estoque: novoEstoque }, activeEmpresaId, usuarioNome).catch(() => {});
+          }
+          return { ...prod, estoque: novoEstoque };
         }
-        return { ...prod, estoque: novoEstoque };
       }
       return prod;
     });
+
+    // Se houver itens avulsos ou não localizados no catálogo local
+    for (const item of itens) {
+      const alreadyAdded = novosItensVenda.some(n => n.produtoId === item.produtoId);
+      if (!alreadyAdded) {
+        const preco = parseFloat(item.precoUnitario) || 0;
+        const qtd = parseFloat(item.quantidade) || 1;
+        const sub = (qtd * preco) - (parseFloat(item.desconto) || 0);
+        total += sub;
+        novosItensVenda.push({
+          id: 'it-ven-' + Math.random().toString(36).substring(2, 9),
+          produtoId: item.produtoId,
+          produtoNome: item.produtoNome || 'Produto',
+          codigo: item.codigo || '',
+          unidade: item.unidade || 'UN',
+          quantidade: qtd,
+          precoUnitario: preco,
+          subtotal: sub
+        });
+      }
+    }
+
+    const valorFinal = customTotal !== undefined ? parseFloat(customTotal) : total;
+    const countVendas = vendas.filter(v => v.empresaId === activeEmpresaId).length;
+    const numeroVenda = `PED-${String(countVendas + 1).padStart(3, '0')}`;
+    const vendaId = 'ven-' + Date.now();
+
+    const novaVenda = {
+      id: vendaId,
+      numero: numeroVenda,
+      clienteId,
+      orcamentoId: orcamentoId || null,
+      total: valorFinal,
+      dataVenda: dataVenda || new Date().toISOString(),
+      vendedorResponsavel: vendedorResponsavel || usuarioNome,
+      condicaoPagamento: condicaoPagamento || 'À Vista',
+      empresaId: activeEmpresaId,
+      itensCount: novosItensVenda.length,
+      itens: novosItensVenda,
+      status: 'Concluida'
+    };
 
     const parceiros = storage.getAllParceiros(activeEmpresaId);
     const cliente = parceiros.find(c => c.id === clienteId);
     const clienteNome = cliente ? cliente.nome : 'Cliente';
 
-    const novoLancamentoFinanceiro = {
-      id: 'fin-' + Date.now(),
-      descricao: `Venda PDV - ${clienteNome}`,
-      tipo: 'Receber',
-      valor: total,
-      status: 'Pendente',
-      dataVencimento: new Date(Date.now() + 15 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
-      empresaId: activeEmpresaId,
-      vendaId
-    };
-
-    setTable(STORAGE_KEYS.PRODUTOS, produtosAtualizados);
+    if (baixarEstoque) {
+      setTable(STORAGE_KEYS.PRODUTOS, produtosAtualizados);
+    }
     setTable(STORAGE_KEYS.VENDAS, [novaVenda, ...vendas]);
     setTable(STORAGE_KEYS.ITENS_VENDA, [...novosItensVenda, ...itensVenda]);
-    setTable(STORAGE_KEYS.FINANCEIRO, [novoLancamentoFinanceiro, ...financeiro]);
 
-    logAuditAction(activeEmpresaId, usuarioNome, `Concluiu venda #${vendaId} no valor de R$ ${total.toFixed(2)}`);
+    if (gerarFinanceiro) {
+      const defaultVenc = new Date();
+      defaultVenc.setDate(defaultVenc.getDate() + 30);
+
+      const novoLancamentoFinanceiro = {
+        id: 'fin-' + Date.now(),
+        descricao: `Pedido de Venda #${numeroVenda} - ${clienteNome}`,
+        tipo: 'Receber',
+        valor: valorFinal,
+        status: 'Pendente',
+        dataVencimento: defaultVenc.toISOString().split('T')[0],
+        origemTipo: 'Venda',
+        origemId: vendaId,
+        empresaId: activeEmpresaId
+      };
+      setTable(STORAGE_KEYS.FINANCEIRO, [novoLancamentoFinanceiro, ...financeiro]);
+      if (supabaseService.isConfigured()) {
+        supabaseService.saveFinanceiro(novoLancamentoFinanceiro, activeEmpresaId, usuarioNome).catch(() => {});
+      }
+    }
+
+    logAuditAction(activeEmpresaId, usuarioNome, `Gerou Pedido de Venda #${numeroVenda} no valor de R$ ${valorFinal.toFixed(2)} para ${clienteNome}`);
 
     if (supabaseService.isConfigured()) {
       supabaseService.saveVenda({ ...novaVenda, itens: novosItensVenda }, activeEmpresaId, usuarioNome)
@@ -1593,8 +1677,6 @@ export const storage = {
           }
         })
         .catch(e => console.error('[Supabase sync venda error]:', e));
-
-      supabaseService.saveFinanceiro(novoLancamentoFinanceiro, activeEmpresaId, usuarioNome).catch(() => {});
     }
 
     return novaVenda;
