@@ -51,6 +51,44 @@ export const OrcamentosPage = ({ showToast }) => {
   const [rejeicaoModal, setRejeicaoModal] = useState(null); // { orcamentoId, motivo: '' }
   const [historicoClienteModal, setHistoricoClienteModal] = useState(null); // cliente
 
+  // Quick Inline Creation Modals
+  const [quickClienteModal, setQuickClienteModal] = useState(false);
+  const [quickClienteData, setQuickClienteData] = useState({
+    nome: '',
+    fantasia: '',
+    cpfCnpj: '',
+    telefone: '',
+    email: '',
+    cep: '',
+    endereco: '',
+    numero: '',
+    bairro: '',
+    cidade: '',
+    estado: 'BA'
+  });
+
+  const [quickFornecedorModal, setQuickFornecedorModal] = useState(false);
+  const [quickFornecedorData, setQuickFornecedorData] = useState({
+    nome: '',
+    fantasia: '',
+    cpfCnpj: '',
+    telefone: '',
+    email: '',
+    cep: '',
+    endereco: '',
+    bairro: '',
+    cidade: '',
+    estado: 'BA'
+  });
+
+  const [quickVendedorModal, setQuickVendedorModal] = useState(false);
+  const [quickVendedorData, setQuickVendedorData] = useState({
+    nome: '',
+    email: '',
+    telefone: '',
+    tipo: 'Vendedor'
+  });
+
   // Search & Filter
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState('TODOS');
@@ -83,6 +121,105 @@ export const OrcamentosPage = ({ showToast }) => {
   const fornecedores = storage.getFornecedores(empresa.id);
   const todosProdutos = storage.getProdutos(empresa.id);
   const condicoesPagamento = storage.getCondicoesPagamento ? storage.getCondicoesPagamento(empresa.id) : [];
+  const usuarios = storage.getUsuarios ? storage.getUsuarios(empresa.id) : [];
+  
+  const listaVendedores = Array.from(new Set([
+    user?.nome,
+    ...usuarios.map(u => u.nome),
+    ...orcamentos.map(o => o.vendedorResponsavel)
+  ].filter(Boolean)));
+
+  const performCEPLookup = async (rawCEP, targetSetter) => {
+    const clean = (rawCEP || '').replace(/\D/g, '');
+    if (clean.length !== 8) return;
+    try {
+      const res = await fetch(`https://viacep.com.br/ws/${clean}/json/`);
+      const data = await res.json();
+      if (!data.erro) {
+        targetSetter(prev => ({
+          ...prev,
+          endereco: data.logradouro || prev.endereco || '',
+          bairro: data.bairro || prev.bairro || '',
+          cidade: data.localidade || prev.cidade || '',
+          estado: data.uf || prev.estado || ''
+        }));
+      }
+    } catch (e) {
+      console.warn('Erro ao consultar CEP:', e);
+    }
+  };
+
+  const handleSaveQuickCliente = (e) => {
+    e.preventDefault();
+    if (!quickClienteData.nome) return;
+    try {
+      const newCli = {
+        ...quickClienteData,
+        tipo: 'Clientes',
+        empresaId: empresa.id
+      };
+      const saved = storage.saveCliente(newCli, empresa.id, user.nome);
+      setFormClienteId(saved.id);
+      
+      const parts = [
+        saved.endereco,
+        saved.numero,
+        saved.bairro,
+        saved.cidade ? `${saved.cidade} - ${saved.estado || 'BA'}` : '',
+        saved.cep ? `CEP: ${saved.cep}` : ''
+      ].filter(Boolean);
+      setFormEnderecoEntrega(parts.join(', '));
+      if (!formComprador) setFormComprador(saved.nome);
+
+      setQuickClienteModal(false);
+      setQuickClienteData({ nome: '', fantasia: '', cpfCnpj: '', telefone: '', email: '', cep: '', endereco: '', numero: '', bairro: '', cidade: '', estado: 'BA' });
+      showToast('success', `Cliente "${saved.nome}" cadastrado e vinculado ao orçamento!`);
+    } catch (err) {
+      showToast('error', 'Erro ao cadastrar cliente.');
+    }
+  };
+
+  const handleSaveQuickFornecedor = (e) => {
+    e.preventDefault();
+    if (!quickFornecedorData.nome) return;
+    try {
+      const newForn = {
+        ...quickFornecedorData,
+        tipo: 'Fornecedores',
+        empresaId: empresa.id
+      };
+      const saved = storage.saveFornecedor(newForn, empresa.id, user.nome);
+      setFormFornecedorId(saved.id);
+      setQuickFornecedorModal(false);
+      setQuickFornecedorData({ nome: '', fantasia: '', cpfCnpj: '', telefone: '', email: '', cep: '', endereco: '', bairro: '', cidade: '', estado: 'BA' });
+      showToast('success', `Fornecedor "${saved.nome}" cadastrado e vinculado ao orçamento!`);
+    } catch (err) {
+      showToast('error', 'Erro ao cadastrar fornecedor.');
+    }
+  };
+
+  const handleSaveQuickVendedor = (e) => {
+    e.preventDefault();
+    if (!quickVendedorData.nome) return;
+    try {
+      const novoUsr = {
+        empresaId: empresa.id,
+        nome: quickVendedorData.nome,
+        email: quickVendedorData.email || `${quickVendedorData.nome.toLowerCase().replace(/\s+/g, '')}@vendas.com`,
+        tipo: quickVendedorData.tipo || 'Vendedor',
+        ativo: true
+      };
+      if (storage.saveUsuario) {
+        storage.saveUsuario(novoUsr, empresa.id, user.nome);
+      }
+      setFormVendedor(quickVendedorData.nome);
+      setQuickVendedorModal(false);
+      setQuickVendedorData({ nome: '', email: '', telefone: '', tipo: 'Vendedor' });
+      showToast('success', `Vendedor "${quickVendedorData.nome}" cadastrado e selecionado!`);
+    } catch (err) {
+      showToast('error', 'Erro ao cadastrar vendedor.');
+    }
+  };
 
   // Filter available products by the selected supplier
   const produtosDoFornecedor = formFornecedorId
@@ -863,9 +1000,28 @@ export const OrcamentosPage = ({ showToast }) => {
                         <Building2 size={16} style={{ color: '#008764' }} />
                         Fornecedor Representado *
                       </label>
-                      <span className="badge badge-accent" style={{ fontSize: '0.7rem' }}>
-                        Catálogo Restrito
-                      </span>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                        <button
+                          type="button"
+                          className="btn btn-outline btn-sm"
+                          onClick={() => setQuickFornecedorModal(true)}
+                          style={{
+                            padding: '2px 8px',
+                            fontSize: '0.75rem',
+                            fontWeight: 600,
+                            display: 'inline-flex',
+                            alignItems: 'center',
+                            gap: '4px',
+                            color: '#008764',
+                            borderColor: '#008764'
+                          }}
+                        >
+                          <Plus size={12} /> Cadastrar Fornecedor
+                        </button>
+                        <span className="badge badge-accent" style={{ fontSize: '0.7rem' }}>
+                          Catálogo Restrito
+                        </span>
+                      </div>
                     </div>
 
                     <select
@@ -892,10 +1048,29 @@ export const OrcamentosPage = ({ showToast }) => {
                 <div style={{ backgroundColor: '#F8FAFC', padding: '1.25rem', borderRadius: '8px', border: '1px solid #E2E8F0', marginBottom: '1.25rem' }}>
                   {/* Cliente Selector with Quick Action Buttons */}
                   <div className="form-group">
-                    <label className="form-label" style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                      <User size={16} style={{ color: '#2563EB' }} />
-                      Cliente *
-                    </label>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.35rem' }}>
+                      <label className="form-label" style={{ marginBottom: 0, display: 'flex', alignItems: 'center', gap: '6px' }}>
+                        <User size={16} style={{ color: '#2563EB' }} />
+                        Cliente *
+                      </label>
+                      <button
+                        type="button"
+                        className="btn btn-outline btn-sm"
+                        onClick={() => setQuickClienteModal(true)}
+                        style={{
+                          padding: '2px 8px',
+                          fontSize: '0.75rem',
+                          fontWeight: 600,
+                          display: 'inline-flex',
+                          alignItems: 'center',
+                          gap: '4px',
+                          color: '#2563EB',
+                          borderColor: '#2563EB'
+                        }}
+                      >
+                        <Plus size={12} /> Cadastrar Cliente
+                      </button>
+                    </div>
 
                     <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
                       <select
@@ -988,10 +1163,18 @@ export const OrcamentosPage = ({ showToast }) => {
                       <input
                         type="text"
                         className="form-input"
+                        list="contatosSugestoes"
                         value={formComprador}
                         onChange={(e) => setFormComprador(e.target.value)}
-                        placeholder="Nome do comprador ou departamento responsável"
+                        placeholder="Nome do comprador ou selecione um contato"
+                        style={{ flex: 1 }}
                       />
+                      <datalist id="contatosSugestoes">
+                        {clienteSelecionadoNoForm?.nome && <option value={clienteSelecionadoNoForm.nome} />}
+                        {(clienteSelecionadoNoForm?.contatos || []).map((c, idx) => (
+                          <option key={idx} value={typeof c === 'string' ? c : (c.nome || c.contato || '')} />
+                        ))}
+                      </datalist>
                       <button
                         type="button"
                         className="btn btn-outline btn-sm"
@@ -1012,14 +1195,39 @@ export const OrcamentosPage = ({ showToast }) => {
                 <div style={{ backgroundColor: '#F8FAFC', padding: '1.25rem', borderRadius: '8px', border: '1px solid #E2E8F0', marginBottom: '1.25rem' }}>
                   <div className="form-row">
                     <div className="form-group">
-                      <label className="form-label">Vendedor / Representante:</label>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.35rem' }}>
+                        <label className="form-label" style={{ marginBottom: 0 }}>Vendedor / Representante:</label>
+                        <button
+                          type="button"
+                          className="btn btn-outline btn-sm"
+                          onClick={() => setQuickVendedorModal(true)}
+                          style={{
+                            padding: '2px 8px',
+                            fontSize: '0.75rem',
+                            fontWeight: 600,
+                            display: 'inline-flex',
+                            alignItems: 'center',
+                            gap: '4px',
+                            color: '#008764',
+                            borderColor: '#008764'
+                          }}
+                        >
+                          <Plus size={12} /> Novo Vendedor
+                        </button>
+                      </div>
                       <input
                         type="text"
                         className="form-input"
+                        list="vendedoresSugestoes"
                         value={formVendedor}
                         onChange={(e) => setFormVendedor(e.target.value)}
-                        placeholder="Nome do vendedor"
+                        placeholder="Selecione na lista ou digite..."
                       />
+                      <datalist id="vendedoresSugestoes">
+                        {listaVendedores.map((v, idx) => (
+                          <option key={idx} value={v} />
+                        ))}
+                      </datalist>
                     </div>
 
                     <div className="form-group">
@@ -2190,6 +2398,280 @@ export const OrcamentosPage = ({ showToast }) => {
             </div>
           );
         })()}
+      </Modal>
+
+      {/* QUICK MODAL 1: CADASTRAR CLIENTE NA HORA */}
+      <Modal
+        isOpen={quickClienteModal}
+        onClose={() => setQuickClienteModal(false)}
+        title="Cadastrar Novo Cliente"
+        maxWidth="620px"
+      >
+        <form onSubmit={handleSaveQuickCliente}>
+          <div className="form-row">
+            <div className="form-group">
+              <label className="form-label">Nome / Razão Social *</label>
+              <input
+                type="text"
+                className="form-input"
+                value={quickClienteData.nome}
+                onChange={(e) => setQuickClienteData({ ...quickClienteData, nome: e.target.value })}
+                placeholder="Ex: Comercial Silva Ltda"
+                required
+              />
+            </div>
+            <div className="form-group">
+              <label className="form-label">Nome Fantasia</label>
+              <input
+                type="text"
+                className="form-input"
+                value={quickClienteData.fantasia}
+                onChange={(e) => setQuickClienteData({ ...quickClienteData, fantasia: e.target.value })}
+                placeholder="Ex: Silva Distribuidora"
+              />
+            </div>
+          </div>
+
+          <div className="form-row">
+            <div className="form-group">
+              <label className="form-label">CPF / CNPJ</label>
+              <input
+                type="text"
+                className="form-input"
+                value={quickClienteData.cpfCnpj}
+                onChange={(e) => setQuickClienteData({ ...quickClienteData, cpfCnpj: e.target.value })}
+                placeholder="00.000.000/0000-00"
+              />
+            </div>
+            <div className="form-group">
+              <label className="form-label">Telefone / WhatsApp</label>
+              <input
+                type="text"
+                className="form-input"
+                value={quickClienteData.telefone}
+                onChange={(e) => setQuickClienteData({ ...quickClienteData, telefone: e.target.value })}
+                placeholder="(71) 99999-9999"
+              />
+            </div>
+          </div>
+
+          <div className="form-row">
+            <div className="form-group">
+              <label className="form-label">CEP (Auto-preenchimento)</label>
+              <input
+                type="text"
+                className="form-input"
+                value={quickClienteData.cep}
+                onChange={(e) => {
+                  const val = e.target.value;
+                  setQuickClienteData({ ...quickClienteData, cep: val });
+                  if (val.replace(/\D/g, '').length === 8) {
+                    performCEPLookup(val, setQuickClienteData);
+                  }
+                }}
+                placeholder="00000-000"
+              />
+            </div>
+            <div className="form-group">
+              <label className="form-label">Cidade</label>
+              <input
+                type="text"
+                className="form-input"
+                value={quickClienteData.cidade}
+                onChange={(e) => setQuickClienteData({ ...quickClienteData, cidade: e.target.value })}
+                placeholder="Cidade"
+              />
+            </div>
+            <div className="form-group" style={{ maxWidth: '80px' }}>
+              <label className="form-label">UF</label>
+              <input
+                type="text"
+                className="form-input"
+                value={quickClienteData.estado}
+                onChange={(e) => setQuickClienteData({ ...quickClienteData, estado: e.target.value })}
+                placeholder="BA"
+              />
+            </div>
+          </div>
+
+          <div className="form-row">
+            <div className="form-group" style={{ flex: 2 }}>
+              <label className="form-label">Endereço (Rua / Av.)</label>
+              <input
+                type="text"
+                className="form-input"
+                value={quickClienteData.endereco}
+                onChange={(e) => setQuickClienteData({ ...quickClienteData, endereco: e.target.value })}
+                placeholder="Logradouro"
+              />
+            </div>
+            <div className="form-group" style={{ flex: 1 }}>
+              <label className="form-label">Número</label>
+              <input
+                type="text"
+                className="form-input"
+                value={quickClienteData.numero}
+                onChange={(e) => setQuickClienteData({ ...quickClienteData, numero: e.target.value })}
+                placeholder="Nº"
+              />
+            </div>
+          </div>
+
+          <div className="modal-footer" style={{ padding: '1rem 0 0 0', borderTop: '1px solid #E2E8F0', marginTop: '1rem', display: 'flex', justifyContent: 'flex-end', gap: '0.5rem' }}>
+            <button type="button" className="btn btn-outline" onClick={() => setQuickClienteModal(false)}>Cancelar</button>
+            <button type="submit" className="btn btn-accent">Salvar e Vincular Cliente</button>
+          </div>
+        </form>
+      </Modal>
+
+      {/* QUICK MODAL 2: CADASTRAR FORNECEDOR NA HORA */}
+      <Modal
+        isOpen={quickFornecedorModal}
+        onClose={() => setQuickFornecedorModal(false)}
+        title="Cadastrar Novo Fornecedor Representado"
+        maxWidth="620px"
+      >
+        <form onSubmit={handleSaveQuickFornecedor}>
+          <div className="form-row">
+            <div className="form-group">
+              <label className="form-label">Razão Social / Nome *</label>
+              <input
+                type="text"
+                className="form-input"
+                value={quickFornecedorData.nome}
+                onChange={(e) => setQuickFornecedorData({ ...quickFornecedorData, nome: e.target.value })}
+                placeholder="Ex: Vidros & Cia Indústria"
+                required
+              />
+            </div>
+            <div className="form-group">
+              <label className="form-label">Nome Fantasia</label>
+              <input
+                type="text"
+                className="form-input"
+                value={quickFornecedorData.fantasia}
+                onChange={(e) => setQuickFornecedorData({ ...quickFornecedorData, fantasia: e.target.value })}
+                placeholder="Ex: Vidros Brasil"
+              />
+            </div>
+          </div>
+
+          <div className="form-row">
+            <div className="form-group">
+              <label className="form-label">CNPJ / CPF</label>
+              <input
+                type="text"
+                className="form-input"
+                value={quickFornecedorData.cpfCnpj}
+                onChange={(e) => setQuickFornecedorData({ ...quickFornecedorData, cpfCnpj: e.target.value })}
+                placeholder="00.000.000/0000-00"
+              />
+            </div>
+            <div className="form-group">
+              <label className="form-label">Telefone / WhatsApp</label>
+              <input
+                type="text"
+                className="form-input"
+                value={quickFornecedorData.telefone}
+                onChange={(e) => setQuickFornecedorData({ ...quickFornecedorData, telefone: e.target.value })}
+                placeholder="(11) 99999-9999"
+              />
+            </div>
+          </div>
+
+          <div className="form-row">
+            <div className="form-group">
+              <label className="form-label">CEP (Auto-preenchimento)</label>
+              <input
+                type="text"
+                className="form-input"
+                value={quickFornecedorData.cep}
+                onChange={(e) => {
+                  const val = e.target.value;
+                  setQuickFornecedorData({ ...quickFornecedorData, cep: val });
+                  if (val.replace(/\D/g, '').length === 8) {
+                    performCEPLookup(val, setQuickFornecedorData);
+                  }
+                }}
+                placeholder="00000-000"
+              />
+            </div>
+            <div className="form-group">
+              <label className="form-label">Cidade</label>
+              <input
+                type="text"
+                className="form-input"
+                value={quickFornecedorData.cidade}
+                onChange={(e) => setQuickFornecedorData({ ...quickFornecedorData, cidade: e.target.value })}
+                placeholder="Cidade"
+              />
+            </div>
+            <div className="form-group" style={{ maxWidth: '80px' }}>
+              <label className="form-label">UF</label>
+              <input
+                type="text"
+                className="form-input"
+                value={quickFornecedorData.estado}
+                onChange={(e) => setQuickFornecedorData({ ...quickFornecedorData, estado: e.target.value })}
+                placeholder="BA"
+              />
+            </div>
+          </div>
+
+          <div className="modal-footer" style={{ padding: '1rem 0 0 0', borderTop: '1px solid #E2E8F0', marginTop: '1rem', display: 'flex', justifyContent: 'flex-end', gap: '0.5rem' }}>
+            <button type="button" className="btn btn-outline" onClick={() => setQuickFornecedorModal(false)}>Cancelar</button>
+            <button type="submit" className="btn btn-accent">Salvar e Vincular Fornecedor</button>
+          </div>
+        </form>
+      </Modal>
+
+      {/* QUICK MODAL 3: CADASTRAR VENDEDOR NA HORA */}
+      <Modal
+        isOpen={quickVendedorModal}
+        onClose={() => setQuickVendedorModal(false)}
+        title="Cadastrar Novo Vendedor / Representante"
+        maxWidth="500px"
+      >
+        <form onSubmit={handleSaveQuickVendedor}>
+          <div className="form-group">
+            <label className="form-label">Nome Completo do Vendedor *</label>
+            <input
+              type="text"
+              className="form-input"
+              value={quickVendedorData.nome}
+              onChange={(e) => setQuickVendedorData({ ...quickVendedorData, nome: e.target.value })}
+              placeholder="Ex: Carlos Oliveira"
+              required
+            />
+          </div>
+
+          <div className="form-group">
+            <label className="form-label">E-mail (Opcional)</label>
+            <input
+              type="email"
+              className="form-input"
+              value={quickVendedorData.email}
+              onChange={(e) => setQuickVendedorData({ ...quickVendedorData, email: e.target.value })}
+              placeholder="carlos@empresa.com"
+            />
+          </div>
+
+          <div className="form-group">
+            <label className="form-label">Telefone / WhatsApp</label>
+            <input
+              type="text"
+              className="form-input"
+              value={quickVendedorData.telefone}
+              onChange={(e) => setQuickVendedorData({ ...quickVendedorData, telefone: e.target.value })}
+              placeholder="(71) 98888-8888"
+            />
+          </div>
+
+          <div className="modal-footer" style={{ padding: '1rem 0 0 0', borderTop: '1px solid #E2E8F0', marginTop: '1rem', display: 'flex', justifyContent: 'flex-end', gap: '0.5rem' }}>
+            <button type="button" className="btn btn-outline" onClick={() => setQuickVendedorModal(false)}>Cancelar</button>
+            <button type="submit" className="btn btn-accent">Cadastrar e Selecionar Vendedor</button>
+          </div>
+        </form>
       </Modal>
     </div>
   );
