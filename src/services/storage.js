@@ -1169,24 +1169,45 @@ export const storage = {
 
   getOrcamentoDetalhado: (orcamentoId, empresaId) => {
     const orcamentos = getTable(STORAGE_KEYS.ORCAMENTOS);
-    const orcamento = orcamentos.find(o => o.id === orcamentoId && o.empresaId === empresaId);
+    const orcamento = orcamentos.find(o => o.id === orcamentoId && (empresaId ? o.empresaId === empresaId : true));
     if (!orcamento) return null;
 
-    const parceiros = storage.getAllParceiros(empresaId);
+    const parceiros = storage.getAllParceiros(orcamento.empresaId || empresaId);
     const cliente = parceiros.find(c => c.id === orcamento.clienteId);
     const fornecedor = parceiros.find(f => f.id === orcamento.fornecedorId);
 
-    const itensOrcamento = getTable(STORAGE_KEYS.ITENS_ORCAMENTO).filter(i => i.orcamentoId === orcamentoId);
+    // 1. Busca itens na tabela normalizada ITENS_ORCAMENTO
+    let itensOrcamento = getTable(STORAGE_KEYS.ITENS_ORCAMENTO).filter(i => i.orcamentoId === orcamentoId);
+
+    // 2. Fallback: Se não encontrou na tabela relacional, usa o array embutido no orçamento (Supabase JSONB ou local)
+    if (itensOrcamento.length === 0 && Array.isArray(orcamento.itens) && orcamento.itens.length > 0) {
+      itensOrcamento = orcamento.itens;
+    }
+
     const produtos = getTable(STORAGE_KEYS.PRODUTOS);
 
-    const itensCompletos = itensOrcamento.map(item => {
-      const prod = produtos.find(p => p.id === item.produtoId);
+    const itensCompletos = itensOrcamento.map((item, idx) => {
+      const prod = produtos.find(p => p.id === item.produtoId || (item.codigo && p.codigo === item.codigo) || (item.produtoNome && p.nome === item.produtoNome));
+      const precoUnit = item.precoUnitario !== undefined ? parseFloat(item.precoUnitario) : (prod ? prod.preco : 0);
+      const qtd = parseFloat(item.quantidade) || 1;
+      const desconto = parseFloat(item.desconto) || 0;
+      const ipi = parseFloat(item.ipi !== undefined ? item.ipi : (prod ? prod.ipi : 0)) || 0;
+      const st = parseFloat(item.st !== undefined ? item.st : (prod ? prod.st : 0)) || 0;
+      const subtotal = item.subtotal !== undefined ? parseFloat(item.subtotal) : ((qtd * precoUnit) - desconto);
+
       return {
         ...item,
-        produtoNome: prod ? prod.nome : 'Produto indisponível',
-        codigo: prod ? prod.codigo : '',
-        unidade: prod ? prod.unidade : 'UN',
-        subtotal: (parseFloat(item.quantidade) || 0) * (parseFloat(item.precoUnitario) || 0)
+        id: item.id || `it-orc-${idx}`,
+        produtoId: item.produtoId || (prod ? prod.id : null),
+        produtoNome: item.produtoNome || (prod ? prod.nome : 'Produto'),
+        codigo: item.codigo || (prod ? prod.codigo : ''),
+        unidade: item.unidade || (prod ? prod.unidade : 'UN'),
+        quantidade: qtd,
+        precoUnitario: precoUnit,
+        desconto,
+        ipi,
+        st,
+        subtotal
       };
     });
 
@@ -1200,7 +1221,11 @@ export const storage = {
 
   getItensOrcamento: (orcamentoId) => {
     const allItens = getTable(STORAGE_KEYS.ITENS_ORCAMENTO);
-    return allItens.filter(i => i.orcamentoId === orcamentoId);
+    const found = allItens.filter(i => i.orcamentoId === orcamentoId);
+    if (found.length > 0) return found;
+    const orcamentos = getTable(STORAGE_KEYS.ORCAMENTOS);
+    const orc = orcamentos.find(o => o.id === orcamentoId);
+    return (orc && Array.isArray(orc.itens)) ? orc.itens : [];
   },
 
   saveOrcamento: (orcamentoData, itens = [], empresaId, usuarioNome) => {
@@ -1216,16 +1241,28 @@ export const storage = {
     const produtos = getTable(STORAGE_KEYS.PRODUTOS);
 
     let total = 0;
-    const preparedItens = itens.map(item => {
-      const prod = produtos.find(p => p.id === item.produtoId);
+    const preparedItens = itens.map((item, idx) => {
+      const prod = produtos.find(p => p.id === item.produtoId || (item.codigo && p.codigo === item.codigo) || (item.produtoNome && p.nome === item.produtoNome));
       const precoUnit = item.precoUnitario !== undefined ? parseFloat(item.precoUnitario) : (prod ? prod.preco : 0);
       const qtd = parseFloat(item.quantidade) || 1;
-      total += (precoUnit * qtd);
+      const desconto = parseFloat(item.desconto) || 0;
+      const ipi = parseFloat(item.ipi !== undefined ? item.ipi : (prod ? prod.ipi : 0)) || 0;
+      const st = parseFloat(item.st !== undefined ? item.st : (prod ? prod.st : 0)) || 0;
+      const subtotal = (qtd * precoUnit) - desconto;
+      total += subtotal;
+
       return {
         id: item.id || ('it-orc-' + Math.random().toString(36).substring(2, 9)),
         produtoId: item.produtoId,
+        produtoNome: item.produtoNome || (prod ? prod.nome : 'Produto'),
+        codigo: item.codigo || (prod ? prod.codigo : ''),
+        unidade: item.unidade || (prod ? prod.unidade : 'UN'),
         quantidade: qtd,
-        precoUnitario: precoUnit
+        precoUnitario: precoUnit,
+        desconto,
+        ipi,
+        st,
+        subtotal
       };
     });
 
@@ -1246,6 +1283,7 @@ export const storage = {
         dataDespacho: orcamentoData.dataDespacho !== undefined ? orcamentoData.dataDespacho : (orcamentoExistente?.dataDespacho || ''),
         ordemCompra: orcamentoData.ordemCompra !== undefined ? orcamentoData.ordemCompra : (orcamentoExistente?.ordemCompra || ''),
         total,
+        itens: preparedItens,
         empresaId: activeEmpresaId
       };
 
@@ -1279,6 +1317,7 @@ export const storage = {
         ordemCompra: orcamentoData.ordemCompra || '',
         status: 'Rascunho',
         total,
+        itens: preparedItens,
         dataCriacao: new Date().toISOString(),
         dataEnvio: '',
         formaEnvio: '',
@@ -1303,8 +1342,12 @@ export const storage = {
         .then(dbOrc => {
           if (dbOrc && dbOrc.id) {
             const current = getTable(STORAGE_KEYS.ORCAMENTOS);
-            const updated = current.map(o => o.id === savedOrcamento.id ? { ...o, id: dbOrc.id, empresaId: activeEmpresaId } : o);
+            const updated = current.map(o => o.id === savedOrcamento.id ? { ...o, id: dbOrc.id, empresaId: activeEmpresaId, itens: preparedItens } : o);
             setTable(STORAGE_KEYS.ORCAMENTOS, updated);
+
+            const allItens = getTable(STORAGE_KEYS.ITENS_ORCAMENTO);
+            const updatedItens = allItens.map(i => i.orcamentoId === savedOrcamento.id ? { ...i, orcamentoId: dbOrc.id } : i);
+            setTable(STORAGE_KEYS.ITENS_ORCAMENTO, updatedItens);
           }
         })
         .catch(e => console.error('[Supabase sync orcamento error]:', e));

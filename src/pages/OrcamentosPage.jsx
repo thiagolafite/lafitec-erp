@@ -430,13 +430,21 @@ export const OrcamentosPage = ({ showToast }) => {
       const updated = [...formItens];
       updated[existingIdx].quantidade += qtd;
       updated[existingIdx].precoUnitario = preco;
+      updated[existingIdx].subtotal = updated[existingIdx].quantidade * preco;
       setFormItens(updated);
     } else {
       setFormItens([...formItens, {
         id: 'it-orc-' + Math.random().toString(36).substring(2, 9),
         produtoId: itemProdutoId,
+        produtoNome: prod.nome,
+        codigo: prod.codigo || '',
+        unidade: prod.unidade || 'UN',
         quantidade: qtd,
-        precoUnitario: preco
+        precoUnitario: preco,
+        desconto: 0,
+        ipi: prod.ipi || 0,
+        st: prod.st || 0,
+        subtotal: qtd * preco
       }]);
     }
 
