@@ -60,16 +60,16 @@ export const Sidebar = ({ currentTab, setCurrentTab }) => {
       {/* Brand Header */}
       <div className="sidebar-logo">
         <div style={{
-          width: '42px',
-          height: '42px',
-          borderRadius: '12px',
-          background: 'linear-gradient(135deg, #00F5A0 0%, #00C896 100%)',
+          width: '40px',
+          height: '40px',
+          borderRadius: '8px',
+          background: '#1E5FA3',
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center',
-          color: '#032318',
-          fontWeight: 900,
-          boxShadow: '0 0 20px rgba(0, 245, 160, 0.4)',
+          color: '#FFFFFF',
+          fontWeight: 700,
+          boxShadow: '0 2px 8px rgba(30, 95, 163, 0.35)',
           position: 'relative'
         }}>
           <ShieldCheck size={26} />
@@ -93,7 +93,7 @@ export const Sidebar = ({ currentTab, setCurrentTab }) => {
       }}>
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '8px' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '5px' }}>
-            <span style={{ width: '6px', height: '6px', borderRadius: '50%', backgroundColor: '#00F5A0', boxShadow: '0 0 8px #00F5A0' }}></span>
+            <span style={{ width: '6px', height: '6px', borderRadius: '50%', backgroundColor: '#5B9BD5' }}></span>
             <span style={{ fontSize: '0.68rem', color: '#94A3B8', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.06em' }}>
               Ambiente Ativo
             </span>
@@ -106,7 +106,7 @@ export const Sidebar = ({ currentTab, setCurrentTab }) => {
         </div>
         
         <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontWeight: 800, fontSize: '0.875rem', color: '#FFFFFF', marginBottom: '10px' }}>
-          <Building2 size={16} style={{ color: '#00F5A0', flexShrink: 0 }} />
+          <Building2 size={16} style={{ color: '#5B9BD5', flexShrink: 0 }} />
           <span style={{ whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
             {empresa ? empresa.nome : 'Sem Empresa'}
           </span>
@@ -120,7 +120,7 @@ export const Sidebar = ({ currentTab, setCurrentTab }) => {
           style={{
             padding: '5px 8px',
             fontSize: '0.75rem',
-            backgroundColor: '#071527',
+            backgroundColor: '#162236',
             color: '#FFFFFF',
             borderColor: 'rgba(255, 255, 255, 0.15)',
             borderRadius: '8px',
@@ -147,12 +147,11 @@ export const Sidebar = ({ currentTab, setCurrentTab }) => {
               style={{
                 width: '100%',
                 background: currentTab === 'master_dashboard' 
-                  ? 'linear-gradient(135deg, rgba(255, 215, 0, 0.25) 0%, rgba(245, 158, 11, 0.3) 100%)' 
-                  : 'linear-gradient(135deg, rgba(255, 215, 0, 0.12) 0%, rgba(245, 158, 11, 0.12) 100%)',
-                border: '1px solid rgba(255, 215, 0, 0.35)',
-                color: '#FCD34D',
-                boxShadow: currentTab === 'master_dashboard' ? '0 0 16px rgba(255, 215, 0, 0.3)' : 'none',
-                fontWeight: 800
+                  ? 'rgba(37, 99, 235, 0.20)' 
+                  : 'rgba(37, 99, 235, 0.10)',
+                border: '1px solid rgba(37, 99, 235, 0.30)',
+                color: '#93C5FD',
+                fontWeight: 700
               }}
             >
               <Crown size={18} style={{ color: '#FCD34D' }} />
@@ -214,7 +213,7 @@ export const Sidebar = ({ currentTab, setCurrentTab }) => {
               <button
                 className={`sidebar-item ${currentTab === 'entradas_estoque' ? 'active' : ''}`}
                 onClick={() => setCurrentTab('entradas_estoque')}
-                style={{ color: currentTab === 'entradas_estoque' ? '#00F5A0' : '#38BDF8' }}
+                style={{ color: currentTab === 'entradas_estoque' ? '#FFFFFF' : '#8FA2B6' }}
               >
                 <ArrowDownLeft size={18} />
                 <span>Entrada de Estoque</span>
@@ -274,7 +273,7 @@ export const Sidebar = ({ currentTab, setCurrentTab }) => {
               <button
                 className={`sidebar-item ${currentTab === 'orcamentos' ? 'active' : ''}`}
                 onClick={() => setCurrentTab('orcamentos')}
-                style={{ color: currentTab === 'orcamentos' ? '#00F5A0' : '#00F5A0' }}
+                style={{ color: currentTab === 'orcamentos' ? '#FFFFFF' : '#8FA2B6' }}
               >
                 <FileSpreadsheet size={18} />
                 <span>Orçamentos Comerciais</span>
@@ -383,7 +382,7 @@ export const Sidebar = ({ currentTab, setCurrentTab }) => {
         <button
           className="sidebar-item"
           onClick={() => setCurrentTab('landing')}
-          style={{ color: '#00F5A0' }}
+          style={{ color: '#8FA2B6' }}
         >
           <Globe size={18} />
           <span>Portal & Landing Page</span>
@@ -419,10 +418,10 @@ export const Sidebar = ({ currentTab, setCurrentTab }) => {
         color: '#94A3B8'
       }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-          <Lock size={13} style={{ color: '#00F5A0' }} />
+          <Lock size={13} style={{ color: '#5B9BD5' }} />
           <span>Isolamento Multi-tenant</span>
         </div>
-        <span style={{ color: '#00F5A0', fontWeight: 800 }}>100% SEGURO</span>
+        <span style={{ color: '#5B9BD5', fontWeight: 700 }}>100% SEGURO</span>
       </div>
     </aside>
   );
