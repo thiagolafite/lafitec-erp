@@ -172,7 +172,7 @@ export const MasterDashboardPage = ({ showToast }) => {
       
       {/* 1. Header do Painel Master */}
       <div style={{
-        background: 'linear-gradient(135deg, #051120 0%, #0A1E35 50%, #102A48 100%)',
+        background: 'linear-gradient(135deg, #1C2A3A 0%, #0A1E35 50%, #102A48 100%)',
         borderRadius: '16px',
         padding: '2rem 2.25rem',
         color: '#FFFFFF',
@@ -199,7 +199,7 @@ export const MasterDashboardPage = ({ showToast }) => {
             <div style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', backgroundColor: 'rgba(255, 215, 0, 0.15)', color: '#FCD34D', padding: '4px 12px', borderRadius: '20px', fontSize: '0.75rem', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: '0.5rem', border: '1px solid rgba(255, 215, 0, 0.3)' }}>
               <Crown size={14} /> <span>Acesso Exclusivo Super-Admin Master</span>
             </div>
-            <h1 style={{ fontFamily: 'Outfit', fontSize: '1.85rem', fontWeight: 900, letterSpacing: '-0.02em', color: '#FFFFFF' }}>
+            <h1 style={{ fontFamily: 'Inter', fontSize: '1.85rem', fontWeight: 900, letterSpacing: '-0.02em', color: '#FFFFFF' }}>
               Painel de Monitoramento & Aprovação SaaS
             </h1>
             <p style={{ color: '#94A3B8', fontSize: '0.9rem', marginTop: '4px' }}>
@@ -226,7 +226,7 @@ export const MasterDashboardPage = ({ showToast }) => {
         <div className="stat-card" style={{ borderLeft: '4px solid #F59E0B' }}>
           <div>
             <div className="stat-label">Aprovações Pendentes</div>
-            <div className="stat-val" style={{ color: totalPendentes > 0 ? '#D97706' : '#071527' }}>
+            <div className="stat-val" style={{ color: totalPendentes > 0 ? '#D97706' : '#1A2332' }}>
               {totalPendentes}
             </div>
             <div style={{ fontSize: '0.75rem', color: totalPendentes > 0 ? '#D97706' : '#576F86', marginTop: '6px', fontWeight: 700 }}>
@@ -238,15 +238,15 @@ export const MasterDashboardPage = ({ showToast }) => {
           </div>
         </div>
 
-        <div className="stat-card" style={{ borderLeft: '4px solid #00F5A0' }}>
+        <div className="stat-card" style={{ borderLeft: '4px solid #1E5FA3' }}>
           <div>
             <div className="stat-label">Total de Empresas</div>
             <div className="stat-val">{totalEmpresas}</div>
-            <div style={{ fontSize: '0.75rem', color: '#008764', marginTop: '6px', fontWeight: 700 }}>
+            <div style={{ fontSize: '0.75rem', color: '#1E5FA3', marginTop: '6px', fontWeight: 700 }}>
               {empresasAtivas} empresas ativas
             </div>
           </div>
-          <div className="stat-icon-wrapper" style={{ backgroundColor: 'rgba(0, 245, 160, 0.14)', color: '#008764', border: '1px solid rgba(0, 245, 160, 0.3)' }}>
+          <div className="stat-icon-wrapper" style={{ backgroundColor: 'rgba(30, 95, 163, 0.12)', color: '#1E5FA3', border: '1px solid rgba(30, 95, 163, 0.25)' }}>
             <Building2 size={26} />
           </div>
         </div>
@@ -332,8 +332,8 @@ export const MasterDashboardPage = ({ showToast }) => {
             fontSize: '0.95rem',
             fontWeight: 800,
             cursor: 'pointer',
-            borderBottom: activeTab === 'empresas' ? '3px solid #00F5A0' : '3px solid transparent',
-            color: activeTab === 'empresas' ? '#008764' : '#64748B',
+            borderBottom: activeTab === 'empresas' ? '3px solid #1E5FA3' : '3px solid transparent',
+            color: activeTab === 'empresas' ? '#1E5FA3' : '#64748B',
             transition: 'all 0.2s ease'
           }}
         >
@@ -381,7 +381,7 @@ export const MasterDashboardPage = ({ showToast }) => {
               }}>
                 <CheckCircle2 size={36} />
               </div>
-              <h3 style={{ fontFamily: 'Outfit', fontSize: '1.35rem', fontWeight: 800, color: '#071527' }}>
+              <h3 style={{ fontFamily: 'Inter', fontSize: '1.35rem', fontWeight: 800, color: '#1A2332' }}>
                 Fila de Aprovações Limpa!
               </h3>
               <p style={{ color: '#64748B', fontSize: '0.9rem', maxWidth: '480px', margin: '0.5rem auto 0 auto' }}>
@@ -401,11 +401,11 @@ export const MasterDashboardPage = ({ showToast }) => {
                           <Calendar size={13} /> {formatDate(item.dataSolicitacao)}
                         </span>
                       </div>
-                      <h3 style={{ fontFamily: 'Outfit', fontSize: '1.35rem', fontWeight: 800, color: '#071527' }}>
+                      <h3 style={{ fontFamily: 'Inter', fontSize: '1.35rem', fontWeight: 800, color: '#1A2332' }}>
                         {item.empresa.nome}
                       </h3>
                       <div style={{ fontSize: '0.85rem', color: '#576F86', fontWeight: 600, marginTop: '2px' }}>
-                        CNPJ: <span className="font-mono" style={{ color: '#071527', fontWeight: 800 }}>{item.empresa.cnpj}</span>
+                        CNPJ: <span className="font-mono" style={{ color: '#1A2332', fontWeight: 800 }}>{item.empresa.cnpj}</span>
                       </div>
                     </div>
 
@@ -441,13 +441,13 @@ export const MasterDashboardPage = ({ showToast }) => {
                   }}>
                     <div>
                       <div style={{ fontSize: '0.75rem', color: '#64748B', fontWeight: 700, textTransform: 'uppercase' }}>Administrador Responsável</div>
-                      <div style={{ fontWeight: 800, color: '#071527', marginTop: '2px' }}>{item.solicitanteNome}</div>
+                      <div style={{ fontWeight: 800, color: '#1A2332', marginTop: '2px' }}>{item.solicitanteNome}</div>
                       <div style={{ color: '#576F86', marginTop: '2px' }}>{item.solicitanteEmail}</div>
                     </div>
 
                     <div>
                       <div style={{ fontSize: '0.75rem', color: '#64748B', fontWeight: 700, textTransform: 'uppercase' }}>Contato / WhatsApp</div>
-                      <div style={{ fontWeight: 800, color: '#071527', marginTop: '2px' }}>
+                      <div style={{ fontWeight: 800, color: '#1A2332', marginTop: '2px' }}>
                         {item.empresa.telefone || 'Não informado'}
                       </div>
                       {item.empresa.telefone && (
@@ -455,7 +455,7 @@ export const MasterDashboardPage = ({ showToast }) => {
                           href={`https://wa.me/55${item.empresa.telefone.replace(/\D/g, '')}`}
                           target="_blank"
                           rel="noreferrer"
-                          style={{ fontSize: '0.775rem', color: '#008764', fontWeight: 700, display: 'inline-flex', alignItems: 'center', gap: '4px', marginTop: '4px' }}
+                          style={{ fontSize: '0.775rem', color: '#154A85', fontWeight: 700, display: 'inline-flex', alignItems: 'center', gap: '4px', marginTop: '4px' }}
                         >
                           <Phone size={12} /> Conversar no WhatsApp →
                         </a>
@@ -464,7 +464,7 @@ export const MasterDashboardPage = ({ showToast }) => {
 
                     <div>
                       <div style={{ fontSize: '0.75rem', color: '#64748B', fontWeight: 700, textTransform: 'uppercase' }}>Localização & Endereço</div>
-                      <div style={{ fontWeight: 700, color: '#071527', marginTop: '2px' }}>
+                      <div style={{ fontWeight: 700, color: '#1A2332', marginTop: '2px' }}>
                         {item.empresa.cidade ? `${item.empresa.cidade} - ${item.empresa.estado}` : 'Não informada'}
                       </div>
                       <div style={{ color: '#64748B', fontSize: '0.8rem', marginTop: '2px' }}>
@@ -555,7 +555,7 @@ export const MasterDashboardPage = ({ showToast }) => {
                   filteredTenants.map((emp) => (
                     <tr key={emp.id}>
                       <td>
-                        <div style={{ fontWeight: 800, color: '#071527' }}>{emp.nome}</div>
+                        <div style={{ fontWeight: 800, color: '#1A2332' }}>{emp.nome}</div>
                         <div style={{ fontSize: '0.775rem', color: '#64748B' }}>
                           CNPJ: <span className="font-mono">{emp.cnpj}</span> {emp.cidade ? `• ${emp.cidade}/${emp.estado}` : ''}
                         </div>
@@ -590,7 +590,7 @@ export const MasterDashboardPage = ({ showToast }) => {
                       <td style={{ fontWeight: 700 }}>{emp.totalUsuarios || 0}</td>
                       <td style={{ fontWeight: 700 }}>{emp.totalClientes || 0}</td>
                       <td style={{ fontWeight: 700 }}>{emp.totalProdutos || 0}</td>
-                      <td style={{ fontWeight: 800, color: '#071527' }}>{formatCurrency(emp.faturamentoTotal)}</td>
+                      <td style={{ fontWeight: 800, color: '#1A2332' }}>{formatCurrency(emp.faturamentoTotal)}</td>
 
                       <td style={{ textAlign: 'right' }}>
                         <div style={{ display: 'inline-flex', gap: '6px' }}>
@@ -667,11 +667,11 @@ export const MasterDashboardPage = ({ showToast }) => {
                   filteredUsers.map((u) => (
                     <tr key={u.id}>
                       <td>
-                        <div style={{ fontWeight: 800, color: '#071527' }}>{u.nome}</div>
+                        <div style={{ fontWeight: 800, color: '#1A2332' }}>{u.nome}</div>
                       </td>
                       <td style={{ color: '#576F86', fontWeight: 600 }}>{u.email}</td>
                       <td>
-                        <div style={{ fontWeight: 700, color: '#071527' }}>{u.empresaNome}</div>
+                        <div style={{ fontWeight: 700, color: '#1A2332' }}>{u.empresaNome}</div>
                         <span className="badge badge-accent" style={{ fontSize: '0.65rem', padding: '1px 6px' }}>{u.empresaPlano}</span>
                       </td>
                       <td>

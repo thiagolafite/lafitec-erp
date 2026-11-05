@@ -20,15 +20,15 @@ export const Navbar = ({ currentTabTitle, setCurrentTab }) => {
           fontWeight: 700,
           color: '#576F86'
         }}>
-          <ShieldCheck size={14} style={{ color: '#00C896' }} />
+          <ShieldCheck size={14} style={{ color: '#1E5FA3' }} />
           <span>Lafitec ERP</span>
         </div>
         <ChevronRight size={15} style={{ color: '#CBD5E1' }} />
         <span style={{
-          fontFamily: 'Outfit',
+          fontFamily: 'Inter',
           fontSize: '1.05rem',
           fontWeight: 800,
-          color: '#071527',
+          color: '#1A2332',
           letterSpacing: '-0.01em'
         }}>
           {currentTabTitle}
@@ -65,11 +65,11 @@ export const Navbar = ({ currentTabTitle, setCurrentTab }) => {
           borderRadius: '20px',
           fontSize: '0.8125rem',
           fontWeight: 700,
-          color: '#071527',
+          color: '#1A2332',
           boxShadow: 'var(--shadow-xs)'
         }}>
-          <span style={{ width: '7px', height: '7px', borderRadius: '50%', backgroundColor: '#00F5A0', boxShadow: '0 0 6px #00F5A0' }}></span>
-          <Building2 size={14} style={{ color: '#008764' }} />
+          <span style={{ width: '7px', height: '7px', borderRadius: '50%', backgroundColor: '#5B9BD5' }}></span>
+          <Building2 size={14} style={{ color: '#1E5FA3' }} />
           <span>{empresa?.nome}</span>
         </div>
 
@@ -88,20 +88,20 @@ export const Navbar = ({ currentTabTitle, setCurrentTab }) => {
             width: '34px',
             height: '34px',
             borderRadius: '50%',
-            background: 'linear-gradient(135deg, #071527 0%, #102A48 100%)',
-            color: '#00F5A0',
+            background: 'linear-gradient(135deg, #1A2332 0%, #243348 100%)',
+            color: '#FFFFFF',
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
-            fontWeight: 800,
+            fontWeight: 700,
             fontSize: '0.9rem',
-            border: '2px solid #00F5A0'
+            border: '2px solid #1E5FA3'
           }}>
             {user?.nome ? user.nome.charAt(0).toUpperCase() : 'U'}
           </div>
 
           <div style={{ display: 'flex', flexDirection: 'column', marginRight: '4px' }}>
-            <span style={{ fontSize: '0.825rem', fontWeight: 800, color: '#071527', lineHeight: 1.1 }}>
+            <span style={{ fontSize: '0.825rem', fontWeight: 800, color: '#1A2332', lineHeight: 1.1 }}>
               {user?.nome}
             </span>
             <span style={{ fontSize: '0.68rem', color: '#576F86', fontWeight: 600 }}>

@@ -77,17 +77,17 @@ export const LandingPage = ({ onGoToLogin, onSelectPlanRegister }) => {
               width: '36px',
               height: '36px',
               borderRadius: '8px',
-              backgroundColor: '#00C896',
+              backgroundColor: '#1E5FA3',
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
-              color: '#0A2540'
+              color: '#FFFFFF'
             }}>
               <ShieldCheck size={24} />
             </div>
             <div>
               <span style={{ fontSize: '1.4rem', fontWeight: 800, color: '#FFFFFF', letterSpacing: '-0.02em' }}>
-                Lafitec<span style={{ color: '#00C896' }}>ERP</span>
+                Lafitec<span style={{ color: '#5B9BD5' }}>ERP</span>
               </span>
             </div>
           </div>
@@ -113,10 +113,10 @@ export const LandingPage = ({ onGoToLogin, onSelectPlanRegister }) => {
 
       {/* Hero Section */}
       <section style={{
-        backgroundColor: '#0A2540',
+        backgroundColor: '#1A2332',
         color: '#FFFFFF',
         padding: '5rem 2rem 6rem 2rem',
-        backgroundImage: 'radial-gradient(circle at 80% 20%, rgba(0, 200, 150, 0.15) 0%, transparent 40%)',
+        backgroundImage: 'radial-gradient(circle at 80% 20%, rgba(30, 95, 163, 0.15) 0%, transparent 40%)',
         textAlign: 'center'
       }}>
         <div style={{ maxWidth: '900px', margin: '0 auto' }}>
@@ -126,9 +126,9 @@ export const LandingPage = ({ onGoToLogin, onSelectPlanRegister }) => {
             gap: '8px',
             padding: '6px 16px',
             borderRadius: '30px',
-            backgroundColor: 'rgba(0, 200, 150, 0.12)',
-            border: '1px solid rgba(0, 200, 150, 0.3)',
-            color: '#00C896',
+            backgroundColor: 'rgba(91, 155, 213, 0.15)',
+            border: '1px solid rgba(91, 155, 213, 0.35)',
+            color: '#93C5FD',
             fontSize: '0.875rem',
             fontWeight: 700,
             marginBottom: '1.5rem'
@@ -143,7 +143,7 @@ export const LandingPage = ({ onGoToLogin, onSelectPlanRegister }) => {
             letterSpacing: '-0.03em',
             marginBottom: '1.25rem'
           }}>
-            Simplifique a gestão da sua empresa com <span style={{ color: '#00C896' }}>segurança e controle total</span>
+            Simplifique a gestão da sua empresa com <span style={{ color: '#60A5FA' }}>segurança e controle total</span>
           </h1>
 
           <p style={{
@@ -184,7 +184,7 @@ export const LandingPage = ({ onGoToLogin, onSelectPlanRegister }) => {
             borderTop: '1px solid rgba(255, 255, 255, 0.1)'
           }}>
             <div>
-              <div style={{ fontSize: '2rem', fontWeight: 800, color: '#00C896' }}>100%</div>
+              <div style={{ fontSize: '2rem', fontWeight: 800, color: '#1E5FA3' }}>100%</div>
               <div style={{ fontSize: '0.875rem', color: '#94A3B8' }}>Isolamento de Dados Multi-tenant</div>
             </div>
             <div>
@@ -192,7 +192,7 @@ export const LandingPage = ({ onGoToLogin, onSelectPlanRegister }) => {
               <div style={{ fontSize: '0.875rem', color: '#94A3B8' }}>Clientes, Vendas e Financeiro</div>
             </div>
             <div>
-              <div style={{ fontSize: '2rem', fontWeight: 800, color: '#00C896' }}>24/7</div>
+              <div style={{ fontSize: '2rem', fontWeight: 800, color: '#1E5FA3' }}>24/7</div>
               <div style={{ fontSize: '0.875rem', color: '#94A3B8' }}>Disponibilidade & Auditoria em Nuvem</div>
             </div>
           </div>
@@ -203,7 +203,7 @@ export const LandingPage = ({ onGoToLogin, onSelectPlanRegister }) => {
       <section style={{ padding: '5rem 2rem', backgroundColor: '#F8FAFC' }}>
         <div style={{ maxWidth: '1100px', margin: '0 auto' }}>
           <div style={{ textAlign: 'center', marginBottom: '3.5rem' }}>
-            <h2 style={{ fontSize: '2.25rem', fontWeight: 800, color: '#0A2540', marginBottom: '0.75rem' }}>
+            <h2 style={{ fontSize: '2.25rem', fontWeight: 800, color: '#1A2332', marginBottom: '0.75rem' }}>
               Sua empresa sofre com estes desafios?
             </h2>
             <p style={{ color: '#64748B', fontSize: '1.1rem' }}>
@@ -236,7 +236,7 @@ export const LandingPage = ({ onGoToLogin, onSelectPlanRegister }) => {
               }}>
                 <AlertOctagon size={24} />
               </div>
-              <h3 style={{ fontSize: '1.25rem', fontWeight: 700, color: '#0A2540', marginBottom: '0.5rem' }}>
+              <h3 style={{ fontSize: '1.25rem', fontWeight: 700, color: '#1A2332', marginBottom: '0.5rem' }}>
                 Falta de Organização
               </h3>
               <p style={{ color: '#64748B', lineHeight: 1.6 }}>
@@ -264,7 +264,7 @@ export const LandingPage = ({ onGoToLogin, onSelectPlanRegister }) => {
               }}>
                 <Lock size={24} />
               </div>
-              <h3 style={{ fontSize: '1.25rem', fontWeight: 700, color: '#0A2540', marginBottom: '0.5rem' }}>
+              <h3 style={{ fontSize: '1.25rem', fontWeight: 700, color: '#1A2332', marginBottom: '0.5rem' }}>
                 Perda de Dados
               </h3>
               <p style={{ color: '#64748B', lineHeight: 1.6 }}>
@@ -292,7 +292,7 @@ export const LandingPage = ({ onGoToLogin, onSelectPlanRegister }) => {
               }}>
                 <DollarSign size={24} />
               </div>
-              <h3 style={{ fontSize: '1.25rem', fontWeight: 700, color: '#0A2540', marginBottom: '0.5rem' }}>
+              <h3 style={{ fontSize: '1.25rem', fontWeight: 700, color: '#1A2332', marginBottom: '0.5rem' }}>
                 Dificuldade no Controle Financeiro
               </h3>
               <p style={{ color: '#64748B', lineHeight: 1.6 }}>
@@ -316,7 +316,7 @@ export const LandingPage = ({ onGoToLogin, onSelectPlanRegister }) => {
               <span className="badge badge-accent" style={{ marginBottom: '1rem' }}>
                 A Solução Definitiva
               </span>
-              <h2 style={{ fontSize: '2.5rem', fontWeight: 800, color: '#0A2540', lineHeight: 1.2, marginBottom: '1.25rem' }}>
+              <h2 style={{ fontSize: '2.5rem', fontWeight: 800, color: '#1A2332', lineHeight: 1.2, marginBottom: '1.25rem' }}>
                 O Lafitec ERP é tudo o que sua empresa precisa em um único lugar
               </h2>
               <p style={{ color: '#64748B', fontSize: '1.05rem', lineHeight: 1.6, marginBottom: '1.5rem' }}>
@@ -324,20 +324,20 @@ export const LandingPage = ({ onGoToLogin, onSelectPlanRegister }) => {
               </p>
               
               <ul style={{ display: 'flex', flexDirection: 'column', gap: '0.875rem', listStyle: 'none' }}>
-                <li style={{ display: 'flex', alignItems: 'center', gap: '10px', fontWeight: 600, color: '#0A2540' }}>
-                  <CheckCircle2 size={20} style={{ color: '#00C896' }} />
+                <li style={{ display: 'flex', alignItems: 'center', gap: '10px', fontWeight: 600, color: '#1A2332' }}>
+                  <CheckCircle2 size={20} style={{ color: '#1E5FA3' }} />
                   Painel de Indicadores (Dashboard) em tempo real
                 </li>
-                <li style={{ display: 'flex', alignItems: 'center', gap: '10px', fontWeight: 600, color: '#0A2540' }}>
-                  <CheckCircle2 size={20} style={{ color: '#00C896' }} />
+                <li style={{ display: 'flex', alignItems: 'center', gap: '10px', fontWeight: 600, color: '#1A2332' }}>
+                  <CheckCircle2 size={20} style={{ color: '#1E5FA3' }} />
                   Gestão completa de Clientes, Produtos e Estoque
                 </li>
-                <li style={{ display: 'flex', alignItems: 'center', gap: '10px', fontWeight: 600, color: '#0A2540' }}>
-                  <CheckCircle2 size={20} style={{ color: '#00C896' }} />
+                <li style={{ display: 'flex', alignItems: 'center', gap: '10px', fontWeight: 600, color: '#1A2332' }}>
+                  <CheckCircle2 size={20} style={{ color: '#1E5FA3' }} />
                   Faturamento de Vendas (PDV) com baixa automática
                 </li>
-                <li style={{ display: 'flex', alignItems: 'center', gap: '10px', fontWeight: 600, color: '#0A2540' }}>
-                  <CheckCircle2 size={20} style={{ color: '#00C896' }} />
+                <li style={{ display: 'flex', alignItems: 'center', gap: '10px', fontWeight: 600, color: '#1A2332' }}>
+                  <CheckCircle2 size={20} style={{ color: '#1E5FA3' }} />
                   Controle de Contas a Pagar e Receber
                 </li>
               </ul>
@@ -345,7 +345,7 @@ export const LandingPage = ({ onGoToLogin, onSelectPlanRegister }) => {
 
             {/* Visual Card Mockup */}
             <div style={{
-              background: '#0A2540',
+              background: '#1A2332',
               padding: '2rem',
               borderRadius: '16px',
               boxShadow: '0 20px 40px -15px rgba(10, 37, 64, 0.4)',
@@ -354,7 +354,7 @@ export const LandingPage = ({ onGoToLogin, onSelectPlanRegister }) => {
             }}>
               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '1.5rem', borderBottom: '1px solid rgba(255,255,255,0.1)', paddingBottom: '1rem' }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontWeight: 700 }}>
-                  <ShieldCheck size={20} style={{ color: '#00C896' }} />
+                  <ShieldCheck size={20} style={{ color: '#1E5FA3' }} />
                   <span>Painel Lafitec ERP</span>
                 </div>
                 <span className="badge badge-success">Online</span>
@@ -363,7 +363,7 @@ export const LandingPage = ({ onGoToLogin, onSelectPlanRegister }) => {
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem', marginBottom: '1.5rem' }}>
                 <div style={{ backgroundColor: 'rgba(255,255,255,0.05)', padding: '1rem', borderRadius: '8px' }}>
                   <div style={{ fontSize: '0.75rem', color: '#94A3B8' }}>Vendas do Mês</div>
-                  <div style={{ fontSize: '1.25rem', fontWeight: 800, color: '#00C896' }}>R$ 15.780,00</div>
+                  <div style={{ fontSize: '1.25rem', fontWeight: 800, color: '#1E5FA3' }}>R$ 15.780,00</div>
                 </div>
                 <div style={{ backgroundColor: 'rgba(255,255,255,0.05)', padding: '1rem', borderRadius: '8px' }}>
                   <div style={{ fontSize: '0.75rem', color: '#94A3B8' }}>Contas a Receber</div>
@@ -386,12 +386,12 @@ export const LandingPage = ({ onGoToLogin, onSelectPlanRegister }) => {
       {/* Security Differential Section */}
       <section style={{
         padding: '5rem 2rem',
-        backgroundColor: '#0A2540',
+        backgroundColor: '#1A2332',
         color: '#FFFFFF'
       }}>
         <div style={{ maxWidth: '1100px', margin: '0 auto' }}>
           <div style={{ textAlign: 'center', marginBottom: '3.5rem' }}>
-            <span style={{ color: '#00C896', fontWeight: 700, letterSpacing: '0.05em', textTransform: 'uppercase', fontSize: '0.875rem' }}>
+            <span style={{ color: '#1E5FA3', fontWeight: 700, letterSpacing: '0.05em', textTransform: 'uppercase', fontSize: '0.875rem' }}>
               Diferencial de Segurança
             </span>
             <h2 style={{ fontSize: '2.25rem', fontWeight: 800, marginTop: '0.5rem' }}>
@@ -413,7 +413,7 @@ export const LandingPage = ({ onGoToLogin, onSelectPlanRegister }) => {
               padding: '2rem',
               borderRadius: '12px'
             }}>
-              <Lock size={32} style={{ color: '#00C896', marginBottom: '1rem' }} />
+              <Lock size={32} style={{ color: '#1E5FA3', marginBottom: '1rem' }} />
               <h3 style={{ fontSize: '1.25rem', fontWeight: 700, marginBottom: '0.5rem' }}>Controle de Acesso Rigoroso</h3>
               <p style={{ color: '#94A3B8', fontSize: '0.9375rem', lineHeight: 1.6 }}>
                 Separação estrita entre Administradores e Funcionários. Cada usuário acessa estritamente o necessário.
@@ -426,7 +426,7 @@ export const LandingPage = ({ onGoToLogin, onSelectPlanRegister }) => {
               padding: '2rem',
               borderRadius: '12px'
             }}>
-              <Server size={32} style={{ color: '#00C896', marginBottom: '1rem' }} />
+              <Server size={32} style={{ color: '#1E5FA3', marginBottom: '1rem' }} />
               <h3 style={{ fontSize: '1.25rem', fontWeight: 700, marginBottom: '0.5rem' }}>Isolamento Multi-Tenant</h3>
               <p style={{ color: '#94A3B8', fontSize: '0.9375rem', lineHeight: 1.6 }}>
                 Garantia matemática de que nenhuma empresa visualizará ou alterará dados de outras organizações.
@@ -439,7 +439,7 @@ export const LandingPage = ({ onGoToLogin, onSelectPlanRegister }) => {
               padding: '2rem',
               borderRadius: '12px'
             }}>
-              <Database size={32} style={{ color: '#00C896', marginBottom: '1rem' }} />
+              <Database size={32} style={{ color: '#1E5FA3', marginBottom: '1rem' }} />
               <h3 style={{ fontSize: '1.25rem', fontWeight: 700, marginBottom: '0.5rem' }}>Backup & Auditoria</h3>
               <p style={{ color: '#94A3B8', fontSize: '0.9375rem', lineHeight: 1.6 }}>
                 Registro contínuo de logs de segurança para rastreabilidade completa de ações e dados.
@@ -453,7 +453,7 @@ export const LandingPage = ({ onGoToLogin, onSelectPlanRegister }) => {
       <section style={{ padding: '5rem 2rem', backgroundColor: '#F8FAFC' }}>
         <div style={{ maxWidth: '1100px', margin: '0 auto' }}>
           <div style={{ textAlign: 'center', marginBottom: '3.5rem' }}>
-            <h2 style={{ fontSize: '2.25rem', fontWeight: 800, color: '#0A2540', marginBottom: '0.5rem' }}>
+            <h2 style={{ fontSize: '2.25rem', fontWeight: 800, color: '#1A2332', marginBottom: '0.5rem' }}>
               Planos transparentes para todas as etapas
             </h2>
             <p style={{ color: '#64748B', fontSize: '1.1rem' }}>
@@ -476,9 +476,9 @@ export const LandingPage = ({ onGoToLogin, onSelectPlanRegister }) => {
               display: 'flex',
               flexDirection: 'column'
             }}>
-              <h3 style={{ fontSize: '1.25rem', fontWeight: 700, color: '#0A2540' }}>Free</h3>
+              <h3 style={{ fontSize: '1.25rem', fontWeight: 700, color: '#1A2332' }}>Free</h3>
               <p style={{ color: '#64748B', fontSize: '0.875rem', margin: '0.25rem 0 1.5rem 0' }}>Para iniciantes e MEIs</p>
-              <div style={{ fontSize: '2.5rem', fontWeight: 800, color: '#0A2540', marginBottom: '1.5rem' }}>
+              <div style={{ fontSize: '2.5rem', fontWeight: 800, color: '#1A2332', marginBottom: '1.5rem' }}>
                 R$ 0<span style={{ fontSize: '1rem', color: '#64748B', fontWeight: 500 }}>/mês</span>
               </div>
               <ul style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem', marginBottom: '2rem', flex: 1, listStyle: 'none' }}>
@@ -497,8 +497,8 @@ export const LandingPage = ({ onGoToLogin, onSelectPlanRegister }) => {
               background: '#FFFFFF',
               borderRadius: '16px',
               padding: '2.5rem 2rem',
-              border: '2px solid #00C896',
-              boxShadow: '0 10px 25px -5px rgba(0, 200, 150, 0.2)',
+              border: '2px solid #1E5FA3',
+              boxShadow: '0 10px 25px -5px rgba(30, 95, 163, 0.2)',
               display: 'flex',
               flexDirection: 'column',
               position: 'relative'
@@ -506,9 +506,9 @@ export const LandingPage = ({ onGoToLogin, onSelectPlanRegister }) => {
               <span className="badge badge-accent" style={{ position: 'absolute', top: '-12px', right: '24px' }}>
                 Mais Popular
               </span>
-              <h3 style={{ fontSize: '1.25rem', fontWeight: 700, color: '#0A2540' }}>Pro</h3>
+              <h3 style={{ fontSize: '1.25rem', fontWeight: 700, color: '#1A2332' }}>Pro</h3>
               <p style={{ color: '#64748B', fontSize: '0.875rem', margin: '0.25rem 0 1.5rem 0' }}>Para pequenas empresas em crescimento</p>
-              <div style={{ fontSize: '2.5rem', fontWeight: 800, color: '#0A2540', marginBottom: '1.5rem' }}>
+              <div style={{ fontSize: '2.5rem', fontWeight: 800, color: '#1A2332', marginBottom: '1.5rem' }}>
                 R$ 89<span style={{ fontSize: '1rem', color: '#64748B', fontWeight: 500 }}>/mês</span>
               </div>
               <ul style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem', marginBottom: '2rem', flex: 1, listStyle: 'none' }}>
@@ -525,11 +525,11 @@ export const LandingPage = ({ onGoToLogin, onSelectPlanRegister }) => {
 
             {/* Premium */}
             <div style={{
-              background: '#0A2540',
+              background: '#1A2332',
               color: '#FFFFFF',
               borderRadius: '16px',
               padding: '2.5rem 2rem',
-              border: '1px solid #0A2540',
+              border: '1px solid #1A2332',
               display: 'flex',
               flexDirection: 'column'
             }}>
@@ -554,10 +554,10 @@ export const LandingPage = ({ onGoToLogin, onSelectPlanRegister }) => {
 
       {/* Final CTA Banner */}
       <section style={{
-        backgroundColor: '#00C896',
+        backgroundColor: '#1E5FA3',
         padding: '4rem 2rem',
         textAlign: 'center',
-        color: '#0A2540'
+        color: '#FFFFFF'
       }}>
         <div style={{ maxWidth: '800px', margin: '0 auto' }}>
           <h2 style={{ fontSize: '2.25rem', fontWeight: 800, marginBottom: '1rem' }}>
@@ -577,7 +577,7 @@ export const LandingPage = ({ onGoToLogin, onSelectPlanRegister }) => {
 
       {/* Footer */}
       <footer style={{
-        backgroundColor: '#0A2540',
+        backgroundColor: '#1A2332',
         color: '#94A3B8',
         padding: '3rem 2rem',
         borderTop: '1px solid rgba(255, 255, 255, 0.1)',
@@ -593,12 +593,12 @@ export const LandingPage = ({ onGoToLogin, onSelectPlanRegister }) => {
           gap: '1rem'
         }}>
           <div>
-            <span style={{ fontSize: '1.2rem', fontWeight: 800, color: '#FFFFFF' }}>Lafitec<span style={{ color: '#00C896' }}>ERP</span></span>
+            <span style={{ fontSize: '1.2rem', fontWeight: 800, color: '#FFFFFF' }}>Lafitec<span style={{ color: '#1E5FA3' }}>ERP</span></span>
             <p style={{ marginTop: '0.25rem' }}>Gestão inteligente com segurança real. © 2026 LafiteLimaTec.</p>
           </div>
           <div style={{ display: 'flex', gap: '1.5rem' }}>
             <a href="#login" onClick={onGoToLogin} style={{ color: '#94A3B8', textDecoration: 'none' }}>Login</a>
-            <a href="#registro" onClick={() => handleOpenRegister('Free')} style={{ color: '#00C896', textDecoration: 'none', fontWeight: 700 }}>Cadastrar Empresa</a>
+            <a href="#registro" onClick={() => handleOpenRegister('Free')} style={{ color: '#1E5FA3', textDecoration: 'none', fontWeight: 700 }}>Cadastrar Empresa</a>
           </div>
         </div>
       </footer>

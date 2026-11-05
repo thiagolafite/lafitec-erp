@@ -221,13 +221,13 @@ export const LoginPage = ({ onGoToLanding }) => {
   return (
     <div style={{
       minHeight: '100vh',
-      backgroundColor: '#071527',
+      backgroundColor: '#1A2332',
       display: 'flex',
       alignItems: 'center',
       justifyContent: 'center',
       padding: '2rem 1.5rem',
       position: 'relative',
-      backgroundImage: 'radial-gradient(ellipse 80% 50% at 50% -20%, rgba(0, 245, 160, 0.15), rgba(255, 255, 255, 0))'
+      backgroundImage: 'radial-gradient(ellipse 80% 50% at 50% -20%, rgba(30, 95, 163, 0.12), rgba(255, 255, 255, 0))'
     }}>
       {/* Background Decorator */}
       <div style={{
@@ -236,7 +236,7 @@ export const LoginPage = ({ onGoToLanding }) => {
         left: 0,
         right: 0,
         height: '4px',
-        background: 'linear-gradient(90deg, #00F5A0 0%, #38BDF8 50%, #6366F1 100%)'
+        background: 'linear-gradient(90deg, #1E5FA3 0%, #2563EB 50%, #3B4F9C 100%)'
       }}></div>
 
       <div style={{ width: '100%', maxWidth: step === 'company_setup' ? '680px' : '460px', transition: 'all 0.3s ease' }}>
@@ -247,19 +247,19 @@ export const LoginPage = ({ onGoToLanding }) => {
             width: '54px',
             height: '54px',
             borderRadius: '16px',
-            background: 'linear-gradient(135deg, #00F5A0 0%, #00C896 100%)',
+            background: '#1E5FA3',
             display: 'inline-flex',
             alignItems: 'center',
             justifyContent: 'center',
-            color: '#032318',
-            fontWeight: 900,
+            color: '#FFFFFF',
+            fontWeight: 700,
             marginBottom: '0.875rem',
-            boxShadow: '0 0 24px rgba(0, 245, 160, 0.45)'
+            boxShadow: '0 4px 16px rgba(30, 95, 163, 0.35)'
           }}>
             <ShieldCheck size={32} />
           </div>
-          <h1 style={{ fontFamily: 'Outfit', fontSize: '1.85rem', fontWeight: 900, color: '#FFFFFF', letterSpacing: '-0.02em' }}>
-            Lafitec<span style={{ color: '#00F5A0' }}>ERP</span>
+          <h1 style={{ fontFamily: 'Inter', fontSize: '1.85rem', fontWeight: 800, color: '#FFFFFF', letterSpacing: '-0.02em' }}>
+            Lafitec<span style={{ color: '#5B9BD5' }}>ERP</span>
           </h1>
           <p style={{ color: '#8FA2B6', fontSize: '0.875rem', marginTop: '0.2rem' }}>
             Gestão Inteligente & Segurança Corporativa Multi-tenant
@@ -297,7 +297,7 @@ export const LoginPage = ({ onGoToLanding }) => {
                   cursor: 'pointer',
                   transition: 'all 0.2s ease',
                   backgroundColor: step === 'login' ? '#FFFFFF' : 'transparent',
-                  color: step === 'login' ? '#071527' : '#64748B',
+                  color: step === 'login' ? '#1A2332' : '#64748B',
                   boxShadow: step === 'login' ? '0 2px 8px rgba(0, 0, 0, 0.08)' : 'none'
                 }}
               >
@@ -315,7 +315,7 @@ export const LoginPage = ({ onGoToLanding }) => {
                   cursor: 'pointer',
                   transition: 'all 0.2s ease',
                   backgroundColor: step === 'register_user' ? '#FFFFFF' : 'transparent',
-                  color: step === 'register_user' ? '#071527' : '#64748B',
+                  color: step === 'register_user' ? '#1A2332' : '#64748B',
                   boxShadow: step === 'register_user' ? '0 2px 8px rgba(0, 0, 0, 0.08)' : 'none'
                 }}
               >
@@ -369,7 +369,7 @@ export const LoginPage = ({ onGoToLanding }) => {
           {step === 'login' && (
             <form onSubmit={handleLoginSubmit}>
               <div style={{ marginBottom: '1.5rem' }}>
-                <h2 style={{ fontFamily: 'Outfit', fontSize: '1.4rem', fontWeight: 800, color: '#071527' }}>Acesse sua Conta</h2>
+                <h2 style={{ fontFamily: 'Inter', fontSize: '1.4rem', fontWeight: 800, color: '#1A2332' }}>Acesse sua Conta</h2>
                 <p style={{ fontSize: '0.875rem', color: '#64748B' }}>Entre com seu e-mail e senha cadastrados</p>
               </div>
 
@@ -432,10 +432,10 @@ export const LoginPage = ({ onGoToLanding }) => {
           {step === 'register_user' && (
             <form onSubmit={handleRegisterUserSubmit}>
               <div style={{ marginBottom: '1.5rem' }}>
-                <div style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', backgroundColor: 'rgba(0, 245, 160, 0.1)', color: '#008764', padding: '4px 10px', borderRadius: '20px', fontSize: '0.75rem', fontWeight: 700, marginBottom: '0.5rem' }}>
+                <div style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', backgroundColor: 'rgba(30, 95, 163, 0.1)', color: '#154A85', padding: '4px 10px', borderRadius: '20px', fontSize: '0.75rem', fontWeight: 700, marginBottom: '0.5rem' }}>
                   <span>Passo 1 de 2</span> • <span>Dados do Administrador</span>
                 </div>
-                <h2 style={{ fontFamily: 'Outfit', fontSize: '1.4rem', fontWeight: 800, color: '#071527' }}>Criar Nova Conta</h2>
+                <h2 style={{ fontFamily: 'Inter', fontSize: '1.4rem', fontWeight: 800, color: '#1A2332' }}>Criar Nova Conta</h2>
                 <p style={{ fontSize: '0.875rem', color: '#64748B' }}>Informe seus dados para iniciar o cadastro da sua empresa</p>
               </div>
 
@@ -507,7 +507,7 @@ export const LoginPage = ({ onGoToLanding }) => {
                 <div style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', backgroundColor: 'rgba(56, 189, 248, 0.1)', color: '#0284C7', padding: '4px 10px', borderRadius: '20px', fontSize: '0.75rem', fontWeight: 700, marginBottom: '0.5rem' }}>
                   <span>Passo 2 de 2</span> • <span>Dados da Empresa & Localização</span>
                 </div>
-                <h2 style={{ fontFamily: 'Outfit', fontSize: '1.4rem', fontWeight: 800, color: '#071527' }}>Dados Cadastrais da Empresa</h2>
+                <h2 style={{ fontFamily: 'Inter', fontSize: '1.4rem', fontWeight: 800, color: '#1A2332' }}>Dados Cadastrais da Empresa</h2>
                 <p style={{ fontSize: '0.875rem', color: '#64748B' }}>Ao digitar o CEP, os dados de endereço serão carregados automaticamente</p>
               </div>
 
@@ -581,7 +581,7 @@ export const LoginPage = ({ onGoToLanding }) => {
                 marginBottom: '1.25rem'
               }}>
                 <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '0.85rem' }}>
-                  <span style={{ fontSize: '0.8rem', fontWeight: 800, color: '#071527', textTransform: 'uppercase', letterSpacing: '0.04em' }}>
+                  <span style={{ fontSize: '0.8rem', fontWeight: 800, color: '#1A2332', textTransform: 'uppercase', letterSpacing: '0.04em' }}>
                     Localização & Endereço
                   </span>
                   {cepLoading && (
@@ -727,12 +727,12 @@ export const LoginPage = ({ onGoToLanding }) => {
                 <Clock size={36} />
               </div>
 
-              <h2 style={{ fontFamily: 'Outfit', fontSize: '1.55rem', fontWeight: 800, color: '#071527', marginBottom: '0.5rem' }}>
+              <h2 style={{ fontFamily: 'Inter', fontSize: '1.55rem', fontWeight: 800, color: '#1A2332', marginBottom: '0.5rem' }}>
                 Solicitação Enviada com Sucesso!
               </h2>
 
               <p style={{ fontSize: '0.925rem', color: '#576F86', lineHeight: 1.6, marginBottom: '1.5rem' }}>
-                Olá, <strong style={{ color: '#071527' }}>{userNome}</strong>! Os dados da empresa <strong style={{ color: '#071527' }}>{companyRazaoSocial}</strong> foram gravados com sucesso e encaminhados para a fila de análise do <strong>Administrador Master</strong>.
+                Olá, <strong style={{ color: '#1A2332' }}>{userNome}</strong>! Os dados da empresa <strong style={{ color: '#1A2332' }}>{companyRazaoSocial}</strong> foram gravados com sucesso e encaminhados para a fila de análise do <strong>Administrador Master</strong>.
               </p>
 
               <div style={{

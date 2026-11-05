@@ -127,7 +127,7 @@ export const VendasPage = ({ showToast }) => {
       <div className="card">
         <div className="card-header">
           <div className="card-title">
-            <ShoppingCart size={20} style={{ color: '#00C896' }} /> Histórico de Vendas
+            <ShoppingCart size={20} style={{ color: '#1E5FA3' }} /> Histórico de Vendas
           </div>
           <span className="badge badge-dark">{vendas.length} Registros</span>
         </div>
@@ -154,11 +154,11 @@ export const VendasPage = ({ showToast }) => {
               ) : (
                 vendas.map(v => (
                   <tr key={v.id}>
-                    <td className="font-mono" style={{ fontWeight: 700, color: '#0A2540' }}>#{v.id}</td>
+                    <td className="font-mono" style={{ fontWeight: 700, color: '#1A2332' }}>#{v.id}</td>
                     <td style={{ fontWeight: 600 }}>{v.clienteNome}</td>
                     <td style={{ color: '#64748B' }}>{new Date(v.dataVenda).toLocaleString('pt-BR')}</td>
                     <td>{v.itensCount || 1} item(ns)</td>
-                    <td className="font-mono" style={{ fontWeight: 800, color: '#00C896' }}>
+                    <td className="font-mono" style={{ fontWeight: 800, color: '#1E5FA3' }}>
                       {formatCurrency(v.total)}
                     </td>
                     <td className="text-right">
@@ -204,7 +204,7 @@ export const VendasPage = ({ showToast }) => {
           </div>
 
           <div style={{ margin: '1.5rem 0 1rem 0', borderTop: '1px solid #E2E8F0', paddingTop: '1rem' }}>
-            <h4 style={{ fontSize: '0.9375rem', fontWeight: 700, color: '#0A2540', marginBottom: '0.75rem' }}>
+            <h4 style={{ fontSize: '0.9375rem', fontWeight: 700, color: '#1A2332', marginBottom: '0.75rem' }}>
               Adicionar Produtos ao Carrinho
             </h4>
 
@@ -273,7 +273,7 @@ export const VendasPage = ({ showToast }) => {
                         <td style={{ fontWeight: 600 }}>{prod?.nome}</td>
                         <td className="font-mono">{formatCurrency(prod?.preco || 0)}</td>
                         <td className="font-mono">{item.quantidade}</td>
-                        <td className="font-mono" style={{ fontWeight: 700, color: '#00C896' }}>
+                        <td className="font-mono" style={{ fontWeight: 700, color: '#1E5FA3' }}>
                           {formatCurrency(subtotal)}
                         </td>
                         <td className="text-right">
@@ -302,8 +302,8 @@ export const VendasPage = ({ showToast }) => {
               paddingTop: '0.75rem',
               borderTop: '2px solid #E2E8F0'
             }}>
-              <span style={{ fontSize: '1.1rem', fontWeight: 800, color: '#0A2540' }}>TOTAL DA VENDA:</span>
-              <span className="font-mono" style={{ fontSize: '1.5rem', fontWeight: 800, color: '#00C896' }}>
+              <span style={{ fontSize: '1.1rem', fontWeight: 800, color: '#1A2332' }}>TOTAL DA VENDA:</span>
+              <span className="font-mono" style={{ fontSize: '1.5rem', fontWeight: 800, color: '#1E5FA3' }}>
                 {formatCurrency(cartTotal)}
               </span>
             </div>
@@ -328,7 +328,7 @@ export const VendasPage = ({ showToast }) => {
           <div style={{ padding: '0.5rem' }}>
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', borderBottom: '1px solid #E2E8F0', paddingBottom: '0.75rem', marginBottom: '1rem' }}>
               <div>
-                <div style={{ fontWeight: 800, color: '#0A2540', fontSize: '1.1rem' }}>{empresa.nome}</div>
+                <div style={{ fontWeight: 800, color: '#1A2332', fontSize: '1.1rem' }}>{empresa.nome}</div>
                 <div style={{ fontSize: '0.8rem', color: '#64748B' }}>CNPJ: {empresa.cnpj}</div>
               </div>
               <span className="badge badge-success">Venda Concluída</span>
@@ -340,7 +340,7 @@ export const VendasPage = ({ showToast }) => {
               <div><strong>Data:</strong> {new Date(vendaDetalhadaModal.dataVenda).toLocaleString('pt-BR')}</div>
             </div>
 
-            <h5 style={{ fontSize: '0.85rem', fontWeight: 700, color: '#0A2540', marginBottom: '0.5rem' }}>
+            <h5 style={{ fontSize: '0.85rem', fontWeight: 700, color: '#1A2332', marginBottom: '0.5rem' }}>
               Itens Adquiridos:
             </h5>
             <table className="table" style={{ fontSize: '0.8125rem', marginBottom: '1.25rem' }}>
@@ -375,8 +375,8 @@ export const VendasPage = ({ showToast }) => {
               borderRadius: '8px',
               border: '1px solid #E2E8F0'
             }}>
-              <span style={{ fontWeight: 800, color: '#0A2540' }}>TOTAL PAGO:</span>
-              <span className="font-mono" style={{ fontSize: '1.25rem', fontWeight: 800, color: '#00C896' }}>
+              <span style={{ fontWeight: 800, color: '#1A2332' }}>TOTAL PAGO:</span>
+              <span className="font-mono" style={{ fontSize: '1.25rem', fontWeight: 800, color: '#1E5FA3' }}>
                 {formatCurrency(vendaDetalhadaModal.total)}
               </span>
             </div>

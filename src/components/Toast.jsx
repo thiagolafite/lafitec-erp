@@ -7,7 +7,7 @@ export const Toast = ({ toast, onClose }) => {
   const { type, message } = toast;
 
   const icons = {
-    success: <CheckCircle2 size={20} className="text-emerald-500" style={{ color: '#00C896' }} />,
+    success: <CheckCircle2 size={20} className="text-emerald-500" style={{ color: '#1E5FA3' }} />,
     warning: <AlertTriangle size={20} style={{ color: '#F59E0B' }} />,
     error: <XCircle size={20} style={{ color: '#EF4444' }} />
   };
@@ -19,7 +19,7 @@ export const Toast = ({ toast, onClose }) => {
   };
 
   const borderColors = {
-    success: '#00C896',
+    success: '#1E5FA3',
     warning: '#F59E0B',
     error: '#EF4444'
   };
@@ -35,7 +35,7 @@ export const Toast = ({ toast, onClose }) => {
       gap: '12px',
       padding: '14px 20px',
       backgroundColor: bgColors[type] || '#FFFFFF',
-      borderLeft: `4px solid ${borderColors[type] || '#0A2540'}`,
+      borderLeft: `4px solid ${borderColors[type] || '#1A2332'}`,
       borderRadius: '8px',
       boxShadow: '0 10px 25px -5px rgba(0, 0, 0, 0.15)',
       color: '#1E293B',

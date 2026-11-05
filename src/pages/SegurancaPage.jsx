@@ -55,7 +55,7 @@ export const SegurancaPage = ({ showToast }) => {
 
       {/* Security Highlight Banner */}
       <div style={{
-        backgroundColor: '#0A2540',
+        backgroundColor: '#1A2332',
         borderRadius: '12px',
         padding: '2rem',
         color: 'white',
@@ -69,8 +69,8 @@ export const SegurancaPage = ({ showToast }) => {
       }}>
         <div style={{ maxWidth: '650px' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '0.5rem' }}>
-            <ShieldCheck size={24} style={{ color: '#00C896' }} />
-            <span style={{ color: '#00C896', fontWeight: 800, textTransform: 'uppercase', fontSize: '0.8125rem' }}>
+            <ShieldCheck size={24} style={{ color: '#60A5FA' }} />
+            <span style={{ color: '#60A5FA', fontWeight: 800, textTransform: 'uppercase', fontSize: '0.8125rem' }}>
               Diferencial Tecnológico Lafitec ERP
             </span>
           </div>
@@ -83,14 +83,14 @@ export const SegurancaPage = ({ showToast }) => {
         </div>
 
         <div style={{
-          backgroundColor: 'rgba(0, 200, 150, 0.12)',
-          border: '1px solid rgba(0, 200, 150, 0.3)',
+          backgroundColor: 'rgba(91, 155, 213, 0.15)',
+          border: '1px solid rgba(91, 155, 213, 0.35)',
           padding: '1rem 1.5rem',
           borderRadius: '10px',
           textAlign: 'center'
         }}>
           <div style={{ fontSize: '0.75rem', color: '#94A3B8', textTransform: 'uppercase', fontWeight: 700 }}>Status do Sistema</div>
-          <div style={{ fontSize: '1.1rem', fontWeight: 800, color: '#00C896', marginTop: '2px' }}>✓ 100% Protegido</div>
+          <div style={{ fontSize: '1.1rem', fontWeight: 800, color: '#60A5FA', marginTop: '2px' }}>✓ 100% Protegido</div>
           <div style={{ fontSize: '0.75rem', color: '#94A3B8', marginTop: '2px' }}>Logs de Auditoria Ativos</div>
         </div>
       </div>
@@ -106,7 +106,7 @@ export const SegurancaPage = ({ showToast }) => {
         <div className="card">
           <div className="card-header">
             <div className="card-title">
-              <Building size={20} style={{ color: '#0A2540' }} /> Dados da Empresa
+              <Building size={20} style={{ color: '#1A2332' }} /> Dados da Empresa
             </div>
             <span className="badge badge-accent">Plano {empresa.plano}</span>
           </div>
@@ -114,7 +114,7 @@ export const SegurancaPage = ({ showToast }) => {
           <div style={{ fontSize: '0.9rem', display: 'flex', flexDirection: 'column', gap: '0.75rem', marginBottom: '1.5rem' }}>
             <div>
               <span style={{ color: '#64748B', fontSize: '0.8rem', display: 'block' }}>Razão Social</span>
-              <strong style={{ color: '#0A2540', fontSize: '1rem' }}>{empresa.nome}</strong>
+              <strong style={{ color: '#1A2332', fontSize: '1rem' }}>{empresa.nome}</strong>
             </div>
 
             <div>
@@ -129,7 +129,7 @@ export const SegurancaPage = ({ showToast }) => {
           </div>
 
           <div style={{ borderTop: '1px solid #E2E8F0', paddingTop: '1rem' }}>
-            <label style={{ fontSize: '0.8rem', fontWeight: 700, color: '#0A2540', display: 'block', marginBottom: '0.5rem' }}>
+            <label style={{ fontSize: '0.8rem', fontWeight: 700, color: '#1A2332', display: 'block', marginBottom: '0.5rem' }}>
               Alterar Plano de Assinatura:
             </label>
             <div style={{ display: 'flex', gap: '0.5rem' }}>
@@ -151,7 +151,7 @@ export const SegurancaPage = ({ showToast }) => {
         <div className="card">
           <div className="card-header">
             <div className="card-title">
-              <Users size={20} style={{ color: '#00C896' }} /> Usuários com Acesso ({usuariosEmpresa.length})
+              <Users size={20} style={{ color: '#1E5FA3' }} /> Usuários com Acesso ({usuariosEmpresa.length})
             </div>
             {user?.tipo === 'Admin' && (
               <button className="btn btn-accent btn-sm" onClick={() => setIsNovoUsuarioModal(true)}>
@@ -193,7 +193,7 @@ export const SegurancaPage = ({ showToast }) => {
       <div className="card">
         <div className="card-header">
           <div className="card-title">
-            <FileCheck size={20} style={{ color: '#00C896' }} /> Trilha de Auditoria de Segurança (Audit Logs)
+            <FileCheck size={20} style={{ color: '#1E5FA3' }} /> Trilha de Auditoria de Segurança (Audit Logs)
           </div>
           <span className="badge badge-dark">{auditLogs.length} Registros</span>
         </div>
@@ -221,7 +221,7 @@ export const SegurancaPage = ({ showToast }) => {
                     <td style={{ color: '#64748B', fontSize: '0.8125rem' }}>
                       {new Date(log.data).toLocaleString('pt-BR')}
                     </td>
-                    <td style={{ fontWeight: 700, color: '#0A2540' }}>{log.usuarioNome}</td>
+                    <td style={{ fontWeight: 700, color: '#1A2332' }}>{log.usuarioNome}</td>
                     <td style={{ fontWeight: 600 }}>{log.acao}</td>
                     <td>
                       <span className="badge badge-success">

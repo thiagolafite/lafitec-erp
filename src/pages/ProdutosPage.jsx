@@ -289,13 +289,13 @@ export const ProdutosPage = ({ showToast }) => {
                   const isEsgotado = (parseFloat(prod.estoque) || 0) === 0;
                   return (
                     <tr key={prod.id}>
-                      <td className="font-mono" style={{ fontWeight: 700, color: '#0A2540' }}>{prod.codigo || prod.id}</td>
+                      <td className="font-mono" style={{ fontWeight: 700, color: '#1A2332' }}>{prod.codigo || prod.id}</td>
                       <td>
-                        <div style={{ fontWeight: 700, color: '#0A2540' }}>{prod.nome}</div>
+                        <div style={{ fontWeight: 700, color: '#1A2332' }}>{prod.nome}</div>
                         <div style={{ fontSize: '0.75rem', color: '#64748B' }}>Ref: {prod.referencia || 'N/A'}</div>
                       </td>
                       <td style={{ color: '#64748B' }}>{prod.grupo ? `${prod.grupo} (${prod.subGrupo || 'Geral'})` : 'Geral'}</td>
-                      <td className="font-mono" style={{ fontWeight: 800, color: '#00C896' }}>
+                      <td className="font-mono" style={{ fontWeight: 800, color: '#1E5FA3' }}>
                         {formatCurrency(prod.preco)}
                       </td>
                       <td className="font-mono" style={{ color: '#64748B' }}>
@@ -353,7 +353,7 @@ export const ProdutosPage = ({ showToast }) => {
           <div style={{
             display: 'flex',
             gap: '4px',
-            borderBottom: '2px solid #00C896',
+            borderBottom: '2px solid #1E5FA3',
             overflowX: 'auto',
             marginBottom: '1.5rem',
             paddingBottom: '0px'
@@ -367,9 +367,9 @@ export const ProdutosPage = ({ showToast }) => {
                   padding: '0.75rem 1.15rem',
                   fontSize: '0.85rem',
                   fontWeight: activeTab === t.id ? 800 : 600,
-                  color: activeTab === t.id ? '#0A2540' : '#64748B',
+                  color: activeTab === t.id ? '#1A2332' : '#64748B',
                   backgroundColor: activeTab === t.id ? '#FFFFFF' : '#F8FAFC',
-                  borderTop: activeTab === t.id ? '3px solid #00C896' : '1px solid #E2E8F0',
+                  borderTop: activeTab === t.id ? '3px solid #1E5FA3' : '1px solid #E2E8F0',
                   borderLeft: '1px solid #E2E8F0',
                   borderRight: '1px solid #E2E8F0',
                   borderBottom: activeTab === t.id ? '1px solid #FFFFFF' : 'none',
@@ -397,8 +397,8 @@ export const ProdutosPage = ({ showToast }) => {
                 padding: '1.25rem',
                 boxShadow: '0 2px 4px rgba(0,0,0,0.02)'
               }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '8px', color: '#0A2540', fontWeight: 800, fontSize: '0.95rem', marginBottom: '1rem', borderBottom: '1px solid #F1F5F9', paddingBottom: '0.5rem' }}>
-                  <Package size={18} style={{ color: '#00C896' }} /> Identificação do Produto
+                <div style={{ display: 'flex', alignItems: 'center', gap: '8px', color: '#1A2332', fontWeight: 800, fontSize: '0.95rem', marginBottom: '1rem', borderBottom: '1px solid #F1F5F9', paddingBottom: '0.5rem' }}>
+                  <Package size={18} style={{ color: '#1E5FA3' }} /> Identificação do Produto
                 </div>
 
                 <div className="form-row" style={{ gridTemplateColumns: '1.2fr 2.5fr 1fr' }}>
@@ -562,8 +562,8 @@ export const ProdutosPage = ({ showToast }) => {
                 padding: '1.25rem',
                 boxShadow: '0 2px 4px rgba(0,0,0,0.02)'
               }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '8px', color: '#0A2540', fontWeight: 800, fontSize: '0.95rem', marginBottom: '1rem', borderBottom: '1px solid #F1F5F9', paddingBottom: '0.5rem' }}>
-                  <FileText size={18} style={{ color: '#00C896' }} /> Dados Fiscais & Alíquotas
+                <div style={{ display: 'flex', alignItems: 'center', gap: '8px', color: '#1A2332', fontWeight: 800, fontSize: '0.95rem', marginBottom: '1rem', borderBottom: '1px solid #F1F5F9', paddingBottom: '0.5rem' }}>
+                  <FileText size={18} style={{ color: '#1E5FA3' }} /> Dados Fiscais & Alíquotas
                 </div>
 
                 <div className="form-row">
@@ -626,7 +626,7 @@ export const ProdutosPage = ({ showToast }) => {
 
               {/* PAINEL 3: SIMULADOR DIDÁTICO DE PREÇOS E MARGEM DE LUCRO */}
               <div style={{
-                backgroundColor: '#0A2540',
+                backgroundColor: '#1A2332',
                 color: '#FFFFFF',
                 borderRadius: '14px',
                 padding: '1.5rem',
@@ -634,7 +634,7 @@ export const ProdutosPage = ({ showToast }) => {
               }}>
                 <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '1rem', borderBottom: '1px solid rgba(255,255,255,0.1)', paddingBottom: '0.75rem' }}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontWeight: 800, fontSize: '1rem' }}>
-                    <Calculator size={20} style={{ color: '#00C896' }} /> Simulador Didático de Formação de Preço
+                    <Calculator size={20} style={{ color: '#1E5FA3' }} /> Simulador Didático de Formação de Preço
                   </div>
                   <span className="badge badge-accent">Calculadora em Tempo Real</span>
                 </div>
@@ -650,7 +650,7 @@ export const ProdutosPage = ({ showToast }) => {
                       required
                       value={formData.preco}
                       onChange={(e) => handleCustoFieldChange('preco', e.target.value)}
-                      style={{ fontSize: '1.25rem', fontWeight: 800, color: '#00C896', backgroundColor: '#07192C', borderColor: '#00C896' }}
+                      style={{ fontSize: '1.25rem', fontWeight: 800, color: '#1E5FA3', backgroundColor: '#07192C', borderColor: '#1E5FA3' }}
                     />
                   </div>
 
@@ -685,13 +685,13 @@ export const ProdutosPage = ({ showToast }) => {
                   <div className="form-group">
                     <label className="form-label" style={{ color: '#94A3B8' }}>% Margem de Lucro Estimada</label>
                     <div style={{
-                      backgroundColor: 'rgba(0, 200, 150, 0.15)',
-                      border: '1px solid #00C896',
+                      backgroundColor: 'rgba(30, 95, 163, 0.15)',
+                      border: '1px solid #1E5FA3',
                       padding: '0.65rem 0.9rem',
                       borderRadius: '8px',
                       fontSize: '1.1rem',
                       fontWeight: 800,
-                      color: '#00C896'
+                      color: '#1E5FA3'
                     }}>
                       {formData.pctMargem}% Lucro
                     </div>
@@ -712,8 +712,8 @@ export const ProdutosPage = ({ showToast }) => {
                 borderRadius: '12px',
                 padding: '1.25rem'
               }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '8px', color: '#0A2540', fontWeight: 800, fontSize: '0.95rem', marginBottom: '1rem', borderBottom: '1px solid #F1F5F9', paddingBottom: '0.5rem' }}>
-                  <Boxes size={18} style={{ color: '#00C896' }} /> Controle de Estoque & Lote
+                <div style={{ display: 'flex', alignItems: 'center', gap: '8px', color: '#1A2332', fontWeight: 800, fontSize: '0.95rem', marginBottom: '1rem', borderBottom: '1px solid #F1F5F9', paddingBottom: '0.5rem' }}>
+                  <Boxes size={18} style={{ color: '#1E5FA3' }} /> Controle de Estoque & Lote
                 </div>
 
                 <div className="form-row">
@@ -726,7 +726,7 @@ export const ProdutosPage = ({ showToast }) => {
                       required
                       value={formData.estoque}
                       onChange={(e) => setFormData({ ...formData, estoque: e.target.value })}
-                      style={{ fontSize: '1.1rem', fontWeight: 800, color: '#0A2540' }}
+                      style={{ fontSize: '1.1rem', fontWeight: 800, color: '#1A2332' }}
                     />
                   </div>
 
@@ -759,7 +759,7 @@ export const ProdutosPage = ({ showToast }) => {
                         type="checkbox"
                         checked={formData.controlaLote}
                         onChange={(e) => setFormData({ ...formData, controlaLote: e.target.checked })}
-                        style={{ width: '18px', height: '18px', accentColor: '#00C896' }}
+                        style={{ width: '18px', height: '18px', accentColor: '#1E5FA3' }}
                       />
                       <span style={{ fontSize: '0.875rem', fontWeight: 700 }}>Controlar Lote & Validade</span>
                     </label>
@@ -774,8 +774,8 @@ export const ProdutosPage = ({ showToast }) => {
                 borderRadius: '12px',
                 padding: '1.25rem'
               }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '8px', color: '#0A2540', fontWeight: 800, fontSize: '0.95rem', marginBottom: '1rem', borderBottom: '1px solid #F1F5F9', paddingBottom: '0.5rem' }}>
-                  <DollarSign size={18} style={{ color: '#00C896' }} /> Composição dos Custos de Aquisição
+                <div style={{ display: 'flex', alignItems: 'center', gap: '8px', color: '#1A2332', fontWeight: 800, fontSize: '0.95rem', marginBottom: '1rem', borderBottom: '1px solid #F1F5F9', paddingBottom: '0.5rem' }}>
+                  <DollarSign size={18} style={{ color: '#1E5FA3' }} /> Composição dos Custos de Aquisição
                 </div>
 
                 <div className="form-row">
@@ -843,8 +843,8 @@ export const ProdutosPage = ({ showToast }) => {
                 borderRadius: '12px',
                 padding: '1.25rem'
               }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '8px', color: '#0A2540', fontWeight: 800, fontSize: '0.95rem', marginBottom: '1rem', borderBottom: '1px solid #F1F5F9', paddingBottom: '0.5rem' }}>
-                  <Ruler size={18} style={{ color: '#00C896' }} /> Pesos, Cubagem & Embalagem
+                <div style={{ display: 'flex', alignItems: 'center', gap: '8px', color: '#1A2332', fontWeight: 800, fontSize: '0.95rem', marginBottom: '1rem', borderBottom: '1px solid #F1F5F9', paddingBottom: '0.5rem' }}>
+                  <Ruler size={18} style={{ color: '#1E5FA3' }} /> Pesos, Cubagem & Embalagem
                 </div>
 
                 <div className="form-row">
@@ -937,8 +937,8 @@ export const ProdutosPage = ({ showToast }) => {
           {/* TAB 4: KIT */}
           {activeTab === 'kit' && (
             <div style={{ textAlign: 'center', padding: '3rem 1rem', backgroundColor: '#F8FAFC', borderRadius: '12px', border: '1px dashed #CBD5E1' }}>
-              <Layers size={36} style={{ color: '#00C896', margin: '0 auto 0.75rem auto' }} />
-              <h4 style={{ fontSize: '1rem', fontWeight: 800, color: '#0A2540' }}>Composição de KIT Comercial</h4>
+              <Layers size={36} style={{ color: '#1E5FA3', margin: '0 auto 0.75rem auto' }} />
+              <h4 style={{ fontSize: '1rem', fontWeight: 800, color: '#1A2332' }}>Composição de KIT Comercial</h4>
               <p style={{ color: '#64748B', fontSize: '0.875rem', marginTop: '0.25rem' }}>
                 Este recurso permite transformar este item em um combo formado por outros produtos cadastrados.
               </p>
@@ -949,7 +949,7 @@ export const ProdutosPage = ({ showToast }) => {
           {activeTab === 'materiaPrima' && (
             <div style={{ textAlign: 'center', padding: '3rem 1rem', backgroundColor: '#F8FAFC', borderRadius: '12px', border: '1px dashed #CBD5E1' }}>
               <Boxes size={36} style={{ color: '#3B82F6', margin: '0 auto 0.75rem auto' }} />
-              <h4 style={{ fontSize: '1rem', fontWeight: 800, color: '#0A2540' }}>Matérias-Primas & Insumos de Fabricação</h4>
+              <h4 style={{ fontSize: '1rem', fontWeight: 800, color: '#1A2332' }}>Matérias-Primas & Insumos de Fabricação</h4>
               <p style={{ color: '#64748B', fontSize: '0.875rem', marginTop: '0.25rem' }}>
                 Associe os componentes de estoque que são consumidos na produção deste item.
               </p>

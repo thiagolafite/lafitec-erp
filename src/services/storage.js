@@ -555,7 +555,7 @@ export const calculateIndiceRelacionamento = (cliente, vendas = [], visitas = []
   } else if (finalScore >= 70) {
     statusText = 'Cliente Ativo';
     badgeClass = 'badge-accent';
-    color = '#00C896';
+    color = '#1E5FA3';
     emoji = '🟢';
   } else if (finalScore >= 50) {
     statusText = 'Atenção';

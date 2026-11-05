@@ -230,13 +230,13 @@ export const EntradaEstoquePage = ({ showToast }) => {
 
       {/* KPI Cards */}
       <div className="stat-grid" style={{ marginBottom: '1.5rem' }}>
-        <div className="stat-card" style={{ borderLeft: '4px solid #00C896' }}>
+        <div className="stat-card" style={{ borderLeft: '4px solid #1E5FA3' }}>
           <div>
             <div className="stat-label">Valor Total em Estoque</div>
-            <div className="stat-val" style={{ color: '#00C896' }}>R$ {valorTotalEstoque.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</div>
+            <div className="stat-val" style={{ color: '#1E5FA3' }}>R$ {valorTotalEstoque.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</div>
             <div style={{ fontSize: '0.75rem', color: '#64748B', marginTop: '4px' }}>Custo total dos produtos</div>
           </div>
-          <div className="stat-icon-wrapper" style={{ backgroundColor: 'rgba(0, 200, 150, 0.1)', color: '#00C896' }}>
+          <div className="stat-icon-wrapper" style={{ backgroundColor: 'rgba(30, 95, 163, 0.1)', color: '#1E5FA3' }}>
             <DollarSign size={22} />
           </div>
         </div>
@@ -279,7 +279,7 @@ export const EntradaEstoquePage = ({ showToast }) => {
       <div style={{
         display: 'flex',
         gap: '6px',
-        borderBottom: '2px solid #00C896',
+        borderBottom: '2px solid #1E5FA3',
         marginBottom: '1.5rem',
         overflowX: 'auto'
       }}>
@@ -378,14 +378,14 @@ export const EntradaEstoquePage = ({ showToast }) => {
                 ) : (
                   filteredEntradas.map(e => (
                     <tr key={e.id}>
-                      <td className="font-mono" style={{ fontWeight: 800, color: '#0A2540' }}>{e.numeroMovimentacao}</td>
+                      <td className="font-mono" style={{ fontWeight: 800, color: '#1A2332' }}>{e.numeroMovimentacao}</td>
                       <td style={{ color: '#64748B' }}>{new Date(e.dataHora).toLocaleString('pt-BR')}</td>
                       <td>
                         <span className="badge badge-accent">
                           {e.tipoEntrada}
                         </span>
                       </td>
-                      <td style={{ fontWeight: 700, color: '#0A2540' }}>{e.fornecedorNome || 'N/A'}</td>
+                      <td style={{ fontWeight: 700, color: '#1A2332' }}>{e.fornecedorNome || 'N/A'}</td>
                       <td className="font-mono">{e.numeroNotaFiscal ? `#${e.numeroNotaFiscal}` : 'Sem NF'}</td>
                       <td style={{ fontWeight: 800, color: '#10B981' }}>
                         R$ {(e.valorTotalNota || 0).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
@@ -424,7 +424,7 @@ export const EntradaEstoquePage = ({ showToast }) => {
         <div className="card">
           <div className="card-header">
             <div className="card-title">
-              <Layers size={20} style={{ color: '#00C896' }} /> Trilha de Auditoria & Histórico de Movimentações
+              <Layers size={20} style={{ color: '#1E5FA3' }} /> Trilha de Auditoria & Histórico de Movimentações
             </div>
             <span className="badge badge-accent">Rastreabilidade Total</span>
           </div>
@@ -454,7 +454,7 @@ export const EntradaEstoquePage = ({ showToast }) => {
                         {m.tipoMovimentacao}
                       </span>
                     </td>
-                    <td style={{ fontWeight: 700, color: '#0A2540' }}>{m.produtoNome}</td>
+                    <td style={{ fontWeight: 700, color: '#1A2332' }}>{m.produtoNome}</td>
                     <td className="font-mono" style={{ fontWeight: 800, color: m.quantidade < 0 ? '#EF4444' : '#10B981' }}>
                       {m.quantidade > 0 ? `+${m.quantidade}` : m.quantidade}
                     </td>
@@ -490,7 +490,7 @@ export const EntradaEstoquePage = ({ showToast }) => {
               </h3>
               {produtosAbaixoMinimo.map(p => (
                 <div key={p.id} style={{ display: 'flex', justifyContent: 'space-between', padding: '0.5rem 0', borderBottom: '1px dashed #FECACA', fontSize: '0.875rem' }}>
-                  <span style={{ fontWeight: 700, color: '#0A2540' }}>{p.nome}</span>
+                  <span style={{ fontWeight: 700, color: '#1A2332' }}>{p.nome}</span>
                   <span style={{ color: '#DC2626', fontWeight: 800 }}>Estoque: {p.estoque} (Mín: {p.estoqueMinimo || 5})</span>
                 </div>
               ))}
@@ -513,21 +513,21 @@ export const EntradaEstoquePage = ({ showToast }) => {
         <div className="card">
           <div className="card-header">
             <div className="card-title">
-              <Upload size={20} style={{ color: '#00C896' }} /> Importador Inteligente de Nota Fiscal (XML NF-e)
+              <Upload size={20} style={{ color: '#1E5FA3' }} /> Importador Inteligente de Nota Fiscal (XML NF-e)
             </div>
             <span className="badge badge-accent">Automação NF-e</span>
           </div>
 
           <div style={{
-            border: '2px dashed #00C896',
+            border: '2px dashed #1E5FA3',
             borderRadius: '12px',
             padding: '3rem 2rem',
             textAlign: 'center',
             backgroundColor: '#F8FAFC',
             marginBottom: '1.5rem'
           }}>
-            <Upload size={48} style={{ color: '#00C896', margin: '0 auto 1rem auto' }} />
-            <h3 style={{ fontSize: '1.2rem', fontWeight: 800, color: '#0A2540' }}>
+            <Upload size={48} style={{ color: '#1E5FA3', margin: '0 auto 1rem auto' }} />
+            <h3 style={{ fontSize: '1.2rem', fontWeight: 800, color: '#1A2332' }}>
               Arraste e solte o arquivo XML da NF-e aqui
             </h3>
             <p style={{ color: '#64748B', fontSize: '0.875rem', marginTop: '4px' }}>
@@ -576,7 +576,7 @@ export const EntradaEstoquePage = ({ showToast }) => {
                 Fornecedor / Origem *
                 <button
                   type="button"
-                  style={{ background: 'none', border: 'none', color: '#00C896', marginLeft: '8px', cursor: 'pointer', fontWeight: 700 }}
+                  style={{ background: 'none', border: 'none', color: '#1E5FA3', marginLeft: '8px', cursor: 'pointer', fontWeight: 700 }}
                   onClick={() => setQuickFornModalOpen(true)}
                 >
                   + Cadastrar na Hora
@@ -623,7 +623,7 @@ export const EntradaEstoquePage = ({ showToast }) => {
           {/* Produtos da Entrada */}
           <div style={{ marginTop: '1.25rem', marginBottom: '1rem', borderTop: '1px solid #E2E8F0', paddingTop: '1rem' }}>
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '0.75rem' }}>
-              <h4 style={{ fontWeight: 800, color: '#0A2540' }}>Produtos da Entrada</h4>
+              <h4 style={{ fontWeight: 800, color: '#1A2332' }}>Produtos da Entrada</h4>
               <button type="button" className="btn btn-outline btn-sm" onClick={handleAddItem}>
                 <Plus size={14} /> Adicionar Produto
               </button>

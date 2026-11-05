@@ -66,7 +66,7 @@ export const RelatoriosPage = () => {
         <div className="card">
           <div className="card-header">
             <div className="card-title">
-              <DollarSign size={20} style={{ color: '#00C896' }} /> Balanço Financeiro Consolidado
+              <DollarSign size={20} style={{ color: '#1E5FA3' }} /> Balanço Financeiro Consolidado
             </div>
             <span className="badge badge-accent">Relatório em Tempo Real</span>
           </div>
@@ -93,7 +93,7 @@ export const RelatoriosPage = () => {
 
             <div style={{ backgroundColor: '#F8FAFC', padding: '1.25rem', borderRadius: '10px', border: '1px solid #E2E8F0' }}>
               <div style={{ fontSize: '0.75rem', color: '#64748B', fontWeight: 700, textTransform: 'uppercase' }}>Saldo Realizado</div>
-              <div style={{ fontSize: '1.5rem', fontWeight: 800, color: saldoLiquidoRealizado >= 0 ? '#00C896' : '#EF4444', marginTop: '0.25rem' }}>
+              <div style={{ fontSize: '1.5rem', fontWeight: 800, color: saldoLiquidoRealizado >= 0 ? '#1E5FA3' : '#EF4444', marginTop: '0.25rem' }}>
                 {formatCurrency(saldoLiquidoRealizado)}
               </div>
             </div>
@@ -106,7 +106,7 @@ export const RelatoriosPage = () => {
             </div>
           </div>
 
-          <h4 style={{ fontSize: '0.95rem', fontWeight: 700, color: '#0A2540', marginBottom: '1rem' }}>
+          <h4 style={{ fontSize: '0.95rem', fontWeight: 700, color: '#1A2332', marginBottom: '1rem' }}>
             Detalhamento das Contas Financeiras ({financeiro.length})
           </h4>
 
@@ -151,7 +151,7 @@ export const RelatoriosPage = () => {
         <div className="card">
           <div className="card-header">
             <div className="card-title">
-              <ShoppingCart size={20} style={{ color: '#00C896' }} /> Relatório Consolidado de Vendas
+              <ShoppingCart size={20} style={{ color: '#1E5FA3' }} /> Relatório Consolidado de Vendas
             </div>
             <span className="badge badge-accent">Total: {formatCurrency(totalVendasVal)}</span>
           </div>
@@ -170,11 +170,11 @@ export const RelatoriosPage = () => {
               <tbody>
                 {vendas.map(v => (
                   <tr key={v.id}>
-                    <td className="font-mono" style={{ fontWeight: 700, color: '#0A2540' }}>#{v.id}</td>
+                    <td className="font-mono" style={{ fontWeight: 700, color: '#1A2332' }}>#{v.id}</td>
                     <td style={{ fontWeight: 600 }}>{v.clienteNome}</td>
                     <td>{new Date(v.dataVenda).toLocaleString('pt-BR')}</td>
                     <td>{v.itensCount || 1} un.</td>
-                    <td className="text-right font-mono" style={{ fontWeight: 800, color: '#00C896' }}>
+                    <td className="text-right font-mono" style={{ fontWeight: 800, color: '#1E5FA3' }}>
                       {formatCurrency(v.total)}
                     </td>
                   </tr>
@@ -189,7 +189,7 @@ export const RelatoriosPage = () => {
         <div className="card">
           <div className="card-header">
             <div className="card-title">
-              <BarChart3 size={20} style={{ color: '#0A2540' }} /> Relatório de Posição de Estoque
+              <BarChart3 size={20} style={{ color: '#1A2332' }} /> Relatório de Posição de Estoque
             </div>
             <span className="badge badge-dark">{produtos.length} Produtos Cadastrados</span>
           </div>
@@ -210,10 +210,10 @@ export const RelatoriosPage = () => {
                   const valorTotalEstoque = p.preco * p.estoque;
                   return (
                     <tr key={p.id}>
-                      <td style={{ fontWeight: 700, color: '#0A2540' }}>{p.nome}</td>
+                      <td style={{ fontWeight: 700, color: '#1A2332' }}>{p.nome}</td>
                       <td className="font-mono">{formatCurrency(p.preco)}</td>
                       <td className="font-mono" style={{ fontWeight: 700 }}>{p.estoque} un.</td>
-                      <td className="font-mono" style={{ fontWeight: 800, color: '#00C896' }}>
+                      <td className="font-mono" style={{ fontWeight: 800, color: '#1E5FA3' }}>
                         {formatCurrency(valorTotalEstoque)}
                       </td>
                       <td>

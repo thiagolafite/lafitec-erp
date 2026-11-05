@@ -214,12 +214,12 @@ export const VisitasPage = ({ showToast }) => {
 
       {/* Banner de Rota Inteligente do Dia */}
       <div style={{
-        backgroundColor: '#0A2540',
+        backgroundColor: '#1A2332',
         color: '#FFFFFF',
         borderRadius: '14px',
         padding: '1.5rem 2rem',
         marginBottom: '1.75rem',
-        backgroundImage: 'linear-gradient(135deg, #0A2540 0%, #1E3A5F 100%)',
+        backgroundImage: 'linear-gradient(135deg, #1A2332 0%, #1E3A5F 100%)',
         boxShadow: '0 10px 25px -5px rgba(10, 37, 64, 0.2)',
         display: 'flex',
         alignItems: 'center',
@@ -229,8 +229,8 @@ export const VisitasPage = ({ showToast }) => {
       }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
           <div style={{
-            backgroundColor: 'rgba(0, 200, 150, 0.15)',
-            color: '#00C896',
+            backgroundColor: 'rgba(30, 95, 163, 0.15)',
+            color: '#1E5FA3',
             padding: '1rem',
             borderRadius: '12px',
             display: 'flex',
@@ -240,7 +240,7 @@ export const VisitasPage = ({ showToast }) => {
             <Car size={32} />
           </div>
           <div>
-            <div style={{ fontSize: '0.8rem', color: '#00C896', fontWeight: 800, textTransform: 'uppercase' }}>
+            <div style={{ fontSize: '0.8rem', color: '#1E5FA3', fontWeight: 800, textTransform: 'uppercase' }}>
               🚗 Rota Inteligente de Campo
             </div>
             <h3 style={{ fontSize: '1.25rem', fontWeight: 800, marginTop: '2px' }}>
@@ -315,7 +315,7 @@ export const VisitasPage = ({ showToast }) => {
       <div style={{
         display: 'flex',
         gap: '6px',
-        borderBottom: '2px solid #00C896',
+        borderBottom: '2px solid #1E5FA3',
         marginBottom: '1.5rem',
         overflowX: 'auto',
         paddingBottom: '0px'
@@ -436,11 +436,11 @@ export const VisitasPage = ({ showToast }) => {
                         )}
                       </div>
 
-                      <h3 style={{ fontSize: '1.1rem', fontWeight: 800, color: '#0A2540' }}>
+                      <h3 style={{ fontSize: '1.1rem', fontWeight: 800, color: '#1A2332' }}>
                         {v.clienteNome}
                       </h3>
                       <p style={{ fontSize: '0.85rem', color: '#64748B', display: 'flex', alignItems: 'center', gap: '4px', marginTop: '2px' }}>
-                        <MapPin size={14} style={{ color: '#00C896' }} /> {v.cidade} {v.endereco ? `(${v.endereco})` : ''}
+                        <MapPin size={14} style={{ color: '#1E5FA3' }} /> {v.cidade} {v.endereco ? `(${v.endereco})` : ''}
                       </p>
 
                       <div style={{ display: 'flex', gap: '1rem', marginTop: '0.75rem', fontSize: '0.8rem', color: '#475569', fontWeight: 600 }}>
@@ -452,7 +452,7 @@ export const VisitasPage = ({ showToast }) => {
                         </span>
                       </div>
 
-                      <p style={{ fontSize: '0.85rem', color: '#334155', marginTop: '0.75rem', backgroundColor: '#F8FAFC', padding: '0.5rem 0.75rem', borderRadius: '6px', borderLeft: '3px solid #00C896' }}>
+                      <p style={{ fontSize: '0.85rem', color: '#334155', marginTop: '0.75rem', backgroundColor: '#F8FAFC', padding: '0.5rem 0.75rem', borderRadius: '6px', borderLeft: '3px solid #1E5FA3' }}>
                         <strong>Objetivo:</strong> {v.objetivo}
                       </p>
 
@@ -507,7 +507,7 @@ export const VisitasPage = ({ showToast }) => {
         <div className="card">
           <div className="card-header">
             <div className="card-title">
-              <Activity size={20} style={{ color: '#00C896' }} /> Ranking do Índice de Relacionamento Comercial (Lafitec Score)
+              <Activity size={20} style={{ color: '#1E5FA3' }} /> Ranking do Índice de Relacionamento Comercial (Lafitec Score)
             </div>
             <span className="badge badge-accent">Inteligência de Campo</span>
           </div>
@@ -555,7 +555,7 @@ export const VisitasPage = ({ showToast }) => {
                     }} />
                   </div>
 
-                  <h3 style={{ fontSize: '1.1rem', fontWeight: 800, color: '#0A2540', marginBottom: '4px' }}>
+                  <h3 style={{ fontSize: '1.1rem', fontWeight: 800, color: '#1A2332', marginBottom: '4px' }}>
                     {cli.nome}
                   </h3>
                   <div style={{ fontSize: '0.8rem', color: '#64748B' }}>
@@ -577,7 +577,7 @@ export const VisitasPage = ({ showToast }) => {
         <div className="card">
           <div className="card-header">
             <div className="card-title">
-              <RefreshCw size={20} style={{ color: '#00C896' }} /> Frequência de Visitas Configuradas por Cliente
+              <RefreshCw size={20} style={{ color: '#1E5FA3' }} /> Frequência de Visitas Configuradas por Cliente
             </div>
             <span className="badge badge-accent">Cálculo Automático</span>
           </div>
@@ -602,7 +602,7 @@ export const VisitasPage = ({ showToast }) => {
 
                   return (
                     <tr key={cli.id}>
-                      <td style={{ fontWeight: 700, color: '#0A2540' }}>{cli.nome}</td>
+                      <td style={{ fontWeight: 700, color: '#1A2332' }}>{cli.nome}</td>
                       <td>
                         <span className={`badge ${scoreInfo.badgeClass}`}>
                           {scoreInfo.emoji} {scoreInfo.score}/100
@@ -669,7 +669,7 @@ export const VisitasPage = ({ showToast }) => {
             marginBottom: '1.5rem'
           }}>
             <div style={{ textAlign: 'center' }}>
-              <MapPin size={48} style={{ color: '#00C896', margin: '0 auto 1rem auto' }} />
+              <MapPin size={48} style={{ color: '#1E5FA3', margin: '0 auto 1rem auto' }} />
               <h3 style={{ fontSize: '1.25rem', fontWeight: 800 }}>Mapa Interativo de Clientes Ativos</h3>
               <p style={{ color: '#94A3B8', fontSize: '0.875rem', marginTop: '4px' }}>
                 Todos os clientes estão mapeados por região. Clique abaixo para iniciar rota GPS.
@@ -685,7 +685,7 @@ export const VisitasPage = ({ showToast }) => {
                 borderRadius: '8px',
                 backgroundColor: '#F8FAFC'
               }}>
-                <div style={{ fontWeight: 800, color: '#0A2540' }}>{cli.nome}</div>
+                <div style={{ fontWeight: 800, color: '#1A2332' }}>{cli.nome}</div>
                 <div style={{ fontSize: '0.8rem', color: '#64748B', marginTop: '2px' }}>{cli.cidade}</div>
                 <div style={{ marginTop: '0.75rem' }}>
                   <a
@@ -713,18 +713,18 @@ export const VisitasPage = ({ showToast }) => {
             </div>
           </div>
 
-          <div style={{ position: 'relative', paddingLeft: '2rem', borderLeft: '3px solid #00C896', marginLeft: '1rem', display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
+          <div style={{ position: 'relative', paddingLeft: '2rem', borderLeft: '3px solid #1E5FA3', marginLeft: '1rem', display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
             <div style={{ position: 'relative' }}>
-              <div style={{ position: 'absolute', left: '-2.6rem', top: '0', width: '16px', height: '16px', borderRadius: '50%', backgroundColor: '#00C896' }}></div>
-              <div style={{ fontSize: '0.75rem', fontWeight: 800, color: '#00C896' }}>04/08/2026 — Visita em Andamento</div>
-              <div style={{ fontWeight: 700, color: '#0A2540' }}>TechCorp Brasil S.A.</div>
+              <div style={{ position: 'absolute', left: '-2.6rem', top: '0', width: '16px', height: '16px', borderRadius: '50%', backgroundColor: '#1E5FA3' }}></div>
+              <div style={{ fontSize: '0.75rem', fontWeight: 800, color: '#1E5FA3' }}>04/08/2026 — Visita em Andamento</div>
+              <div style={{ fontWeight: 700, color: '#1A2332' }}>TechCorp Brasil S.A.</div>
               <p style={{ fontSize: '0.85rem', color: '#64748B' }}>Apresentação do módulo de gestão ERP e negociação técnica.</p>
             </div>
 
             <div style={{ position: 'relative' }}>
               <div style={{ position: 'absolute', left: '-2.6rem', top: '0', width: '16px', height: '16px', borderRadius: '50%', backgroundColor: '#3B82F6' }}></div>
               <div style={{ fontSize: '0.75rem', fontWeight: 800, color: '#3B82F6' }}>01/08/2026 — Pedido Realizado (#ven-101)</div>
-              <div style={{ fontWeight: 700, color: '#0A2540' }}>Ana Beatriz Souza</div>
+              <div style={{ fontWeight: 700, color: '#1A2332' }}>Ana Beatriz Souza</div>
               <p style={{ fontSize: '0.85rem', color: '#64748B' }}>Venda concluída no valor de R$ 5.290,00.</p>
             </div>
           </div>

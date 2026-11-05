@@ -104,7 +104,7 @@ export const DashboardPage = ({ onNavigate }) => {
     { mes: 'Maio', venda: 451916.24, comissao: 22595.81, color: '#EC4899' },
     { mes: 'Junho', venda: 160870.79, comissao: 8043.53, color: '#F59E0B' },
     { mes: 'Julho', venda: 10718.52, comissao: 535.92, color: '#06B6D4' },
-    { mes: 'Agosto', venda: receitaTotalVendas || 15200.00, comissao: (receitaTotalVendas || 15200.00) * 0.05, color: '#00C896' }
+    { mes: 'Agosto', venda: receitaTotalVendas || 15200.00, comissao: (receitaTotalVendas || 15200.00) * 0.05, color: '#1E5FA3' }
   ];
 
   const faturamentoMensalAno = [
@@ -115,12 +115,12 @@ export const DashboardPage = ({ onNavigate }) => {
     { mes: 'Maio', valor: 52100.00, color: '#EC4899' },
     { mes: 'Junho', valor: 31800.00, color: '#F59E0B' },
     { mes: 'Julho', valor: 22400.00, color: '#06B6D4' },
-    { mes: 'Agosto', valor: receitaTotalVendas || 18500.00, color: '#00C896' }
+    { mes: 'Agosto', valor: receitaTotalVendas || 18500.00, color: '#1E5FA3' }
   ];
 
   const vendedorMes = [
     { vendedor: 'Carlos Vendedor', valor: receitaTotalVendas || 10718.52, color: '#0284C7' },
-    { vendedor: 'Lafite Admin', valor: 4500.00, color: '#00C896' },
+    { vendedor: 'Lafite Admin', valor: 4500.00, color: '#1E5FA3' },
     { vendedor: 'Mariana Lima', valor: 2300.00, color: '#F97316' }
   ];
 
@@ -174,7 +174,7 @@ export const DashboardPage = ({ onNavigate }) => {
                 <div style={{
                   fontSize: count > 6 ? '0.65rem' : '0.725rem',
                   fontWeight: 800,
-                  color: '#0A2540',
+                  color: '#1A2332',
                   marginBottom: '4px',
                   textAlign: 'center',
                   whiteSpace: 'nowrap'
@@ -223,7 +223,7 @@ export const DashboardPage = ({ onNavigate }) => {
     <div style={{ maxWidth: '100%', overflowX: 'hidden' }}>
       {/* 1. Header welcome banner - Executive Command Center */}
       <div style={{
-        background: 'linear-gradient(135deg, #071527 0%, #0A1E35 60%, #102A48 100%)',
+        background: 'linear-gradient(135deg, #1A2332 0%, #0A1E35 60%, #102A48 100%)',
         borderRadius: '16px',
         padding: '2rem 2.25rem',
         color: '#FFFFFF',
@@ -246,18 +246,18 @@ export const DashboardPage = ({ onNavigate }) => {
           width: '180px',
           height: '180px',
           borderRadius: '50%',
-          background: 'radial-gradient(circle, rgba(0, 245, 160, 0.25) 0%, transparent 70%)',
+          background: 'radial-gradient(circle, rgba(30, 95, 163, 0.12) 0%, transparent 70%)',
           pointerEvents: 'none'
         }}></div>
 
         <div style={{ position: 'relative', zIndex: 1 }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '6px' }}>
-            <span style={{ width: '8px', height: '8px', borderRadius: '50%', backgroundColor: '#00F5A0', boxShadow: '0 0 10px #00F5A0' }}></span>
-            <span style={{ fontSize: '0.75rem', color: '#00F5A0', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.08em' }}>
+            <span style={{ width: '8px', height: '8px', borderRadius: '50%', backgroundColor: '#5B9BD5' }}></span>
+            <span style={{ fontSize: '0.75rem', color: '#5B9BD5', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em' }}>
               Painel de Controle Executivo • Multi-tenant
             </span>
           </div>
-          <h2 style={{ fontFamily: 'Outfit', fontSize: '1.75rem', fontWeight: 900, letterSpacing: '-0.02em' }}>
+          <h2 style={{ fontFamily: 'Inter', fontSize: '1.75rem', fontWeight: 900, letterSpacing: '-0.02em' }}>
             Olá, {user?.nome}! Bem-vindo ao {empresa.nome}
           </h2>
           <p style={{ color: '#94A3B8', fontSize: '0.9rem', marginTop: '4px' }}>
@@ -296,11 +296,11 @@ export const DashboardPage = ({ onNavigate }) => {
           <div>
             <div className="stat-label">Total de Vendas</div>
             <div className="stat-val">{totalVendasCount}</div>
-            <div style={{ fontSize: '0.75rem', color: '#008764', marginTop: '6px', fontWeight: 700 }}>
+            <div style={{ fontSize: '0.75rem', color: '#154A85', marginTop: '6px', fontWeight: 700 }}>
               Faturamento: {formatCurrency(receitaTotalVendas)}
             </div>
           </div>
-          <div className="stat-icon-wrapper" style={{ backgroundColor: 'rgba(0, 245, 160, 0.14)', color: '#008764', border: '1px solid rgba(0, 245, 160, 0.3)' }}>
+          <div className="stat-icon-wrapper" style={{ backgroundColor: 'rgba(30, 95, 163, 0.14)', color: '#154A85', border: '1px solid rgba(30, 95, 163, 0.3)' }}>
             <ShoppingCart size={26} />
           </div>
         </div>
@@ -356,7 +356,7 @@ export const DashboardPage = ({ onNavigate }) => {
         <div className="card" style={{ overflow: 'hidden' }}>
           <div className="card-header">
             <div className="card-title">
-              <TrendingUp size={20} style={{ color: '#00C896' }} /> Resumo de Fluxo Financeiro
+              <TrendingUp size={20} style={{ color: '#1E5FA3' }} /> Resumo de Fluxo Financeiro
             </div>
             <span className="badge badge-accent">Visão Mensal</span>
           </div>
@@ -368,7 +368,7 @@ export const DashboardPage = ({ onNavigate }) => {
                 <span style={{ color: '#10B981' }}>100%</span>
               </div>
               <div style={{ height: '10px', backgroundColor: '#E2E8F0', borderRadius: '5px', overflow: 'hidden' }}>
-                <div style={{ width: '100%', height: '100%', backgroundColor: '#00C896' }}></div>
+                <div style={{ width: '100%', height: '100%', backgroundColor: '#1E5FA3' }}></div>
               </div>
             </div>
 
@@ -452,7 +452,7 @@ export const DashboardPage = ({ onNavigate }) => {
       <div className="card" style={{ marginBottom: '2.5rem', overflow: 'hidden' }}>
         <div className="card-header">
           <div className="card-title">
-            <ShoppingCart size={20} style={{ color: '#0A2540' }} /> Últimas Vendas Realizadas
+            <ShoppingCart size={20} style={{ color: '#1A2332' }} /> Últimas Vendas Realizadas
           </div>
           <button onClick={() => onNavigate('vendas')} className="btn btn-primary btn-sm">
             Ir para Vendas <ArrowUpRight size={16} />
@@ -480,11 +480,11 @@ export const DashboardPage = ({ onNavigate }) => {
               ) : (
                 vendas.slice(0, 5).map(v => (
                   <tr key={v.id}>
-                    <td className="font-mono" style={{ fontWeight: 700, color: '#0A2540' }}>#{v.id}</td>
+                    <td className="font-mono" style={{ fontWeight: 700, color: '#1A2332' }}>#{v.id}</td>
                     <td style={{ fontWeight: 600 }}>{v.clienteNome}</td>
                     <td style={{ color: '#64748B' }}>{new Date(v.dataVenda).toLocaleDateString('pt-BR')}</td>
                     <td>{v.itensCount || 1} item(ns)</td>
-                    <td className="text-right font-mono" style={{ fontWeight: 800, color: '#00C896' }}>
+                    <td className="text-right font-mono" style={{ fontWeight: 800, color: '#1E5FA3' }}>
                       {formatCurrency(v.total)}
                     </td>
                   </tr>
@@ -498,8 +498,8 @@ export const DashboardPage = ({ onNavigate }) => {
       {/* 5. SEÇÃO DE GRÁFICOS EXECUTIVOS ADICIONAIS COM 100% CONTENÇÃO NOS CARDS (Sem Transbordo) */}
       <div style={{ marginTop: '2.5rem', paddingTop: '1.5rem', borderTop: '2px dashed #E2E8F0', maxWidth: '100%' }}>
         <div style={{ marginBottom: '1.5rem' }}>
-          <h3 style={{ fontSize: '1.25rem', fontWeight: 800, color: '#0A2540', display: 'flex', alignItems: 'center', gap: '8px' }}>
-            <BarChart3 size={24} style={{ color: '#00C896' }} /> Análises Comparativas & Business Intelligence
+          <h3 style={{ fontSize: '1.25rem', fontWeight: 800, color: '#1A2332', display: 'flex', alignItems: 'center', gap: '8px' }}>
+            <BarChart3 size={24} style={{ color: '#1E5FA3' }} /> Análises Comparativas & Business Intelligence
           </h3>
           <p style={{ color: '#64748B', fontSize: '0.875rem' }}>
             Gráficos comparativos de fornecedores, clientes, faturamento e vendedores.
@@ -630,7 +630,7 @@ export const DashboardPage = ({ onNavigate }) => {
             <div className="card" style={{ overflow: 'hidden' }}>
               <div className="card-header">
                 <div className="card-title">
-                  <TrendingUp size={18} style={{ color: '#00C896' }} /> Faturamento Dia (Mês Agosto)
+                  <TrendingUp size={18} style={{ color: '#1E5FA3' }} /> Faturamento Dia (Mês Agosto)
                 </div>
                 <span className="badge badge-accent">Fluxo Diário</span>
               </div>

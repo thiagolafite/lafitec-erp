@@ -273,9 +273,9 @@ export const AIAssistantWidget = ({ onNavigate, showToast }) => {
             bottom: '24px',
             right: '24px',
             zIndex: 9999,
-            backgroundColor: '#0A2540',
+            backgroundColor: '#1A2332',
             color: '#FFFFFF',
-            border: '2px solid #00C896',
+            border: '2px solid #1E5FA3',
             borderRadius: '30px',
             padding: '10px 20px',
             boxShadow: '0 8px 24px rgba(10, 37, 64, 0.35)',
@@ -290,7 +290,7 @@ export const AIAssistantWidget = ({ onNavigate, showToast }) => {
           }}
           onMouseEnter={(e) => {
             e.currentTarget.style.transform = 'translateY(-3px) scale(1.03)';
-            e.currentTarget.style.boxShadow = '0 12px 28px rgba(0, 200, 150, 0.4)';
+            e.currentTarget.style.boxShadow = '0 12px 28px rgba(30, 95, 163, 0.4)';
           }}
           onMouseLeave={(e) => {
             e.currentTarget.style.transform = 'translateY(0) scale(1)';
@@ -299,22 +299,22 @@ export const AIAssistantWidget = ({ onNavigate, showToast }) => {
           title="Assistente IA: Tire dúvidas sobre cálculos e rotinas do sistema"
         >
           <div style={{
-            backgroundColor: '#00C896',
+            backgroundColor: '#1E5FA3',
             borderRadius: '50%',
             width: '24px',
             height: '24px',
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
-            color: '#0A2540'
+            color: '#FFFFFF'
           }}>
             <Sparkles size={14} />
           </div>
           <span>Assistente IA Lafitec</span>
           <span style={{
             fontSize: '0.65rem',
-            backgroundColor: 'rgba(0, 200, 150, 0.2)',
-            color: '#00C896',
+            backgroundColor: 'rgba(91, 155, 213, 0.2)',
+            color: '#93C5FD',
             padding: '2px 6px',
             borderRadius: '10px',
             textTransform: 'uppercase',
@@ -347,18 +347,18 @@ export const AIAssistantWidget = ({ onNavigate, showToast }) => {
         }}>
           {/* Header */}
           <div style={{
-            backgroundColor: '#0A2540',
+            backgroundColor: '#1A2332',
             color: '#FFFFFF',
             padding: '0.875rem 1.25rem',
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'space-between',
-            borderBottom: '2px solid #00C896'
+            borderBottom: '2px solid #1E5FA3'
           }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
               <div style={{
-                backgroundColor: 'rgba(0, 200, 150, 0.2)',
-                color: '#00C896',
+                backgroundColor: 'rgba(30, 95, 163, 0.2)',
+                color: '#1E5FA3',
                 padding: '6px',
                 borderRadius: '8px',
                 display: 'flex'
@@ -413,8 +413,8 @@ export const AIAssistantWidget = ({ onNavigate, showToast }) => {
                     padding: '0.65rem',
                     fontSize: '0.8rem',
                     fontWeight: activeTab === 'chat' ? 800 : 600,
-                    color: activeTab === 'chat' ? '#0A2540' : '#64748B',
-                    borderBottom: activeTab === 'chat' ? '2px solid #00C896' : 'none',
+                    color: activeTab === 'chat' ? '#1A2332' : '#64748B',
+                    borderBottom: activeTab === 'chat' ? '2px solid #1E5FA3' : 'none',
                     backgroundColor: activeTab === 'chat' ? '#FFFFFF' : 'transparent',
                     border: 'none',
                     cursor: 'pointer',
@@ -435,8 +435,8 @@ export const AIAssistantWidget = ({ onNavigate, showToast }) => {
                     padding: '0.65rem',
                     fontSize: '0.8rem',
                     fontWeight: activeTab === 'calculos' ? 800 : 600,
-                    color: activeTab === 'calculos' ? '#0A2540' : '#64748B',
-                    borderBottom: activeTab === 'calculos' ? '2px solid #00C896' : 'none',
+                    color: activeTab === 'calculos' ? '#1A2332' : '#64748B',
+                    borderBottom: activeTab === 'calculos' ? '2px solid #1E5FA3' : 'none',
                     backgroundColor: activeTab === 'calculos' ? '#FFFFFF' : 'transparent',
                     border: 'none',
                     cursor: 'pointer',
@@ -457,8 +457,8 @@ export const AIAssistantWidget = ({ onNavigate, showToast }) => {
                     padding: '0.65rem',
                     fontSize: '0.8rem',
                     fontWeight: activeTab === 'rotinas' ? 800 : 600,
-                    color: activeTab === 'rotinas' ? '#0A2540' : '#64748B',
-                    borderBottom: activeTab === 'rotinas' ? '2px solid #00C896' : 'none',
+                    color: activeTab === 'rotinas' ? '#1A2332' : '#64748B',
+                    borderBottom: activeTab === 'rotinas' ? '2px solid #1E5FA3' : 'none',
                     backgroundColor: activeTab === 'rotinas' ? '#FFFFFF' : 'transparent',
                     border: 'none',
                     cursor: 'pointer',
@@ -496,8 +496,8 @@ export const AIAssistantWidget = ({ onNavigate, showToast }) => {
                       >
                         <div
                           style={{
-                            backgroundColor: m.sender === 'user' ? '#0A2540' : '#F8FAFC',
-                            color: m.sender === 'user' ? '#FFFFFF' : '#0A2540',
+                            backgroundColor: m.sender === 'user' ? '#1A2332' : '#F8FAFC',
+                            color: m.sender === 'user' ? '#FFFFFF' : '#1A2332',
                             padding: '0.75rem 1rem',
                             borderRadius: m.sender === 'user' ? '12px 12px 2px 12px' : '12px 12px 12px 2px',
                             border: m.sender === 'user' ? 'none' : '1px solid #E2E8F0',
@@ -547,8 +547,8 @@ export const AIAssistantWidget = ({ onNavigate, showToast }) => {
                                   padding: '6px 10px',
                                   fontSize: '0.75rem',
                                   backgroundColor: '#F0FDF4',
-                                  color: '#008764',
-                                  border: '1px solid rgba(0, 200, 150, 0.3)',
+                                  color: '#154A85',
+                                  border: '1px solid rgba(30, 95, 163, 0.3)',
                                   borderRadius: '6px',
                                   cursor: 'pointer',
                                   fontWeight: 600,
@@ -619,7 +619,7 @@ export const AIAssistantWidget = ({ onNavigate, showToast }) => {
                   {/* Simulador 1: Orçamento com Impostos */}
                   <div style={{ backgroundColor: '#F8FAFC', padding: '1rem', borderRadius: '8px', border: '1px solid #CBD5E1', marginBottom: '1rem' }}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '6px', fontWeight: 800, color: 'var(--primary-dark)', marginBottom: '0.75rem' }}>
-                      <Calculator size={16} style={{ color: '#00C896' }} />
+                      <Calculator size={16} style={{ color: '#1E5FA3' }} />
                       <span>Simulador: Preço de Venda com IPI & ST</span>
                     </div>
 
@@ -685,7 +685,7 @@ export const AIAssistantWidget = ({ onNavigate, showToast }) => {
                     </div>
 
                     {/* Calculation Results Card */}
-                    <div style={{ backgroundColor: '#FFFFFF', padding: '0.75rem', borderRadius: '6px', border: '1px solid #00C896', lineHeight: '1.4' }}>
+                    <div style={{ backgroundColor: '#FFFFFF', padding: '0.75rem', borderRadius: '6px', border: '1px solid #1E5FA3', lineHeight: '1.4' }}>
                       <div style={{ display: 'flex', justifyContent: 'space-between', color: '#64748B' }}>
                         <span>Preço Líquido (Base):</span>
                         <strong className="font-mono">R$ {precoLiquidoSim.toFixed(2)}</strong>
@@ -700,10 +700,10 @@ export const AIAssistantWidget = ({ onNavigate, showToast }) => {
                       </div>
                       <div style={{ display: 'flex', justifyContent: 'space-between', borderTop: '1px dashed #CBD5E1', paddingTop: '4px', marginTop: '4px' }}>
                         <span style={{ fontWeight: 700 }}>Preço Unit. com Impostos:</span>
-                        <strong className="font-mono" style={{ color: '#008764' }}>R$ {precoFinalUnit.toFixed(2)}</strong>
+                        <strong className="font-mono" style={{ color: '#154A85' }}>R$ {precoFinalUnit.toFixed(2)}</strong>
                       </div>
                       <div style={{ display: 'flex', justifyContent: 'space-between', borderTop: '1px solid #E2E8F0', paddingTop: '4px', marginTop: '4px', fontSize: '0.875rem' }}>
-                        <strong style={{ color: '#0A2540' }}>Total ({simQuantidade} un):</strong>
+                        <strong style={{ color: '#1A2332' }}>Total ({simQuantidade} un):</strong>
                         <strong className="font-mono" style={{ color: '#DC2626', fontSize: '0.95rem' }}>
                           R$ {subtotalGeralSim.toFixed(2)}
                         </strong>
@@ -774,7 +774,7 @@ export const AIAssistantWidget = ({ onNavigate, showToast }) => {
                     {/* Result */}
                     <div style={{ backgroundColor: '#FFFFFF', padding: '0.75rem', borderRadius: '6px', border: '1px solid #0284C7', textAlign: 'center' }}>
                       <div style={{ fontSize: '0.75rem', color: '#64748B' }}>Score Calculado do Cliente:</div>
-                      <div className="font-mono" style={{ fontSize: '1.4rem', fontWeight: 800, color: scoreSimCalculado >= 70 ? '#008764' : scoreSimCalculado >= 50 ? '#D97706' : '#DC2626' }}>
+                      <div className="font-mono" style={{ fontSize: '1.4rem', fontWeight: 800, color: scoreSimCalculado >= 70 ? '#154A85' : scoreSimCalculado >= 50 ? '#D97706' : '#DC2626' }}>
                         {scoreSimCalculado}/100
                       </div>
                       <div style={{ fontSize: '0.75rem', fontWeight: 700, marginTop: '2px' }}>

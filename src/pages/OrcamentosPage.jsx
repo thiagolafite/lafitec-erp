@@ -742,9 +742,9 @@ export const OrcamentosPage = ({ showToast }) => {
         <div className="stat-card">
           <div>
             <div className="stat-label">Aprovados</div>
-            <div className="stat-val" style={{ color: '#008764' }}>{countAprovado}</div>
+            <div className="stat-val" style={{ color: '#154A85' }}>{countAprovado}</div>
           </div>
-          <div className="stat-icon-wrapper" style={{ background: 'rgba(0, 200, 150, 0.12)', color: '#00C896' }}>
+          <div className="stat-icon-wrapper" style={{ background: 'rgba(30, 95, 163, 0.12)', color: '#1E5FA3' }}>
             <CheckCircle2 size={24} />
           </div>
         </div>
@@ -850,13 +850,13 @@ export const OrcamentosPage = ({ showToast }) => {
                       <div style={{ fontWeight: 700, color: 'var(--primary-dark)' }}>{orc.clienteNome}</div>
                       {orc.comprador && (
                         <div style={{ fontSize: '0.75rem', color: '#64748B', display: 'flex', alignItems: 'center', gap: '4px', marginTop: '2px' }}>
-                          <User size={12} style={{ color: '#008764' }} /> {orc.comprador}
+                          <User size={12} style={{ color: '#154A85' }} /> {orc.comprador}
                         </div>
                       )}
                     </td>
                     <td>
                       <div style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '0.85rem' }}>
-                        <Building2 size={15} style={{ color: '#008764', flexShrink: 0 }} />
+                        <Building2 size={15} style={{ color: '#154A85', flexShrink: 0 }} />
                         <span style={{ fontWeight: 600 }}>{orc.fornecedorNome}</span>
                       </div>
                     </td>
@@ -869,7 +869,7 @@ export const OrcamentosPage = ({ showToast }) => {
                         <span style={{ color: '#94A3B8', fontSize: '0.8rem' }}>-</span>
                       )}
                     </td>
-                    <td className="font-mono" style={{ fontWeight: 800, color: '#008764' }}>
+                    <td className="font-mono" style={{ fontWeight: 800, color: '#154A85' }}>
                       {formatCurrency(orc.total)}
                     </td>
                     <td>
@@ -1027,7 +1027,7 @@ export const OrcamentosPage = ({ showToast }) => {
                   <div className="form-group" style={{ marginBottom: 0 }}>
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.35rem' }}>
                       <label className="form-label" style={{ marginBottom: 0, color: 'var(--primary-dark)', display: 'flex', alignItems: 'center', gap: '6px' }}>
-                        <Building2 size={16} style={{ color: '#008764' }} />
+                        <Building2 size={16} style={{ color: '#154A85' }} />
                         Fornecedor Representado *
                       </label>
                       <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
@@ -1042,8 +1042,8 @@ export const OrcamentosPage = ({ showToast }) => {
                             display: 'inline-flex',
                             alignItems: 'center',
                             gap: '4px',
-                            color: '#008764',
-                            borderColor: '#008764'
+                            color: '#154A85',
+                            borderColor: '#154A85'
                           }}
                         >
                           <Plus size={12} /> Cadastrar Fornecedor
@@ -1155,7 +1155,7 @@ export const OrcamentosPage = ({ showToast }) => {
                   <div className="form-group">
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.35rem' }}>
                       <label className="form-label" style={{ marginBottom: 0, display: 'flex', alignItems: 'center', gap: '4px' }}>
-                        <MapPin size={14} style={{ color: '#008764' }} />
+                        <MapPin size={14} style={{ color: '#154A85' }} />
                         Endereço de Entrega:
                       </label>
                       <button
@@ -1238,8 +1238,8 @@ export const OrcamentosPage = ({ showToast }) => {
                             display: 'inline-flex',
                             alignItems: 'center',
                             gap: '4px',
-                            color: '#008764',
-                            borderColor: '#008764'
+                            color: '#154A85',
+                            borderColor: '#154A85'
                           }}
                         >
                           <Plus size={12} /> Novo Vendedor
@@ -1461,7 +1461,7 @@ export const OrcamentosPage = ({ showToast }) => {
                                   <td style={{ textAlign: 'right', color: '#64748B' }}>
                                     {formatCurrency(item.precoUnitario)}
                                   </td>
-                                  <td className="font-mono" style={{ textAlign: 'right', fontWeight: 800, color: '#008764' }}>
+                                  <td className="font-mono" style={{ textAlign: 'right', fontWeight: 800, color: '#154A85' }}>
                                     {formatCurrency(sub)}
                                   </td>
                                   <td style={{ textAlign: 'center' }}>
@@ -1493,7 +1493,7 @@ export const OrcamentosPage = ({ showToast }) => {
                       </span>
                       <div style={{ textAlign: 'right' }}>
                         <span style={{ fontSize: '0.8125rem', color: '#64748B', marginRight: '8px' }}>Total Estimado:</span>
-                        <span className="font-mono" style={{ fontSize: '1.4rem', fontWeight: 800, color: '#008764' }}>
+                        <span className="font-mono" style={{ fontSize: '1.4rem', fontWeight: 800, color: '#154A85' }}>
                           {formatCurrency(formTotalCalculated)}
                         </span>
                       </div>
@@ -1591,7 +1591,7 @@ export const OrcamentosPage = ({ showToast }) => {
                 </div>
 
                 {/* Recap Box */}
-                <div style={{ backgroundColor: '#F0FDF4', border: '1px solid rgba(0, 200, 150, 0.3)', padding: '1.25rem', borderRadius: '8px', marginBottom: '1.25rem' }}>
+                <div style={{ backgroundColor: '#F0FDF4', border: '1px solid rgba(30, 95, 163, 0.3)', padding: '1.25rem', borderRadius: '8px', marginBottom: '1.25rem' }}>
                   <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: '1rem', alignItems: 'center' }}>
                     <div>
                       <span style={{ fontSize: '0.75rem', color: '#64748B', textTransform: 'uppercase', fontWeight: 700, display: 'block' }}>Cliente</span>
@@ -1610,7 +1610,7 @@ export const OrcamentosPage = ({ showToast }) => {
 
                     <div style={{ textAlign: 'right' }}>
                       <span style={{ fontSize: '0.75rem', color: '#64748B', textTransform: 'uppercase', fontWeight: 700, display: 'block' }}>Total do Orçamento</span>
-                      <span className="font-mono" style={{ fontSize: '1.6rem', fontWeight: 800, color: '#008764' }}>{formatCurrency(formTotalCalculated)}</span>
+                      <span className="font-mono" style={{ fontSize: '1.6rem', fontWeight: 800, color: '#154A85' }}>{formatCurrency(formTotalCalculated)}</span>
                     </div>
                   </div>
                 </div>
@@ -1687,7 +1687,7 @@ export const OrcamentosPage = ({ showToast }) => {
                         <td className="font-mono" style={{ fontWeight: 700 }}>{o.numero}</td>
                         <td style={{ color: '#64748B' }}>{formatDate(o.dataCriacao)}</td>
                         <td>{getStatusBadge(o.status)}</td>
-                        <td className="font-mono text-right" style={{ fontWeight: 800, color: '#008764' }}>{formatCurrency(o.total)}</td>
+                        <td className="font-mono text-right" style={{ fontWeight: 800, color: '#154A85' }}>{formatCurrency(o.total)}</td>
                       </tr>
                     ))}
                   </tbody>
@@ -1730,13 +1730,13 @@ export const OrcamentosPage = ({ showToast }) => {
                 padding: '1.25rem',
                 borderRadius: '8px',
                 cursor: 'pointer',
-                border: envioModal?.canal === 'WhatsApp' ? '2px solid #00C896' : '1px solid #E2E8F0',
+                border: envioModal?.canal === 'WhatsApp' ? '2px solid #1E5FA3' : '1px solid #E2E8F0',
                 backgroundColor: envioModal?.canal === 'WhatsApp' ? '#F0FDF4' : '#F8FAFC',
                 textAlign: 'center',
                 transition: 'all 0.2s'
               }}
             >
-              <MessageSquare size={32} style={{ color: '#008764', marginBottom: '8px', display: 'inline-block' }} />
+              <MessageSquare size={32} style={{ color: '#154A85', marginBottom: '8px', display: 'inline-block' }} />
               <div style={{ fontWeight: 800, color: 'var(--primary-dark)' }}>WhatsApp</div>
               <div style={{ fontSize: '0.75rem', color: '#64748B', marginTop: '4px' }}>
                 {envioModal?.orcamento?.clienteTelefone || 'Abrirá WhatsApp com texto'}
@@ -1858,7 +1858,7 @@ export const OrcamentosPage = ({ showToast }) => {
             {/* Client, Supplier & Order Info */}
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem', marginBottom: '1.25rem' }}>
               <div style={{ padding: '1rem', backgroundColor: '#F8FAFC', borderRadius: '8px', border: '1px solid #E2E8F0' }}>
-                <div style={{ fontSize: '0.75rem', fontWeight: 800, color: '#008764', textTransform: 'uppercase', marginBottom: '6px' }}>
+                <div style={{ fontSize: '0.75rem', fontWeight: 800, color: '#154A85', textTransform: 'uppercase', marginBottom: '6px' }}>
                   Dados do Cliente
                 </div>
                 <div style={{ fontWeight: 700, color: 'var(--primary-dark)', fontSize: '0.95rem' }}>
@@ -1872,14 +1872,14 @@ export const OrcamentosPage = ({ showToast }) => {
                 )}
                 {detalhesModal.enderecoEntrega && (
                   <div style={{ fontSize: '0.8125rem', color: '#64748B', marginTop: '4px' }}>
-                    <MapPin size={12} style={{ display: 'inline', marginRight: '4px', color: '#008764' }} />
+                    <MapPin size={12} style={{ display: 'inline', marginRight: '4px', color: '#154A85' }} />
                     Entrega: {detalhesModal.enderecoEntrega}
                   </div>
                 )}
               </div>
 
               <div style={{ padding: '1rem', backgroundColor: '#F8FAFC', borderRadius: '8px', border: '1px solid #E2E8F0' }}>
-                <div style={{ fontSize: '0.75rem', fontWeight: 800, color: '#008764', textTransform: 'uppercase', marginBottom: '6px' }}>
+                <div style={{ fontSize: '0.75rem', fontWeight: 800, color: '#154A85', textTransform: 'uppercase', marginBottom: '6px' }}>
                   Fornecedor & Dados Comerciais
                 </div>
                 <div style={{ fontWeight: 700, color: 'var(--primary-dark)', fontSize: '0.95rem' }}>
@@ -1924,7 +1924,7 @@ export const OrcamentosPage = ({ showToast }) => {
                         <td style={{ fontWeight: 700, color: 'var(--primary-dark)' }}>{item.produtoNome}</td>
                         <td style={{ textAlign: 'center' }}>{item.quantidade} {item.unidade || 'UN'}</td>
                         <td style={{ textAlign: 'right', color: '#64748B' }}>{formatCurrency(item.precoUnitario)}</td>
-                        <td className="font-mono" style={{ textAlign: 'right', fontWeight: 800, color: '#008764' }}>{formatCurrency(item.subtotal)}</td>
+                        <td className="font-mono" style={{ textAlign: 'right', fontWeight: 800, color: '#154A85' }}>{formatCurrency(item.subtotal)}</td>
                       </tr>
                     ))}
                   </tbody>
@@ -1950,9 +1950,9 @@ export const OrcamentosPage = ({ showToast }) => {
                 )}
               </div>
 
-              <div style={{ padding: '1rem 1.5rem', backgroundColor: '#F0FDF4', borderRadius: '8px', border: '1px solid rgba(0, 200, 150, 0.3)', textAlign: 'right', minWidth: '220px' }}>
+              <div style={{ padding: '1rem 1.5rem', backgroundColor: '#F0FDF4', borderRadius: '8px', border: '1px solid rgba(30, 95, 163, 0.3)', textAlign: 'right', minWidth: '220px' }}>
                 <span style={{ fontSize: '0.75rem', color: '#64748B', fontWeight: 700, textTransform: 'uppercase', display: 'block' }}>Total do Orçamento</span>
-                <span className="font-mono" style={{ fontSize: '1.6rem', fontWeight: 800, color: '#008764' }}>{formatCurrency(detalhesModal.total)}</span>
+                <span className="font-mono" style={{ fontSize: '1.6rem', fontWeight: 800, color: '#154A85' }}>{formatCurrency(detalhesModal.total)}</span>
               </div>
             </div>
 
@@ -2197,7 +2197,7 @@ export const OrcamentosPage = ({ showToast }) => {
                         textAlign: 'center',
                         backgroundColor: '#F8FAFC'
                       }}>
-                        <div style={{ fontWeight: 800, fontSize: '0.9rem', color: '#0A2540', letterSpacing: '0.04em' }}>
+                        <div style={{ fontWeight: 800, fontSize: '0.9rem', color: '#1A2332', letterSpacing: '0.04em' }}>
                           LAFITE LIMA
                         </div>
                         <div style={{ fontSize: '0.62rem', color: '#64748B', textTransform: 'uppercase', letterSpacing: '0.06em' }}>
@@ -2765,7 +2765,7 @@ export const OrcamentosPage = ({ showToast }) => {
                 <div style={{ fontSize: '0.75rem', textTransform: 'uppercase', color: '#64748B', fontWeight: 700 }}>
                   Valor Total do Pedido
                 </div>
-                <div className="font-mono" style={{ fontSize: '1.6rem', fontWeight: 800, color: '#008764', marginTop: '4px' }}>
+                <div className="font-mono" style={{ fontSize: '1.6rem', fontWeight: 800, color: '#154A85', marginTop: '4px' }}>
                   {formatCurrency(converterModal.orcamento.total)}
                 </div>
                 <div style={{ fontSize: '0.8rem', color: '#64748B', marginTop: '2px' }}>
@@ -2842,7 +2842,7 @@ export const OrcamentosPage = ({ showToast }) => {
                     type="checkbox"
                     checked={converterModal.baixarEstoque}
                     onChange={(e) => setConverterModal({ ...converterModal, baixarEstoque: e.target.checked })}
-                    style={{ width: '16px', height: '16px', accentColor: '#008764' }}
+                    style={{ width: '16px', height: '16px', accentColor: '#154A85' }}
                   />
                   <span>Dar <strong>baixa imediata</strong> no estoque dos produtos</span>
                 </label>
@@ -2852,7 +2852,7 @@ export const OrcamentosPage = ({ showToast }) => {
                     type="checkbox"
                     checked={converterModal.gerarFinanceiro}
                     onChange={(e) => setConverterModal({ ...converterModal, gerarFinanceiro: e.target.checked })}
-                    style={{ width: '16px', height: '16px', accentColor: '#008764' }}
+                    style={{ width: '16px', height: '16px', accentColor: '#154A85' }}
                   />
                   <span>Lançar no <strong>Contas a Receber</strong> (Financeiro)</span>
                 </label>
