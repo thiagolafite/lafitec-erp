@@ -36,12 +36,12 @@ const AppContent = () => {
 
   if (loading) {
     return (
-      <div className="flex-center" style={{ minHeight: '100vh', backgroundColor: '#1A2332', color: 'white', flexDirection: 'column', gap: '1rem' }}>
+      <div className="flex-center" style={{ minHeight: '100vh', backgroundColor: '#1A1A1A', color: 'white', flexDirection: 'column', gap: '1rem' }}>
         <div style={{
           width: '40px',
           height: '40px',
           border: '4px solid rgba(255,255,255,0.1)',
-          borderTopColor: '#1E5FA3',
+          borderTopColor: '#C9A962',
           borderRadius: '50%',
           animation: 'spin 1s linear infinite'
         }} />

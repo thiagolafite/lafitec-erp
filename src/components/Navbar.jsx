@@ -1,5 +1,5 @@
 import React from 'react';
-import { User, LogOut, ShieldCheck, Building, ChevronRight, Plus, FileSpreadsheet, Sparkles, Building2 } from 'lucide-react';
+import { LogOut, ChevronRight, Plus, Building2 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 
 export const Navbar = ({ currentTabTitle, setCurrentTab }) => {
@@ -8,27 +8,40 @@ export const Navbar = ({ currentTabTitle, setCurrentTab }) => {
   return (
     <header className="topbar">
       {/* Breadcrumb Path */}
-      <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
         <div style={{
           display: 'flex',
           alignItems: 'center',
-          gap: '6px',
-          padding: '4px 10px',
-          backgroundColor: '#F1F5F9',
-          borderRadius: '8px',
-          fontSize: '0.8rem',
-          fontWeight: 700,
-          color: '#576F86'
+          gap: '8px',
+          padding: '4px 12px',
+          backgroundColor: '#1A1A1A',
+          borderRadius: '4px',
+          fontSize: '0.75rem',
+          fontFamily: "'Montserrat', sans-serif",
+          fontWeight: 600,
+          letterSpacing: '0.06em',
+          color: '#FFFFFF'
         }}>
-          <ShieldCheck size={14} style={{ color: '#1E5FA3' }} />
-          <span>Lafitec ERP</span>
+          <span style={{
+            width: '20px',
+            height: '20px',
+            borderRadius: '50%',
+            border: '1.5px solid #C9A962',
+            display: 'inline-flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            fontSize: '0.6rem',
+            fontWeight: 700,
+            color: '#C9A962'
+          }}>LL</span>
+          <span>LAFITE LIMA</span>
         </div>
-        <ChevronRight size={15} style={{ color: '#CBD5E1' }} />
+        <ChevronRight size={15} style={{ color: '#A3A3A3' }} />
         <span style={{
-          fontFamily: 'Inter',
-          fontSize: '1.05rem',
-          fontWeight: 800,
-          color: '#1A2332',
+          fontFamily: "'Montserrat', sans-serif",
+          fontSize: '1rem',
+          fontWeight: 700,
+          color: '#1A1A1A',
           letterSpacing: '-0.01em'
         }}>
           {currentTabTitle}
@@ -36,8 +49,8 @@ export const Navbar = ({ currentTabTitle, setCurrentTab }) => {
       </div>
 
       {/* Right Controls & Profile */}
-      <div style={{ display: 'flex', alignItems: 'center', gap: '1.25rem' }}>
-        {/* Quick Action Button: Novo Orçamento with Glow */}
+      <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
+        {/* Quick Action Button: Novo Orçamento */}
         <button
           onClick={() => setCurrentTab('orcamentos')}
           className="btn btn-accent btn-sm"
@@ -45,31 +58,31 @@ export const Navbar = ({ currentTabTitle, setCurrentTab }) => {
             display: 'inline-flex',
             alignItems: 'center',
             gap: '6px',
-            fontWeight: 800,
+            fontWeight: 600,
             padding: '0.48rem 1rem',
-            borderRadius: '10px'
+            borderRadius: '4px'
           }}
           title="Elaborar Novo Orçamento Comercial"
         >
-          <Plus size={15} /> + Novo Orçamento
+          <Plus size={15} /> Novo Orçamento
         </button>
 
-        {/* Company Quick Badge with active dot */}
+        {/* Company Quick Badge */}
         <div style={{
           display: 'flex',
           alignItems: 'center',
           gap: '8px',
           padding: '6px 14px',
-          backgroundColor: '#F8FAFD',
-          border: '1px solid #E2E8F0',
-          borderRadius: '20px',
-          fontSize: '0.8125rem',
-          fontWeight: 700,
-          color: '#1A2332',
-          boxShadow: 'var(--shadow-xs)'
+          backgroundColor: '#FAFAFA',
+          border: '1px solid #E0E0E0',
+          borderRadius: '4px',
+          fontSize: '0.8rem',
+          fontFamily: "'Montserrat', sans-serif",
+          fontWeight: 600,
+          color: '#1A1A1A'
         }}>
-          <span style={{ width: '7px', height: '7px', borderRadius: '50%', backgroundColor: '#5B9BD5' }}></span>
-          <Building2 size={14} style={{ color: '#1E5FA3' }} />
+          <span style={{ width: '7px', height: '7px', borderRadius: '50%', backgroundColor: '#C9A962' }}></span>
+          <Building2 size={14} style={{ color: '#C9A962' }} />
           <span>{empresa?.nome}</span>
         </div>
 
@@ -78,33 +91,33 @@ export const Navbar = ({ currentTabTitle, setCurrentTab }) => {
           display: 'flex',
           alignItems: 'center',
           gap: '10px',
-          padding: '4px 6px 4px 10px',
+          padding: '4px 8px 4px 10px',
           backgroundColor: '#FFFFFF',
-          border: '1px solid #E2E8F0',
-          borderRadius: '24px',
-          boxShadow: 'var(--shadow-xs)'
+          border: '1px solid #E0E0E0',
+          borderRadius: '4px'
         }}>
           <div style={{
-            width: '34px',
-            height: '34px',
+            width: '32px',
+            height: '32px',
             borderRadius: '50%',
-            background: 'linear-gradient(135deg, #1A2332 0%, #243348 100%)',
-            color: '#FFFFFF',
+            backgroundColor: '#1A1A1A',
+            color: '#C9A962',
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
+            fontFamily: "'Montserrat', sans-serif",
             fontWeight: 700,
-            fontSize: '0.9rem',
-            border: '2px solid #1E5FA3'
+            fontSize: '0.85rem',
+            border: '1.5px solid #C9A962'
           }}>
             {user?.nome ? user.nome.charAt(0).toUpperCase() : 'U'}
           </div>
 
           <div style={{ display: 'flex', flexDirection: 'column', marginRight: '4px' }}>
-            <span style={{ fontSize: '0.825rem', fontWeight: 800, color: '#1A2332', lineHeight: 1.1 }}>
+            <span style={{ fontFamily: "'Montserrat', sans-serif", fontSize: '0.8rem', fontWeight: 700, color: '#1A1A1A', lineHeight: 1.1 }}>
               {user?.nome}
             </span>
-            <span style={{ fontSize: '0.68rem', color: '#576F86', fontWeight: 600 }}>
+            <span style={{ fontSize: '0.68rem', color: '#666666', fontWeight: 600 }}>
               {user?.tipo === 'Admin' ? 'Administrador' : 'Operador'}
             </span>
           </div>
@@ -120,10 +133,10 @@ export const Navbar = ({ currentTabTitle, setCurrentTab }) => {
               color: '#DC2626',
               borderColor: '#FECACA',
               backgroundColor: '#FEF2F2',
-              fontWeight: 700,
+              fontWeight: 600,
               padding: '0.35rem 0.75rem',
-              borderRadius: '12px',
-              fontSize: '0.8rem'
+              borderRadius: '4px',
+              fontSize: '0.75rem'
             }}
           >
             <LogOut size={14} />

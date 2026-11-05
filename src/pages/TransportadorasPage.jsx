@@ -249,9 +249,9 @@ export const TransportadorasPage = ({ showToast }) => {
               ) : (
                 filtered.map(t => (
                   <tr key={t.id}>
-                    <td className="font-mono" style={{ fontWeight: 700, color: '#1A2332' }}>{t.codigo || t.id}</td>
+                    <td className="font-mono" style={{ fontWeight: 700, color: '#1A1A1A' }}>{t.codigo || t.id}</td>
                     <td>
-                      <div style={{ fontWeight: 700, color: '#1A2332' }}>{t.nome}</div>
+                      <div style={{ fontWeight: 700, color: '#1A1A1A' }}>{t.nome}</div>
                       <div style={{ fontSize: '0.75rem', color: '#64748B' }}>{t.fantasia ? `Fantasia: ${t.fantasia}` : t.email}</div>
                     </td>
                     <td className="font-mono" style={{ fontSize: '0.8rem', color: '#475569' }}>{t.rntrc || 'N/A'}</td>
@@ -263,7 +263,7 @@ export const TransportadorasPage = ({ showToast }) => {
                     </td>
                     <td>
                       <span style={{ display: 'inline-flex', alignItems: 'center', gap: '4px', fontWeight: 600 }}>
-                        <MapPin size={14} style={{ color: '#1E5FA3' }} /> {t.cidade || 'Não informada'}
+                        <MapPin size={14} style={{ color: '#C9A962' }} /> {t.cidade || 'Não informada'}
                       </span>
                     </td>
                     <td>
@@ -311,7 +311,7 @@ export const TransportadorasPage = ({ showToast }) => {
             type="button"
             className={`btn btn-sm ${activeTab === 'principal' ? 'btn-primary' : 'btn-outline'}`}
             onClick={() => setActiveTab('principal')}
-            style={{ borderBottom: activeTab === 'principal' ? '3px solid #1E5FA3' : 'none' }}
+            style={{ borderBottom: activeTab === 'principal' ? '3px solid #C9A962' : 'none' }}
           >
             Principal
           </button>
@@ -519,7 +519,7 @@ export const TransportadorasPage = ({ showToast }) => {
                         onChange={handleCepChange}
                       />
                       {cepLoading && (
-                        <Loader2 size={16} className="spin" style={{ position: 'absolute', right: '10px', top: '50%', transform: 'translateY(-50%)', color: '#1E5FA3' }} />
+                        <Loader2 size={16} className="spin" style={{ position: 'absolute', right: '10px', top: '50%', transform: 'translateY(-50%)', color: '#C9A962' }} />
                       )}
                     </div>
                   </div>
@@ -607,7 +607,7 @@ export const TransportadorasPage = ({ showToast }) => {
           {activeTab === 'contatos' && (
             <div>
               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '1rem' }}>
-                <h4 style={{ fontWeight: 800, color: '#1A2332' }}>Contatos da Transportadora / Expedição</h4>
+                <h4 style={{ fontWeight: 800, color: '#1A1A1A' }}>Contatos da Transportadora / Expedição</h4>
                 <button type="button" className="btn btn-accent btn-sm" onClick={handleAddContato}>
                   <PlusCircle size={16} /> Adicionar Contato
                 </button>
@@ -693,7 +693,7 @@ export const TransportadorasPage = ({ showToast }) => {
           {/* ABA 3: ENDEREÇOS */}
           {activeTab === 'enderecos' && (
             <div>
-              <h4 style={{ fontWeight: 800, color: '#1A2332', marginBottom: '1rem' }}>Endereços Secundários e Filiais de Coleta</h4>
+              <h4 style={{ fontWeight: 800, color: '#1A1A1A', marginBottom: '1rem' }}>Endereços Secundários e Filiais de Coleta</h4>
               <p style={{ fontSize: '0.875rem', color: '#64748B', marginBottom: '1rem' }}>
                 Cadastre pontos de coleta, transbordo ou galpões de carregamento adicionais.
               </p>

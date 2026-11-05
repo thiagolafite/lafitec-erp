@@ -171,7 +171,7 @@ export const CondicoesPagamentoPage = ({ showToast }) => {
             <div className="stat-label">Total Cadastradas</div>
             <div className="stat-val">{totalGeral}</div>
           </div>
-          <div className="stat-icon-wrapper" style={{ background: 'rgba(10, 37, 64, 0.08)', color: 'var(--primary-dark)' }}>
+          <div className="stat-icon-wrapper" style={{ background: 'rgba(26, 26, 26, 0.08)', color: 'var(--primary-dark)' }}>
             <CreditCard size={24} />
           </div>
         </div>
@@ -181,7 +181,7 @@ export const CondicoesPagamentoPage = ({ showToast }) => {
             <div className="stat-label">Pagamento À Vista</div>
             <div className="stat-val">{countVista}</div>
           </div>
-          <div className="stat-icon-wrapper" style={{ background: 'rgba(30, 95, 163, 0.12)', color: '#1E5FA3' }}>
+          <div className="stat-icon-wrapper" style={{ background: 'rgba(201, 169, 98, 0.12)', color: '#C9A962' }}>
             <DollarSign size={24} />
           </div>
         </div>
@@ -283,7 +283,7 @@ export const CondicoesPagamentoPage = ({ showToast }) => {
                       </div>
                     </td>
                     <td>
-                      <span className="font-mono" style={{ color: '#1A2332', fontWeight: 600 }}>
+                      <span className="font-mono" style={{ color: '#1A1A1A', fontWeight: 600 }}>
                         {cond.intervaloDias || '0 (À Vista)'}
                       </span>
                     </td>
@@ -473,7 +473,7 @@ export const CondicoesPagamentoPage = ({ showToast }) => {
                       cursor: 'pointer',
                       fontWeight: 700,
                       fontSize: '0.85rem',
-                      backgroundColor: formImprimeNoPedido ? '#1E5FA3' : '#FFFFFF',
+                      backgroundColor: formImprimeNoPedido ? '#C9A962' : '#FFFFFF',
                       color: formImprimeNoPedido ? '#05291E' : '#64748B',
                       transition: 'all 0.2s'
                     }}

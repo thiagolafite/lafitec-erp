@@ -126,12 +126,12 @@ export const FinanceiroPage = ({ showToast }) => {
         <div className="stat-card">
           <div>
             <div className="stat-label">Saldo Liquidado</div>
-            <div className="stat-val" style={{ color: totalPago >= 0 ? '#1E5FA3' : '#EF4444' }}>
+            <div className="stat-val" style={{ color: totalPago >= 0 ? '#C9A962' : '#EF4444' }}>
               {formatCurrency(totalPago)}
             </div>
             <div style={{ fontSize: '0.75rem', color: '#64748B', marginTop: '4px' }}>Realizado no caixa</div>
           </div>
-          <div className="stat-icon-wrapper" style={{ backgroundColor: 'rgba(10, 37, 64, 0.1)', color: '#1A2332' }}>
+          <div className="stat-icon-wrapper" style={{ backgroundColor: 'rgba(26, 26, 26, 0.1)', color: '#1A1A1A' }}>
             <DollarSign size={24} />
           </div>
         </div>
@@ -141,7 +141,7 @@ export const FinanceiroPage = ({ showToast }) => {
       <div className="card">
         <div className="card-header" style={{ flexWrap: 'wrap', gap: '1rem' }}>
           <div className="card-title">
-            <DollarSign size={20} style={{ color: '#1E5FA3' }} /> Lançamentos Financeiros
+            <DollarSign size={20} style={{ color: '#C9A962' }} /> Lançamentos Financeiros
           </div>
 
           {/* Filters Bar */}
@@ -193,7 +193,7 @@ export const FinanceiroPage = ({ showToast }) => {
                 filteredFinanceiro.map(item => (
                   <tr key={item.id}>
                     <td>
-                      <div style={{ fontWeight: 700, color: '#1A2332' }}>{item.descricao}</div>
+                      <div style={{ fontWeight: 700, color: '#1A1A1A' }}>{item.descricao}</div>
                     </td>
                     <td>
                       {item.tipo === 'Receber' ? (

@@ -55,12 +55,12 @@ export const SegurancaPage = ({ showToast }) => {
 
       {/* Security Highlight Banner */}
       <div style={{
-        backgroundColor: '#1A2332',
+        backgroundColor: '#1A1A1A',
         borderRadius: '12px',
         padding: '2rem',
         color: 'white',
         marginBottom: '2rem',
-        boxShadow: '0 10px 25px -5px rgba(10, 37, 64, 0.25)',
+        boxShadow: '0 10px 25px -5px rgba(26, 26, 26, 0.25)',
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'space-between',
@@ -69,8 +69,8 @@ export const SegurancaPage = ({ showToast }) => {
       }}>
         <div style={{ maxWidth: '650px' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '0.5rem' }}>
-            <ShieldCheck size={24} style={{ color: '#60A5FA' }} />
-            <span style={{ color: '#60A5FA', fontWeight: 800, textTransform: 'uppercase', fontSize: '0.8125rem' }}>
+            <ShieldCheck size={24} style={{ color: '#C9A962' }} />
+            <span style={{ color: '#C9A962', fontWeight: 800, textTransform: 'uppercase', fontSize: '0.8125rem' }}>
               Diferencial Tecnológico Lafitec ERP
             </span>
           </div>
@@ -83,14 +83,14 @@ export const SegurancaPage = ({ showToast }) => {
         </div>
 
         <div style={{
-          backgroundColor: 'rgba(91, 155, 213, 0.15)',
-          border: '1px solid rgba(91, 155, 213, 0.35)',
+          backgroundColor: 'rgba(201, 169, 98, 0.15)',
+          border: '1px solid rgba(201, 169, 98, 0.35)',
           padding: '1rem 1.5rem',
           borderRadius: '10px',
           textAlign: 'center'
         }}>
           <div style={{ fontSize: '0.75rem', color: '#94A3B8', textTransform: 'uppercase', fontWeight: 700 }}>Status do Sistema</div>
-          <div style={{ fontSize: '1.1rem', fontWeight: 800, color: '#60A5FA', marginTop: '2px' }}>✓ 100% Protegido</div>
+          <div style={{ fontSize: '1.1rem', fontWeight: 800, color: '#C9A962', marginTop: '2px' }}>✓ 100% Protegido</div>
           <div style={{ fontSize: '0.75rem', color: '#94A3B8', marginTop: '2px' }}>Logs de Auditoria Ativos</div>
         </div>
       </div>
@@ -106,7 +106,7 @@ export const SegurancaPage = ({ showToast }) => {
         <div className="card">
           <div className="card-header">
             <div className="card-title">
-              <Building size={20} style={{ color: '#1A2332' }} /> Dados da Empresa
+              <Building size={20} style={{ color: '#1A1A1A' }} /> Dados da Empresa
             </div>
             <span className="badge badge-accent">Plano {empresa.plano}</span>
           </div>
@@ -114,7 +114,7 @@ export const SegurancaPage = ({ showToast }) => {
           <div style={{ fontSize: '0.9rem', display: 'flex', flexDirection: 'column', gap: '0.75rem', marginBottom: '1.5rem' }}>
             <div>
               <span style={{ color: '#64748B', fontSize: '0.8rem', display: 'block' }}>Razão Social</span>
-              <strong style={{ color: '#1A2332', fontSize: '1rem' }}>{empresa.nome}</strong>
+              <strong style={{ color: '#1A1A1A', fontSize: '1rem' }}>{empresa.nome}</strong>
             </div>
 
             <div>
@@ -129,7 +129,7 @@ export const SegurancaPage = ({ showToast }) => {
           </div>
 
           <div style={{ borderTop: '1px solid #E2E8F0', paddingTop: '1rem' }}>
-            <label style={{ fontSize: '0.8rem', fontWeight: 700, color: '#1A2332', display: 'block', marginBottom: '0.5rem' }}>
+            <label style={{ fontSize: '0.8rem', fontWeight: 700, color: '#1A1A1A', display: 'block', marginBottom: '0.5rem' }}>
               Alterar Plano de Assinatura:
             </label>
             <div style={{ display: 'flex', gap: '0.5rem' }}>
@@ -151,7 +151,7 @@ export const SegurancaPage = ({ showToast }) => {
         <div className="card">
           <div className="card-header">
             <div className="card-title">
-              <Users size={20} style={{ color: '#1E5FA3' }} /> Usuários com Acesso ({usuariosEmpresa.length})
+              <Users size={20} style={{ color: '#C9A962' }} /> Usuários com Acesso ({usuariosEmpresa.length})
             </div>
             {user?.tipo === 'Admin' && (
               <button className="btn btn-accent btn-sm" onClick={() => setIsNovoUsuarioModal(true)}>
@@ -193,7 +193,7 @@ export const SegurancaPage = ({ showToast }) => {
       <div className="card">
         <div className="card-header">
           <div className="card-title">
-            <FileCheck size={20} style={{ color: '#1E5FA3' }} /> Trilha de Auditoria de Segurança (Audit Logs)
+            <FileCheck size={20} style={{ color: '#C9A962' }} /> Trilha de Auditoria de Segurança (Audit Logs)
           </div>
           <span className="badge badge-dark">{auditLogs.length} Registros</span>
         </div>
@@ -221,7 +221,7 @@ export const SegurancaPage = ({ showToast }) => {
                     <td style={{ color: '#64748B', fontSize: '0.8125rem' }}>
                       {new Date(log.data).toLocaleString('pt-BR')}
                     </td>
-                    <td style={{ fontWeight: 700, color: '#1A2332' }}>{log.usuarioNome}</td>
+                    <td style={{ fontWeight: 700, color: '#1A1A1A' }}>{log.usuarioNome}</td>
                     <td style={{ fontWeight: 600 }}>{log.acao}</td>
                     <td>
                       <span className="badge badge-success">

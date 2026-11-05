@@ -446,9 +446,9 @@ export const ClientesPage = ({ showToast }) => {
 
                   return (
                     <tr key={p.id}>
-                      <td className="font-mono" style={{ fontWeight: 700, color: '#1A2332' }}>{p.codigo || p.id}</td>
+                      <td className="font-mono" style={{ fontWeight: 700, color: '#1A1A1A' }}>{p.codigo || p.id}</td>
                       <td>
-                        <div style={{ fontWeight: 700, color: '#1A2332' }}>{p.nome}</div>
+                        <div style={{ fontWeight: 700, color: '#1A1A1A' }}>{p.nome}</div>
                         <div style={{ fontSize: '0.75rem', color: '#64748B' }}>{p.email}</div>
                       </td>
                       <td>
@@ -504,7 +504,7 @@ export const ClientesPage = ({ showToast }) => {
           <div style={{
             display: 'flex',
             gap: '2px',
-            borderBottom: '2px solid #1E5FA3',
+            borderBottom: '2px solid #C9A962',
             overflowX: 'auto',
             marginBottom: '1.25rem',
             paddingBottom: '0px'
@@ -518,9 +518,9 @@ export const ClientesPage = ({ showToast }) => {
                   padding: '0.625rem 1rem',
                   fontSize: '0.85rem',
                   fontWeight: activeTab === t.id ? 800 : 600,
-                  color: activeTab === t.id ? '#1A2332' : '#64748B',
+                  color: activeTab === t.id ? '#1A1A1A' : '#64748B',
                   backgroundColor: activeTab === t.id ? '#FFFFFF' : '#F1F5F9',
-                  borderTop: activeTab === t.id ? '3px solid #1E5FA3' : '1px solid #E2E8F0',
+                  borderTop: activeTab === t.id ? '3px solid #C9A962' : '1px solid #E2E8F0',
                   borderLeft: '1px solid #E2E8F0',
                   borderRight: '1px solid #E2E8F0',
                   borderBottom: activeTab === t.id ? '1px solid #FFFFFF' : 'none',
@@ -553,14 +553,14 @@ export const ClientesPage = ({ showToast }) => {
 
                 {/* TIPO DE CADASTRO (OPÇÃO PROSPECTS REMOVIDA) */}
                 <div className="form-group">
-                  <label className="form-label" style={{ color: '#1E5FA3', fontWeight: 800 }}>
+                  <label className="form-label" style={{ color: '#C9A962', fontWeight: 800 }}>
                     Tipo de Cadastro (Alocação Automática) *
                   </label>
                   <select
                     className="form-select"
                     value={formData.tipo === 'Prospect' ? 'Clientes' : formData.tipo}
                     onChange={(e) => setFormData({ ...formData, tipo: e.target.value })}
-                    style={{ fontWeight: 700, borderColor: '#1E5FA3', backgroundColor: '#F0FDF4' }}
+                    style={{ fontWeight: 700, borderColor: '#C9A962', backgroundColor: '#F0FDF4' }}
                   >
                     <option value="Clientes">Clientes (Lista de Clientes)</option>
                     <option value="Parceiro">Parceiro Comercial</option>
@@ -739,7 +739,7 @@ export const ClientesPage = ({ showToast }) => {
                   position: 'absolute',
                   top: '-12px',
                   left: '16px',
-                  backgroundColor: '#1A2332',
+                  backgroundColor: '#1A1A1A',
                   color: '#FFFFFF',
                   padding: '2px 10px',
                   borderRadius: '4px',
@@ -918,7 +918,7 @@ export const ClientesPage = ({ showToast }) => {
           {/* TAB 2: CONTATOS */}
           {activeTab === 'contatos' && (
             <div>
-              <h4 style={{ fontSize: '0.95rem', fontWeight: 700, color: '#1A2332', marginBottom: '1rem', borderBottom: '1px solid #E2E8F0', paddingBottom: '0.5rem' }}>
+              <h4 style={{ fontSize: '0.95rem', fontWeight: 700, color: '#1A1A1A', marginBottom: '1rem', borderBottom: '1px solid #E2E8F0', paddingBottom: '0.5rem' }}>
                 Outros Contatos
               </h4>
 
@@ -1048,7 +1048,7 @@ export const ClientesPage = ({ showToast }) => {
           {/* TAB 3: ENDEREÇOS */}
           {activeTab === 'enderecos' && (
             <div>
-              <h4 style={{ fontSize: '0.95rem', fontWeight: 700, color: '#1A2332', marginBottom: '1rem' }}>
+              <h4 style={{ fontSize: '0.95rem', fontWeight: 700, color: '#1A1A1A', marginBottom: '1rem' }}>
                 Endereço de Cobrança
               </h4>
               <div className="form-row">
@@ -1073,7 +1073,7 @@ export const ClientesPage = ({ showToast }) => {
                 </div>
               </div>
 
-              <h4 style={{ fontSize: '0.95rem', fontWeight: 700, color: '#1A2332', margin: '1.5rem 0 1rem 0' }}>
+              <h4 style={{ fontSize: '0.95rem', fontWeight: 700, color: '#1A1A1A', margin: '1.5rem 0 1rem 0' }}>
                 Endereço de Entrega
               </h4>
               <div className="form-row">

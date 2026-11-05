@@ -57,27 +57,47 @@ export const Sidebar = ({ currentTab, setCurrentTab }) => {
 
   return (
     <aside className="sidebar">
-      {/* Brand Header */}
+      {/* Brand Header - Lafite Lima Official Logo */}
       <div className="sidebar-logo">
         <div style={{
-          width: '40px',
-          height: '40px',
-          borderRadius: '8px',
-          background: '#1E5FA3',
+          width: '42px',
+          height: '42px',
+          borderRadius: '50%',
+          border: '2px solid #FFFFFF',
+          backgroundColor: 'transparent',
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center',
           color: '#FFFFFF',
+          fontFamily: "'Montserrat', sans-serif",
           fontWeight: 700,
-          boxShadow: '0 2px 8px rgba(30, 95, 163, 0.35)',
-          position: 'relative'
+          fontSize: '1.1rem',
+          letterSpacing: '0.02em',
+          flexShrink: 0
         }}>
-          <ShieldCheck size={26} />
+          LL
         </div>
         <div>
-          <div className="sidebar-brand">Lafitec<span>ERP</span></div>
-          <div style={{ fontSize: '0.65rem', color: '#64748B', fontWeight: 800, letterSpacing: '0.08em', textTransform: 'uppercase' }}>
-            Enterprise Edition
+          <div style={{
+            fontFamily: "'Montserrat', sans-serif",
+            fontSize: '0.92rem',
+            fontWeight: 600,
+            letterSpacing: '0.08em',
+            color: '#FFFFFF',
+            lineHeight: 1.2
+          }}>
+            LAFITE LIMA
+          </div>
+          <div style={{
+            fontFamily: "'Montserrat', sans-serif",
+            fontSize: '0.62rem',
+            color: '#C9A962',
+            fontWeight: 500,
+            letterSpacing: '0.16em',
+            textTransform: 'uppercase',
+            marginTop: '2px'
+          }}>
+            REPRESENTAÇÕES • ERP
           </div>
         </div>
       </div>
@@ -87,26 +107,26 @@ export const Sidebar = ({ currentTab, setCurrentTab }) => {
         padding: '0.95rem 1.1rem',
         margin: '1rem 0.85rem 0.5rem 0.85rem',
         backgroundColor: 'rgba(255, 255, 255, 0.03)',
-        borderRadius: '12px',
-        border: '1px solid rgba(255, 255, 255, 0.08)',
-        boxShadow: '0 4px 12px rgba(0,0,0,0.15)'
+        borderRadius: '6px',
+        border: '1px solid rgba(201, 169, 98, 0.22)',
+        boxShadow: '0 4px 12px rgba(0,0,0,0.2)'
       }}>
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '8px' }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '5px' }}>
-            <span style={{ width: '6px', height: '6px', borderRadius: '50%', backgroundColor: '#5B9BD5' }}></span>
-            <span style={{ fontSize: '0.68rem', color: '#94A3B8', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.06em' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+            <span style={{ width: '6px', height: '6px', borderRadius: '50%', backgroundColor: '#C9A962' }}></span>
+            <span style={{ fontSize: '0.65rem', color: '#A3A3A3', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em' }}>
               Ambiente Ativo
             </span>
           </div>
           {empresa && (
-            <span className={`badge ${getPlanoBadgeClass(empresa.plano)}`} style={{ fontSize: '0.65rem', padding: '2px 8px' }}>
+            <span className={`badge ${getPlanoBadgeClass(empresa.plano)}`} style={{ fontSize: '0.62rem', padding: '2px 8px' }}>
               {empresa.plano}
             </span>
           )}
         </div>
         
-        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontWeight: 800, fontSize: '0.875rem', color: '#FFFFFF', marginBottom: '10px' }}>
-          <Building2 size={16} style={{ color: '#5B9BD5', flexShrink: 0 }} />
+        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontWeight: 700, fontSize: '0.85rem', color: '#FFFFFF', marginBottom: '10px' }}>
+          <Building2 size={16} style={{ color: '#C9A962', flexShrink: 0 }} />
           <span style={{ whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
             {empresa ? empresa.nome : 'Sem Empresa'}
           </span>
@@ -120,10 +140,10 @@ export const Sidebar = ({ currentTab, setCurrentTab }) => {
           style={{
             padding: '5px 8px',
             fontSize: '0.75rem',
-            backgroundColor: '#162236',
+            backgroundColor: '#121212',
             color: '#FFFFFF',
             borderColor: 'rgba(255, 255, 255, 0.15)',
-            borderRadius: '8px',
+            borderRadius: '4px',
             fontWeight: 600
           }}
         >
@@ -147,15 +167,15 @@ export const Sidebar = ({ currentTab, setCurrentTab }) => {
               style={{
                 width: '100%',
                 background: currentTab === 'master_dashboard' 
-                  ? 'rgba(37, 99, 235, 0.20)' 
-                  : 'rgba(37, 99, 235, 0.10)',
-                border: '1px solid rgba(37, 99, 235, 0.30)',
-                color: '#93C5FD',
+                  ? 'rgba(201, 169, 98, 0.22)' 
+                  : 'rgba(201, 169, 98, 0.10)',
+                border: '1px solid rgba(201, 169, 98, 0.40)',
+                color: '#C9A962',
                 fontWeight: 700
               }}
             >
-              <Crown size={18} style={{ color: '#FCD34D' }} />
-              <span>👑 Painel Master SaaS</span>
+              <Crown size={18} style={{ color: '#C9A962' }} />
+              <span>Painel Master SaaS</span>
             </button>
           </div>
         )}
@@ -418,10 +438,10 @@ export const Sidebar = ({ currentTab, setCurrentTab }) => {
         color: '#94A3B8'
       }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-          <Lock size={13} style={{ color: '#5B9BD5' }} />
+          <Lock size={13} style={{ color: '#C9A962' }} />
           <span>Isolamento Multi-tenant</span>
         </div>
-        <span style={{ color: '#5B9BD5', fontWeight: 700 }}>100% SEGURO</span>
+        <span style={{ color: '#C9A962', fontWeight: 700 }}>100% SEGURO</span>
       </div>
     </aside>
   );
