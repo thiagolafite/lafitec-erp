@@ -10,6 +10,7 @@ const STORAGE_KEYS = {
   TRANSPORTADORAS: 'lafitec_transportadoras',
   FORNECEDORES: 'lafitec_fornecedores',
   PRODUTOS: 'lafitec_produtos',
+  GRUPOS_PRODUTO: 'lafitec_grupos_produto',
   ORCAMENTOS: 'lafitec_orcamentos',
   ITENS_ORCAMENTO: 'lafitec_itens_orcamento',
   CONDICOES_PAGAMENTO: 'lafitec_condicoes_pagamento',
@@ -1183,6 +1184,96 @@ export const storage = {
         supabaseService.deleteProduto(id, empresaId, usuarioNome).catch(e => console.warn('Supabase delete produto error:', e));
       }
     }
+  },
+
+  // --- GRUPOS & SUBGRUPOS DE PRODUTOS ---
+  getGruposProdutos: (empresaId) => {
+    const saved = getTable(STORAGE_KEYS.GRUPOS_PRODUTO).filter(g => g.empresaId === empresaId);
+    const produtos = getTable(STORAGE_KEYS.PRODUTOS).filter(p => p.empresaId === empresaId);
+
+    const mapa = new Map();
+    saved.forEach(g => {
+      const nome = (g.nome || '').trim();
+      if (!nome) return;
+      const key = nome.toLowerCase();
+      if (!mapa.has(key)) {
+        mapa.set(key, {
+          id: g.id,
+          empresaId: g.empresaId,
+          nome,
+          subgrupos: Array.isArray(g.subgrupos) ? [...new Set(g.subgrupos.map(s => s.trim()).filter(Boolean))] : []
+        });
+      }
+    });
+
+    // Incorpora grupos e subgrupos já cadastrados nos produtos existentes
+    produtos.forEach(p => {
+      const gNome = (p.grupo || '').trim();
+      const sNome = (p.subGrupo || '').trim();
+      if (gNome) {
+        const key = gNome.toLowerCase();
+        if (!mapa.has(key)) {
+          mapa.set(key, {
+            id: `grp-${key}`,
+            empresaId,
+            nome: gNome,
+            subgrupos: []
+          });
+        }
+        if (sNome) {
+          const entry = mapa.get(key);
+          if (!entry.subgrupos.some(s => s.toLowerCase() === sNome.toLowerCase())) {
+            entry.subgrupos.push(sNome);
+          }
+        }
+      }
+    });
+
+    return Array.from(mapa.values()).sort((a, b) => a.nome.localeCompare(b.nome));
+  },
+
+  saveGrupoProduto: (nome, subGrupoInicial, empresaId, usuarioNome) => {
+    const cleanNome = (nome || '').trim();
+    const cleanSub = (subGrupoInicial || '').trim();
+    if (!cleanNome) throw new Error('Informe o nome do Grupo.');
+
+    const all = getTable(STORAGE_KEYS.GRUPOS_PRODUTO);
+    const existingIndex = all.findIndex(
+      g => g.empresaId === empresaId && (g.nome || '').trim().toLowerCase() === cleanNome.toLowerCase()
+    );
+
+    let savedGrupo;
+    if (existingIndex >= 0) {
+      const current = all[existingIndex];
+      const subs = Array.isArray(current.subgrupos) ? [...current.subgrupos] : [];
+      if (cleanSub && !subs.some(s => s.toLowerCase() === cleanSub.toLowerCase())) {
+        subs.push(cleanSub);
+      }
+      savedGrupo = { ...current, subgrupos: subs };
+      all[existingIndex] = savedGrupo;
+    } else {
+      savedGrupo = {
+        id: 'grp-' + Date.now(),
+        empresaId,
+        nome: cleanNome,
+        subgrupos: cleanSub ? [cleanSub] : []
+      };
+      all.push(savedGrupo);
+    }
+
+    setTable(STORAGE_KEYS.GRUPOS_PRODUTO, all);
+    logAuditAction(empresaId, usuarioNome, `Cadastrou grupo de produto: ${cleanNome}`);
+    return savedGrupo;
+  },
+
+  saveSubGrupoProduto: (grupoNome, subGrupoNome, empresaId, usuarioNome) => {
+    const cleanSub = (subGrupoNome || '').trim();
+    if (!cleanSub) throw new Error('Informe o nome do SubGrupo.');
+    const cleanGrupo = (grupoNome || '').trim() || 'Geral';
+
+    const saved = storage.saveGrupoProduto(cleanGrupo, cleanSub, empresaId, usuarioNome);
+    logAuditAction(empresaId, usuarioNome, `Cadastrou subgrupo "${cleanSub}" no grupo "${cleanGrupo}"`);
+    return { grupo: saved.nome, subGrupo: cleanSub };
   },
 
   // --- ORÇAMENTOS ---

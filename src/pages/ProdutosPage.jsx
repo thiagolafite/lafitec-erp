@@ -40,11 +40,19 @@ export const ProdutosPage = ({ showToast }) => {
   const [quickFornModal, setQuickFornModal] = useState(false);
   const [quickFornData, setQuickFornData] = useState({ nome: '', cnpj: '', email: '', telefone: '', categoria: '' });
 
+  // Quick Grupo & SubGrupo Modals
+  const [quickGrupoModal, setQuickGrupoModal] = useState(false);
+  const [quickGrupoData, setQuickGrupoData] = useState({ nome: '', subGrupoInicial: '' });
+  const [quickSubGrupoModal, setQuickSubGrupoModal] = useState(false);
+  const [quickSubGrupoData, setQuickSubGrupoData] = useState({ grupoNome: '', nome: '' });
+
   const [fornecedores, setFornecedores] = useState(() => storage.getFornecedores(empresa?.id || ''));
+  const [gruposProdutos, setGruposProdutos] = useState(() => storage.getGruposProdutos(empresa?.id || ''));
 
   const refreshListasAuxiliares = () => {
     if (empresa) {
       setFornecedores(storage.getFornecedores(empresa.id));
+      setGruposProdutos(storage.getGruposProdutos(empresa.id));
     }
   };
 
@@ -189,6 +197,65 @@ export const ProdutosPage = ({ showToast }) => {
       showToast('error', 'Erro ao cadastrar fornecedor.');
     }
   };
+
+  const handleSaveQuickGrupo = (e) => {
+    e.preventDefault();
+    if (!quickGrupoData.nome.trim()) return;
+    try {
+      const saved = storage.saveGrupoProduto(
+        quickGrupoData.nome,
+        quickGrupoData.subGrupoInicial,
+        empresa.id,
+        user.nome
+      );
+      refreshListasAuxiliares();
+      setFormData(prev => ({
+        ...prev,
+        grupo: saved.nome,
+        subGrupo: quickGrupoData.subGrupoInicial.trim() ? quickGrupoData.subGrupoInicial.trim() : prev.subGrupo
+      }));
+      setQuickGrupoModal(false);
+      setQuickGrupoData({ nome: '', subGrupoInicial: '' });
+      showToast('success', `Grupo "${saved.nome}" cadastrado e selecionado!`);
+    } catch (err) {
+      showToast('error', err.message || 'Erro ao cadastrar grupo.');
+    }
+  };
+
+  const handleSaveQuickSubGrupo = (e) => {
+    e.preventDefault();
+    if (!quickSubGrupoData.nome.trim()) return;
+    try {
+      const targetGrupo = quickSubGrupoData.grupoNome.trim() || formData.grupo || 'Geral';
+      const saved = storage.saveSubGrupoProduto(
+        targetGrupo,
+        quickSubGrupoData.nome,
+        empresa.id,
+        user.nome
+      );
+      refreshListasAuxiliares();
+      setFormData(prev => ({
+        ...prev,
+        grupo: saved.grupo,
+        subGrupo: saved.subGrupo
+      }));
+      setQuickSubGrupoModal(false);
+      setQuickSubGrupoData({ grupoNome: '', nome: '' });
+      showToast('success', `SubGrupo "${saved.subGrupo}" cadastrado e selecionado!`);
+    } catch (err) {
+      showToast('error', err.message || 'Erro ao cadastrar subgrupo.');
+    }
+  };
+
+  const subGruposDisponiveis = (() => {
+    if (formData.grupo) {
+      const grp = gruposProdutos.find(g => g.nome.toLowerCase() === formData.grupo.toLowerCase());
+      return grp ? [...grp.subgrupos].sort((a, b) => a.localeCompare(b)) : [];
+    }
+    const allSubs = new Set();
+    gruposProdutos.forEach(g => g.subgrupos.forEach(s => allSubs.add(s)));
+    return Array.from(allSubs).sort((a, b) => a.localeCompare(b));
+  })();
 
   const handleSubmit = (e, duplicar = false) => {
     if (e) e.preventDefault();
@@ -493,24 +560,74 @@ export const ProdutosPage = ({ showToast }) => {
                 <div className="form-row">
                   <div className="form-group">
                     <label className="form-label">Grupo / Categoria</label>
-                    <input
-                      type="text"
-                      className="form-input"
-                      placeholder="Ex: Hardware, Software..."
-                      value={formData.grupo}
-                      onChange={(e) => setFormData({ ...formData, grupo: e.target.value })}
-                    />
+                    <div style={{ display: 'flex', gap: '6px' }}>
+                      <select
+                        className="form-select"
+                        value={formData.grupo}
+                        onChange={(e) => {
+                          const novoGrupo = e.target.value;
+                          const grpObj = gruposProdutos.find(g => g.nome.toLowerCase() === novoGrupo.toLowerCase());
+                          const subValido = grpObj && grpObj.subgrupos.some(s => s.toLowerCase() === (formData.subGrupo || '').toLowerCase());
+                          setFormData({
+                            ...formData,
+                            grupo: novoGrupo,
+                            subGrupo: !novoGrupo || subValido ? formData.subGrupo : ''
+                          });
+                        }}
+                      >
+                        <option value="">Selecione o grupo...</option>
+                        {gruposProdutos.map(g => (
+                          <option key={g.id} value={g.nome}>{g.nome}</option>
+                        ))}
+                        {formData.grupo && !gruposProdutos.some(g => g.nome.toLowerCase() === formData.grupo.toLowerCase()) && (
+                          <option value={formData.grupo}>{formData.grupo}</option>
+                        )}
+                      </select>
+                      <button
+                        type="button"
+                        className="btn btn-accent btn-sm"
+                        title="Criar Novo Grupo na Hora"
+                        onClick={() => {
+                          setQuickGrupoData({ nome: '', subGrupoInicial: '' });
+                          setQuickGrupoModal(true);
+                        }}
+                      >
+                        <Plus size={16} />
+                      </button>
+                    </div>
                   </div>
 
                   <div className="form-group">
                     <label className="form-label">SubGrupo</label>
-                    <input
-                      type="text"
-                      className="form-input"
-                      placeholder="Ex: Redes, SaaS, Servidores..."
-                      value={formData.subGrupo}
-                      onChange={(e) => setFormData({ ...formData, subGrupo: e.target.value })}
-                    />
+                    <div style={{ display: 'flex', gap: '6px' }}>
+                      <select
+                        className="form-select"
+                        value={formData.subGrupo}
+                        onChange={(e) => setFormData({ ...formData, subGrupo: e.target.value })}
+                      >
+                        <option value="">Selecione o subgrupo...</option>
+                        {subGruposDisponiveis.map(sub => (
+                          <option key={sub} value={sub}>{sub}</option>
+                        ))}
+                        {formData.subGrupo && !subGruposDisponiveis.some(s => s.toLowerCase() === formData.subGrupo.toLowerCase()) && (
+                          <option value={formData.subGrupo}>{formData.subGrupo}</option>
+                        )}
+                      </select>
+                      <button
+                        type="button"
+                        className="btn btn-accent btn-sm"
+                        title="Criar Novo SubGrupo na Hora"
+                        onClick={() => {
+                          setQuickSubGrupoData({
+                            grupoNome: formData.grupo || (gruposProdutos[0]?.nome || ''),
+                            nome: ''
+                          });
+                          setQuickSubGrupoModal(true);
+                        }}
+                      >
+                        <Plus size={16} />
+                      </button>
+                    </div>
                   </div>
                 </div>
 
@@ -1029,6 +1146,93 @@ export const ProdutosPage = ({ showToast }) => {
           </div>
           <div className="modal-footer" style={{ padding: '1rem 0 0 0', backgroundColor: 'transparent' }}>
             <button type="button" className="btn btn-outline" onClick={() => setQuickFornModal(false)}>Cancelar</button>
+            <button type="submit" className="btn btn-accent">Cadastrar & Selecionar</button>
+          </div>
+        </form>
+      </Modal>
+
+      {/* QUICK MODAL: GRUPO NA HORA */}
+      <Modal
+        isOpen={quickGrupoModal}
+        onClose={() => setQuickGrupoModal(false)}
+        title="Cadastro Rápido de Grupo / Categoria"
+      >
+        <form onSubmit={handleSaveQuickGrupo}>
+          <div className="form-group">
+            <label className="form-label">Nome do Grupo / Categoria *</label>
+            <input
+              type="text"
+              className="form-input"
+              required
+              autoFocus
+              placeholder="Ex: Vidros, Ferragens, Alumínio, Hardware..."
+              value={quickGrupoData.nome}
+              onChange={(e) => setQuickGrupoData({ ...quickGrupoData, nome: e.target.value })}
+            />
+          </div>
+          <div className="form-group">
+            <label className="form-label">SubGrupo Inicial (Opcional)</label>
+            <input
+              type="text"
+              className="form-input"
+              placeholder="Ex: Temperado, Fechaduras, Perfis..."
+              value={quickGrupoData.subGrupoInicial}
+              onChange={(e) => setQuickGrupoData({ ...quickGrupoData, subGrupoInicial: e.target.value })}
+            />
+          </div>
+          <div className="modal-footer" style={{ padding: '1rem 0 0 0', backgroundColor: 'transparent' }}>
+            <button type="button" className="btn btn-outline" onClick={() => setQuickGrupoModal(false)}>Cancelar</button>
+            <button type="submit" className="btn btn-accent">Cadastrar & Selecionar</button>
+          </div>
+        </form>
+      </Modal>
+
+      {/* QUICK MODAL: SUBGRUPO NA HORA */}
+      <Modal
+        isOpen={quickSubGrupoModal}
+        onClose={() => setQuickSubGrupoModal(false)}
+        title="Cadastro Rápido de SubGrupo"
+      >
+        <form onSubmit={handleSaveQuickSubGrupo}>
+          <div className="form-group">
+            <label className="form-label">Grupo Vinculado *</label>
+            {gruposProdutos.length > 0 ? (
+              <select
+                className="form-select"
+                required
+                value={quickSubGrupoData.grupoNome}
+                onChange={(e) => setQuickSubGrupoData({ ...quickSubGrupoData, grupoNome: e.target.value })}
+              >
+                <option value="">Selecione o grupo...</option>
+                {gruposProdutos.map(g => (
+                  <option key={g.id} value={g.nome}>{g.nome}</option>
+                ))}
+              </select>
+            ) : (
+              <input
+                type="text"
+                className="form-input"
+                required
+                placeholder="Ex: Geral, Vidros, Ferragens..."
+                value={quickSubGrupoData.grupoNome}
+                onChange={(e) => setQuickSubGrupoData({ ...quickSubGrupoData, grupoNome: e.target.value })}
+              />
+            )}
+          </div>
+          <div className="form-group">
+            <label className="form-label">Nome do SubGrupo *</label>
+            <input
+              type="text"
+              className="form-input"
+              required
+              autoFocus
+              placeholder="Ex: Temperado 8mm, Laminado, Redes..."
+              value={quickSubGrupoData.nome}
+              onChange={(e) => setQuickSubGrupoData({ ...quickSubGrupoData, nome: e.target.value })}
+            />
+          </div>
+          <div className="modal-footer" style={{ padding: '1rem 0 0 0', backgroundColor: 'transparent' }}>
+            <button type="button" className="btn btn-outline" onClick={() => setQuickSubGrupoModal(false)}>Cancelar</button>
             <button type="submit" className="btn btn-accent">Cadastrar & Selecionar</button>
           </div>
         </form>
