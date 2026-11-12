@@ -498,12 +498,21 @@ export const seedInitialData = () => {
 
 const getTable = (key) => {
   seedInitialData();
-  const raw = localStorage.getItem(key);
-  return raw ? JSON.parse(raw) : [];
+  try {
+    const raw = localStorage.getItem(key);
+    return raw ? JSON.parse(raw) : [];
+  } catch (err) {
+    console.error(`[Storage] Falha ao parsear tabela ${key}:`, err);
+    return [];
+  }
 };
 
 const setTable = (key, data) => {
-  localStorage.setItem(key, JSON.stringify(data));
+  try {
+    localStorage.setItem(key, JSON.stringify(data));
+  } catch (err) {
+    console.error(`[Storage] Falha ao persistir tabela ${key}:`, err);
+  }
 };
 
 // --- CÁLCULO INTELIGENTE DO ÍNDICE DE RELACIONAMENTO DO CLIENTE (0 a 100) ---
@@ -635,13 +644,22 @@ export const storage = {
   },
 
   getCurrentSession: () => {
-    const raw = localStorage.getItem(STORAGE_KEYS.CURRENT_USER);
-    return raw ? JSON.parse(raw) : null;
+    try {
+      const raw = localStorage.getItem(STORAGE_KEYS.CURRENT_USER);
+      return raw ? JSON.parse(raw) : null;
+    } catch (e) {
+      console.error('[Storage] Erro ao ler sessão atual:', e);
+      return null;
+    }
   },
 
   saveCurrentSession: (session) => {
-    if (session) {
-      localStorage.setItem(STORAGE_KEYS.CURRENT_USER, JSON.stringify(session));
+    try {
+      if (session) {
+        localStorage.setItem(STORAGE_KEYS.CURRENT_USER, JSON.stringify(session));
+      }
+    } catch (e) {
+      console.error('[Storage] Erro ao salvar sessão atual:', e);
     }
   },
 
@@ -899,6 +917,12 @@ export const storage = {
       const session = storage.getCurrentSession();
       const activeEmpresaId = (empresaId && empresaId.length > 15) ? empresaId : (session?.empresa?.id || '80285958-6d61-4784-b0af-89fb3c99b401');
       supabaseService.saveEntradaEstoque({ ...novaEntrada, empresaId: activeEmpresaId }, activeEmpresaId, usuarioNome).catch(() => {});
+      (entradaData.itens || []).forEach(item => {
+        const prod = produtosAtualizados.find(p => p.id === item.produtoId);
+        if (prod) {
+          supabaseService.updateProductStock(prod.id, prod.estoque, activeEmpresaId).catch(() => {});
+        }
+      });
     }
 
     return novaEntrada;
@@ -963,6 +987,18 @@ export const storage = {
     setTable(STORAGE_KEYS.MOVIMENTACOES_ESTOQUE, [...novasMovimentacoes, ...movimentacoes]);
 
     logAuditAction(empresaId, usuarioNome, `Realizou ESTORNO da Entrada #${entradaTarget.numeroMovimentacao}. Motivo: ${motivoEstorno}`);
+
+    if (supabaseService.isConfigured()) {
+      const session = storage.getCurrentSession();
+      const activeEmpresaId = (empresaId && empresaId.length > 15) ? empresaId : (session?.empresa?.id || '80285958-6d61-4784-b0af-89fb3c99b401');
+      supabaseService.estornarEntradaEstoque(entradaId, motivoEstorno, activeEmpresaId, usuarioNome).catch(() => {});
+      (entradaTarget.itens || []).forEach(item => {
+        const prod = produtosAtualizados.find(p => p.id === item.produtoId);
+        if (prod) {
+          supabaseService.updateProductStock(prod.id, prod.estoque, activeEmpresaId).catch(() => {});
+        }
+      });
+    }
   },
 
   // --- MÓDULO DE VISITAS & ROTAS ---
@@ -1668,6 +1704,15 @@ export const storage = {
     logAuditAction(activeEmpresaId, usuarioNome, `Gerou Pedido de Venda #${numeroVenda} no valor de R$ ${valorFinal.toFixed(2)} para ${clienteNome}`);
 
     if (supabaseService.isConfigured()) {
+      if (baixarEstoque) {
+        itens.forEach(item => {
+          const prod = produtosAtualizados.find(p => p.id === item.produtoId);
+          if (prod) {
+            supabaseService.updateProductStock(prod.id, prod.estoque, activeEmpresaId).catch(() => {});
+          }
+        });
+      }
+
       supabaseService.saveVenda({ ...novaVenda, itens: novosItensVenda }, activeEmpresaId, usuarioNome)
         .then(dbVenda => {
           if (dbVenda && dbVenda.id) {
@@ -1680,6 +1725,17 @@ export const storage = {
     }
 
     return novaVenda;
+  },
+
+  deleteVenda: (id, empresaId, usuarioNome) => {
+    const session = storage.getCurrentSession();
+    const activeEmpresaId = (empresaId && empresaId.length > 15) ? empresaId : (session?.empresa?.id || '80285958-6d61-4784-b0af-89fb3c99b401');
+    const vendas = getTable(STORAGE_KEYS.VENDAS);
+    setTable(STORAGE_KEYS.VENDAS, vendas.filter(v => v.id !== id));
+    logAuditAction(activeEmpresaId, usuarioNome, `Cancelou/Excluiu venda #${id}`);
+    if (supabaseService.isConfigured()) {
+      supabaseService.deleteVenda(id, activeEmpresaId, usuarioNome).catch(() => {});
+    }
   },
 
   // --- FINANCEIRO ---
@@ -1830,6 +1886,11 @@ export const storage = {
     if (cond) {
       setTable(STORAGE_KEYS.CONDICOES_PAGAMENTO, all.filter(c => c.id !== id));
       logAuditAction(activeEmpresaId, usuarioNome, `Excluiu condição de pagamento: ${cond.descricao}`);
+      if (supabaseService.isConfigured()) {
+        supabaseService.deleteCondicaoPagamento(id, activeEmpresaId, usuarioNome).catch(e => {
+          console.warn('[Storage] Erro ao excluir condição de pagamento no Supabase:', e);
+        });
+      }
     }
   },
 

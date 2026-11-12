@@ -27,7 +27,24 @@ const AppContent = () => {
   const [currentTab, setCurrentTab] = useState('dashboard');
   const [toast, setToast] = useState(null);
 
-  const showToast = (type, message) => {
+  const showToast = (arg1, arg2) => {
+    let type = 'info';
+    let message = '';
+    const validTypes = ['success', 'warning', 'error', 'info', 'danger'];
+
+    if (validTypes.includes(arg1)) {
+      type = arg1;
+      message = arg2 || '';
+    } else if (validTypes.includes(arg2)) {
+      type = arg2;
+      message = arg1 || '';
+    } else {
+      message = arg1 || arg2 || '';
+      type = 'info';
+    }
+
+    if (type === 'danger') type = 'error';
+
     setToast({ type, message });
     setTimeout(() => {
       setToast(null);

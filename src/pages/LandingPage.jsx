@@ -43,8 +43,12 @@ export const LandingPage = ({ onGoToLogin, onSelectPlanRegister }) => {
     setErrorMsg('');
     setLoading(true);
     try {
-      await registerEmpresa({ ...formData, plano: selectedPlan });
+      const res = await registerEmpresa({ ...formData, plano: selectedPlan });
       setRegistroModal(false);
+      if (res && res.pendingApproval) {
+        alert('Cadastro realizado com sucesso! Sua conta está em análise para aprovação pelo Administrador Master.');
+      }
+      if (onGoToLogin) onGoToLogin();
     } catch (err) {
       setErrorMsg(err.message || 'Erro ao registrar empresa.');
     } finally {

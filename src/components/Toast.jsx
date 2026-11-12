@@ -1,5 +1,5 @@
 import React from 'react';
-import { CheckCircle2, AlertTriangle, XCircle, X } from 'lucide-react';
+import { CheckCircle2, AlertTriangle, XCircle, Info, X } from 'lucide-react';
 
 export const Toast = ({ toast, onClose }) => {
   if (!toast) return null;
@@ -7,21 +7,24 @@ export const Toast = ({ toast, onClose }) => {
   const { type, message } = toast;
 
   const icons = {
-    success: <CheckCircle2 size={20} className="text-emerald-500" style={{ color: '#C9A962' }} />,
+    success: <CheckCircle2 size={20} style={{ color: '#C9A962' }} />,
     warning: <AlertTriangle size={20} style={{ color: '#F59E0B' }} />,
-    error: <XCircle size={20} style={{ color: '#EF4444' }} />
+    error: <XCircle size={20} style={{ color: '#EF4444' }} />,
+    info: <Info size={20} style={{ color: '#3B82F6' }} />
   };
 
   const bgColors = {
     success: '#ECFDF5',
     warning: '#FFFBEB',
-    error: '#FEF2F2'
+    error: '#FEF2F2',
+    info: '#EFF6FF'
   };
 
   const borderColors = {
     success: '#C9A962',
     warning: '#F59E0B',
-    error: '#EF4444'
+    error: '#EF4444',
+    info: '#3B82F6'
   };
 
   return (

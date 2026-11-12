@@ -1,7 +1,7 @@
 // Lafitec ERP - Supabase Backend Data Service
 // Comunicação com o PostgreSQL através da API do Supabase
 
-import { supabase, isSupabaseConfigured } from './supabaseClient';
+import { supabase, isSupabaseConfigured, supabaseUrl, supabaseAnonKey } from './supabaseClient';
 
 export const toValidUuidOrNull = (val) => {
   if (!val || typeof val !== 'string') return null;
@@ -44,11 +44,11 @@ export const supabaseService = {
     // 2. Consulta via REST direto com anon key (blindagem contra tokens corrompidos em localStorage)
     if (!usuario) {
       try {
-        const directUrl = `https://kkoyikmayylhxcnmcjyl.supabase.co/rest/v1/usuarios?email=ilike.${encodeURIComponent(cleanEmail)}&ativo=eq.true&select=*`;
+        const directUrl = `${supabaseUrl}/rest/v1/usuarios?email=ilike.${encodeURIComponent(cleanEmail)}&ativo=eq.true&select=*`;
         const res = await fetch(directUrl, {
           headers: {
-            'apikey': 'sb_publishable_ON_tVRIx3Va4ukWsnOf-8g_EXDv5ju4',
-            'Authorization': 'Bearer sb_publishable_ON_tVRIx3Va4ukWsnOf-8g_EXDv5ju4'
+            'apikey': supabaseAnonKey,
+            'Authorization': `Bearer ${supabaseAnonKey}`
           }
         });
 
@@ -103,10 +103,10 @@ export const supabaseService = {
 
       if (!empresa) {
         try {
-          const resEmp = await fetch(`https://kkoyikmayylhxcnmcjyl.supabase.co/rest/v1/empresas?id=eq.${usuario.empresa_id}&select=*`, {
+          const resEmp = await fetch(`${supabaseUrl}/rest/v1/empresas?id=eq.${usuario.empresa_id}&select=*`, {
             headers: {
-              'apikey': 'sb_publishable_ON_tVRIx3Va4ukWsnOf-8g_EXDv5ju4',
-              'Authorization': 'Bearer sb_publishable_ON_tVRIx3Va4ukWsnOf-8g_EXDv5ju4'
+              'apikey': supabaseAnonKey,
+              'Authorization': `Bearer ${supabaseAnonKey}`
             }
           });
           if (resEmp.ok) {
@@ -357,6 +357,16 @@ export const supabaseService = {
   async syncAllDataFromSupabase(empresaId) {
     if (!supabase || !empresaId) return;
     const validEmpresaId = (empresaId && empresaId.length > 15) ? empresaId : '80285958-6d61-4784-b0af-89fb3c99b401';
+    
+    const safeParse = (key) => {
+      try {
+        const raw = localStorage.getItem(key);
+        return raw ? JSON.parse(raw) : [];
+      } catch (e) {
+        return [];
+      }
+    };
+
     try {
       // 1. Parceiros (Clientes, Fornecedores, Transportadoras)
       const { data: dbParceiros } = await supabase
@@ -364,9 +374,9 @@ export const supabaseService = {
         .select('*')
         .eq('empresa_id', validEmpresaId);
       
-      if (dbParceiros && dbParceiros.length > 0) {
+      if (Array.isArray(dbParceiros)) {
         const mapped = dbParceiros.map(this.mapParceiroFromDb);
-        const existing = JSON.parse(localStorage.getItem('lafitec_parceiros_unificados') || '[]');
+        const existing = safeParse('lafitec_parceiros_unificados');
         const otherEmpresas = existing.filter(p => p.empresaId !== validEmpresaId);
         localStorage.setItem('lafitec_parceiros_unificados', JSON.stringify([...otherEmpresas, ...mapped]));
       }
@@ -377,9 +387,9 @@ export const supabaseService = {
         .select('*')
         .eq('empresa_id', validEmpresaId);
 
-      if (dbProdutos && dbProdutos.length > 0) {
+      if (Array.isArray(dbProdutos)) {
         const mapped = dbProdutos.map(this.mapProdutoFromDb);
-        const existing = JSON.parse(localStorage.getItem('lafitec_produtos') || '[]');
+        const existing = safeParse('lafitec_produtos');
         const otherEmpresas = existing.filter(p => p.empresaId !== validEmpresaId);
         localStorage.setItem('lafitec_produtos', JSON.stringify([...otherEmpresas, ...mapped]));
       }
@@ -390,7 +400,7 @@ export const supabaseService = {
         .select('*')
         .eq('empresa_id', validEmpresaId);
 
-      if (dbCondicoes && dbCondicoes.length > 0) {
+      if (Array.isArray(dbCondicoes)) {
         const mapped = dbCondicoes.map(c => ({
           id: c.id,
           empresaId: c.empresa_id,
@@ -402,7 +412,7 @@ export const supabaseService = {
           ordem: c.ordem,
           imprimeNoPedido: c.imprime_no_pedido
         }));
-        const existing = JSON.parse(localStorage.getItem('lafitec_condicoes_pagamento') || '[]');
+        const existing = safeParse('lafitec_condicoes_pagamento');
         const otherEmpresas = existing.filter(c => c.empresaId !== validEmpresaId);
         localStorage.setItem('lafitec_condicoes_pagamento', JSON.stringify([...otherEmpresas, ...mapped]));
       }
@@ -413,7 +423,7 @@ export const supabaseService = {
         .select('*')
         .eq('empresa_id', validEmpresaId);
 
-      if (dbOrcamentos && dbOrcamentos.length > 0) {
+      if (Array.isArray(dbOrcamentos)) {
         const mapped = dbOrcamentos.map(o => ({
           id: o.id,
           empresaId: o.empresa_id,
@@ -445,7 +455,7 @@ export const supabaseService = {
           vendaId: o.venda_id,
           itens: o.itens || []
         }));
-        const existing = JSON.parse(localStorage.getItem('lafitec_orcamentos') || '[]');
+        const existing = safeParse('lafitec_orcamentos');
         const otherEmpresas = existing.filter(o => o.empresaId !== validEmpresaId);
         localStorage.setItem('lafitec_orcamentos', JSON.stringify([...otherEmpresas, ...mapped]));
       }
@@ -456,7 +466,7 @@ export const supabaseService = {
         .select('*')
         .eq('empresa_id', validEmpresaId);
 
-      if (dbVendas && dbVendas.length > 0) {
+      if (Array.isArray(dbVendas)) {
         const mapped = dbVendas.map(v => ({
           id: v.id,
           empresaId: v.empresa_id,
@@ -470,7 +480,7 @@ export const supabaseService = {
           status: v.status,
           itens: v.itens || []
         }));
-        const existing = JSON.parse(localStorage.getItem('lafitec_vendas') || '[]');
+        const existing = safeParse('lafitec_vendas');
         const otherEmpresas = existing.filter(v => v.empresaId !== validEmpresaId);
         localStorage.setItem('lafitec_vendas', JSON.stringify([...otherEmpresas, ...mapped]));
       }
@@ -481,7 +491,7 @@ export const supabaseService = {
         .select('*')
         .eq('empresa_id', validEmpresaId);
 
-      if (dbFinanceiro && dbFinanceiro.length > 0) {
+      if (Array.isArray(dbFinanceiro)) {
         const mapped = dbFinanceiro.map(f => ({
           id: f.id,
           empresaId: f.empresa_id,
@@ -495,7 +505,7 @@ export const supabaseService = {
           origemId: f.origem_id,
           observacoes: f.observacoes
         }));
-        const existing = JSON.parse(localStorage.getItem('lafitec_financeiro') || '[]');
+        const existing = safeParse('lafitec_financeiro');
         const otherEmpresas = existing.filter(f => f.empresaId !== validEmpresaId);
         localStorage.setItem('lafitec_financeiro', JSON.stringify([...otherEmpresas, ...mapped]));
       }
@@ -506,7 +516,7 @@ export const supabaseService = {
         .select('*')
         .eq('empresa_id', validEmpresaId);
 
-      if (dbVisitas && dbVisitas.length > 0) {
+      if (Array.isArray(dbVisitas)) {
         const mapped = dbVisitas.map(v => ({
           id: v.id,
           empresaId: v.empresa_id,
@@ -522,9 +532,61 @@ export const supabaseService = {
           resultadoVisita: v.resultado_visita,
           observacoes: v.observacoes
         }));
-        const existing = JSON.parse(localStorage.getItem('lafitec_visitas') || '[]');
+        const existing = safeParse('lafitec_visitas');
         const otherEmpresas = existing.filter(v => v.empresaId !== validEmpresaId);
         localStorage.setItem('lafitec_visitas', JSON.stringify([...otherEmpresas, ...mapped]));
+      }
+
+      // 8. Entradas de Estoque
+      const { data: dbEntradas } = await supabase
+        .from('entradas_estoque')
+        .select('*')
+        .eq('empresa_id', validEmpresaId);
+
+      if (Array.isArray(dbEntradas)) {
+        const mapped = dbEntradas.map(e => ({
+          id: e.id,
+          empresaId: e.empresa_id,
+          numeroMovimentacao: e.numero_movimentacao,
+          dataHora: e.data_hora,
+          usuarioResponsavel: e.usuario_responsavel,
+          tipoEntrada: e.tipo_entrada,
+          motivo: e.motivo,
+          fornecedorId: e.fornecedor_id,
+          fornecedorNome: e.fornecedor_nome,
+          numeroNotaFiscal: e.numero_nota_fiscal,
+          serieNotaFiscal: e.serie_nota_fiscal,
+          observacoes: e.observacoes,
+          status: e.status,
+          motivoEstorno: e.motivo_estorno,
+          valorTotalNota: parseFloat(e.valor_total_nota) || 0,
+          itens: e.itens || []
+        }));
+        const existing = safeParse('lafitec_entradas_estoque');
+        const otherEmpresas = existing.filter(e => e.empresaId !== validEmpresaId);
+        localStorage.setItem('lafitec_entradas_estoque', JSON.stringify([...otherEmpresas, ...mapped]));
+      }
+
+      // 9. Usuários da Empresa
+      const { data: dbUsuarios } = await supabase
+        .from('usuarios')
+        .select('*')
+        .eq('empresa_id', validEmpresaId);
+
+      if (Array.isArray(dbUsuarios)) {
+        const mapped = dbUsuarios.map(u => ({
+          id: u.id,
+          empresaId: u.empresa_id,
+          nome: u.nome,
+          email: u.email,
+          cargo: u.cargo,
+          perfil: u.perfil,
+          ativo: u.ativo,
+          isMaster: u.is_master
+        }));
+        const existing = safeParse('lafitec_usuarios');
+        const otherEmpresas = existing.filter(u => u.empresaId !== validEmpresaId);
+        localStorage.setItem('lafitec_usuarios', JSON.stringify([...otherEmpresas, ...mapped]));
       }
     } catch (err) {
       console.warn('[SupabaseService] Erro na sincronização global:', err);
@@ -907,14 +969,15 @@ export const supabaseService = {
     // 2. Tentativa via Direct REST Fetch (Garante 100% de gravação)
     if (!savedData) {
       try {
-        const url = 'https://kkoyikmayylhxcnmcjyl.supabase.co';
-        const key = 'sb_publishable_ON_tVRIx3Va4ukWsnOf-8g_EXDv5ju4';
         delete dbPayload.id;
-        const res = await fetch(`${url}/rest/v1/parceiros`, {
+        const endpoint = isUpdate
+          ? `${supabaseUrl}/rest/v1/parceiros?id=eq.${encodeURIComponent(id)}&empresa_id=eq.${encodeURIComponent(validEmpresaId)}`
+          : `${supabaseUrl}/rest/v1/parceiros`;
+        const res = await fetch(endpoint, {
           method: isUpdate ? 'PATCH' : 'POST',
           headers: {
-            'apikey': key,
-            'Authorization': `Bearer ${key}`,
+            'apikey': supabaseAnonKey,
+            'Authorization': `Bearer ${supabaseAnonKey}`,
             'Content-Type': 'application/json',
             'Prefer': 'return=representation'
           },
@@ -952,11 +1015,9 @@ export const supabaseService = {
     }
 
     try {
-      const url = 'https://kkoyikmayylhxcnmcjyl.supabase.co';
-      const key = 'sb_publishable_ON_tVRIx3Va4ukWsnOf-8g_EXDv5ju4';
-      await fetch(`${url}/rest/v1/parceiros?id=eq.${targetUuid}&empresa_id=eq.${validEmpresaId}`, {
+      await fetch(`${supabaseUrl}/rest/v1/parceiros?id=eq.${encodeURIComponent(targetUuid)}&empresa_id=eq.${encodeURIComponent(validEmpresaId)}`, {
         method: 'DELETE',
-        headers: { 'apikey': key, 'Authorization': `Bearer ${key}` }
+        headers: { 'apikey': supabaseAnonKey, 'Authorization': `Bearer ${supabaseAnonKey}` }
       });
       await this.logAuditAction(validEmpresaId, usuarioNome, `Excluiu parceiro #${targetUuid}`);
     } catch (e) {}
@@ -1009,14 +1070,15 @@ export const supabaseService = {
 
     if (!savedData) {
       try {
-        const url = 'https://kkoyikmayylhxcnmcjyl.supabase.co';
-        const key = 'sb_publishable_ON_tVRIx3Va4ukWsnOf-8g_EXDv5ju4';
         delete dbPayload.id;
-        const res = await fetch(`${url}/rest/v1/produtos`, {
+        const endpoint = isUpdate
+          ? `${supabaseUrl}/rest/v1/produtos?id=eq.${encodeURIComponent(id)}&empresa_id=eq.${encodeURIComponent(validEmpresaId)}`
+          : `${supabaseUrl}/rest/v1/produtos`;
+        const res = await fetch(endpoint, {
           method: isUpdate ? 'PATCH' : 'POST',
           headers: {
-            'apikey': key,
-            'Authorization': `Bearer ${key}`,
+            'apikey': supabaseAnonKey,
+            'Authorization': `Bearer ${supabaseAnonKey}`,
             'Content-Type': 'application/json',
             'Prefer': 'return=representation'
           },
@@ -1054,14 +1116,55 @@ export const supabaseService = {
     }
 
     try {
-      const url = 'https://kkoyikmayylhxcnmcjyl.supabase.co';
-      const key = 'sb_publishable_ON_tVRIx3Va4ukWsnOf-8g_EXDv5ju4';
-      await fetch(`${url}/rest/v1/produtos?id=eq.${targetUuid}&empresa_id=eq.${validEmpresaId}`, {
+      await fetch(`${supabaseUrl}/rest/v1/produtos?id=eq.${encodeURIComponent(targetUuid)}&empresa_id=eq.${encodeURIComponent(validEmpresaId)}`, {
         method: 'DELETE',
-        headers: { 'apikey': key, 'Authorization': `Bearer ${key}` }
+        headers: { 'apikey': supabaseAnonKey, 'Authorization': `Bearer ${supabaseAnonKey}` }
       });
       await this.logAuditAction(validEmpresaId, usuarioNome, `Excluiu produto #${targetUuid}`);
     } catch (e) {}
+  },
+
+  async updateProductStock(prodId, novoEstoque, empresaId) {
+    const validEmpresaId = (empresaId && empresaId.length > 15) ? empresaId : '80285958-6d61-4784-b0af-89fb3c99b401';
+    const targetUuid = toValidUuidOrNull(prodId);
+    if (!targetUuid) return null;
+
+    if (supabase) {
+      try {
+        const { data, error } = await supabase
+          .from('produtos')
+          .update({ estoque: parseFloat(novoEstoque) || 0 })
+          .eq('id', targetUuid)
+          .eq('empresa_id', validEmpresaId)
+          .select()
+          .maybeSingle();
+        if (!error && data) return this.mapProdutoFromDb(data);
+      } catch (e) {
+        console.warn('[SupabaseService] Erro ao atualizar estoque do produto no SDK:', e);
+      }
+    }
+
+    try {
+      const endpoint = `${supabaseUrl}/rest/v1/produtos?id=eq.${encodeURIComponent(targetUuid)}&empresa_id=eq.${encodeURIComponent(validEmpresaId)}`;
+      const res = await fetch(endpoint, {
+        method: 'PATCH',
+        headers: {
+          'apikey': supabaseAnonKey,
+          'Authorization': `Bearer ${supabaseAnonKey}`,
+          'Content-Type': 'application/json',
+          'Prefer': 'return=representation'
+        },
+        body: JSON.stringify({ estoque: parseFloat(novoEstoque) || 0 })
+      });
+      if (res.ok) {
+        const list = await res.json();
+        const saved = Array.isArray(list) ? list[0] : list;
+        return saved ? this.mapProdutoFromDb(saved) : null;
+      }
+    } catch (e) {
+      console.warn('[SupabaseService] Erro ao atualizar estoque do produto via direct fetch:', e);
+    }
+    return null;
   },
 
   // --- CONDIÇÕES DE PAGAMENTO ---
@@ -1121,6 +1224,20 @@ export const supabaseService = {
       if (error) throw error;
       await this.logAuditAction(empresaId, usuarioNome, `Cadastrou condição de pagamento: ${cond.descricao}`);
       return data;
+    }
+  },
+
+  async deleteCondicaoPagamento(id, empresaId, usuarioNome) {
+    if (!supabase || !id) return;
+    try {
+      await supabase
+        .from('condicoes_pagamento')
+        .delete()
+        .eq('id', id)
+        .eq('empresa_id', empresaId);
+      await this.logAuditAction(empresaId, usuarioNome, `Excluiu condição de pagamento #${id}`);
+    } catch (e) {
+      console.warn('[SupabaseService] Erro ao excluir condição de pagamento:', e);
     }
   },
 
@@ -1192,6 +1309,29 @@ export const supabaseService = {
 
     await this.logAuditAction(empresaId, usuarioNome, `Registrou entrada de estoque ${entrada.numero_movimentacao}`);
     return entrada;
+  },
+
+  async estornarEntradaEstoque(entradaId, motivoEstorno, empresaId, usuarioNome) {
+    if (!supabase || !entradaId) return null;
+    const validEmpresaId = (empresaId && empresaId.length > 15) ? empresaId : '80285958-6d61-4784-b0af-89fb3c99b401';
+    try {
+      const { data, error } = await supabase
+        .from('entradas_estoque')
+        .update({
+          status: 'Estornada',
+          motivo_estorno: motivoEstorno || 'Estornado pelo usuário'
+        })
+        .eq('id', entradaId)
+        .eq('empresa_id', validEmpresaId)
+        .select()
+        .maybeSingle();
+
+      await this.logAuditAction(validEmpresaId, usuarioNome, `Estornou entrada de estoque #${entradaId}`);
+      return data;
+    } catch (e) {
+      console.warn('[SupabaseService] Erro ao estornar entrada estoque no Supabase:', e);
+      return null;
+    }
   },
 
   // --- ORÇAMENTOS ---
@@ -1288,11 +1428,17 @@ export const supabaseService = {
 
     if (!savedData) {
       try {
-        const url = 'https://kkoyikmayylhxcnmcjyl.supabase.co';
-        const key = 'sb_publishable_ON_tVRIx3Va4ukWsnOf-8g_EXDv5ju4';
-        const res = await fetch(`${url}/rest/v1/orcamentos`, {
+        const endpoint = isUpdate
+          ? `${supabaseUrl}/rest/v1/orcamentos?id=eq.${encodeURIComponent(orc.id)}&empresa_id=eq.${encodeURIComponent(validEmpresaId)}`
+          : `${supabaseUrl}/rest/v1/orcamentos`;
+        const res = await fetch(endpoint, {
           method: isUpdate ? 'PATCH' : 'POST',
-          headers: { 'apikey': key, 'Authorization': `Bearer ${key}`, 'Content-Type': 'application/json', 'Prefer': 'return=representation' },
+          headers: {
+            'apikey': supabaseAnonKey,
+            'Authorization': `Bearer ${supabaseAnonKey}`,
+            'Content-Type': 'application/json',
+            'Prefer': 'return=representation'
+          },
           body: JSON.stringify(payload)
         });
         if (res.ok) {
@@ -1370,11 +1516,14 @@ export const supabaseService = {
 
     if (!savedData) {
       try {
-        const url = 'https://kkoyikmayylhxcnmcjyl.supabase.co';
-        const key = 'sb_publishable_ON_tVRIx3Va4ukWsnOf-8g_EXDv5ju4';
-        const res = await fetch(`${url}/rest/v1/vendas`, {
+        const res = await fetch(`${supabaseUrl}/rest/v1/vendas`, {
           method: 'POST',
-          headers: { 'apikey': key, 'Authorization': `Bearer ${key}`, 'Content-Type': 'application/json', 'Prefer': 'return=representation' },
+          headers: {
+            'apikey': supabaseAnonKey,
+            'Authorization': `Bearer ${supabaseAnonKey}`,
+            'Content-Type': 'application/json',
+            'Prefer': 'return=representation'
+          },
           body: JSON.stringify(payload)
         });
         if (res.ok) {
@@ -1389,6 +1538,17 @@ export const supabaseService = {
       return savedData;
     }
     return null;
+  },
+
+  async deleteVenda(id, empresaId, usuarioNome) {
+    const validEmpresaId = (empresaId && empresaId.length > 15) ? empresaId : '80285958-6d61-4784-b0af-89fb3c99b401';
+    if (!supabase || !id) return;
+    try {
+      await supabase.from('vendas').delete().eq('id', id).eq('empresa_id', validEmpresaId);
+      await this.logAuditAction(validEmpresaId, usuarioNome, `Cancelou/Excluiu venda #${id}`);
+    } catch (e) {
+      console.warn('[SupabaseService] Erro ao excluir venda:', e);
+    }
   },
 
   // --- FINANCEIRO ---
@@ -1447,11 +1607,17 @@ export const supabaseService = {
 
     if (!savedData) {
       try {
-        const url = 'https://kkoyikmayylhxcnmcjyl.supabase.co';
-        const key = 'sb_publishable_ON_tVRIx3Va4ukWsnOf-8g_EXDv5ju4';
-        const res = await fetch(`${url}/rest/v1/financeiro`, {
+        const endpoint = isUpdate
+          ? `${supabaseUrl}/rest/v1/financeiro?id=eq.${encodeURIComponent(lancamento.id)}&empresa_id=eq.${encodeURIComponent(validEmpresaId)}`
+          : `${supabaseUrl}/rest/v1/financeiro`;
+        const res = await fetch(endpoint, {
           method: isUpdate ? 'PATCH' : 'POST',
-          headers: { 'apikey': key, 'Authorization': `Bearer ${key}`, 'Content-Type': 'application/json', 'Prefer': 'return=representation' },
+          headers: {
+            'apikey': supabaseAnonKey,
+            'Authorization': `Bearer ${supabaseAnonKey}`,
+            'Content-Type': 'application/json',
+            'Prefer': 'return=representation'
+          },
           body: JSON.stringify(payload)
         });
         if (res.ok) {
@@ -1560,11 +1726,17 @@ export const supabaseService = {
 
     if (!savedData) {
       try {
-        const url = 'https://kkoyikmayylhxcnmcjyl.supabase.co';
-        const key = 'sb_publishable_ON_tVRIx3Va4ukWsnOf-8g_EXDv5ju4';
-        const res = await fetch(`${url}/rest/v1/visitas`, {
+        const endpoint = isUpdate
+          ? `${supabaseUrl}/rest/v1/visitas?id=eq.${encodeURIComponent(visita.id)}&empresa_id=eq.${encodeURIComponent(validEmpresaId)}`
+          : `${supabaseUrl}/rest/v1/visitas`;
+        const res = await fetch(endpoint, {
           method: isUpdate ? 'PATCH' : 'POST',
-          headers: { 'apikey': key, 'Authorization': `Bearer ${key}`, 'Content-Type': 'application/json', 'Prefer': 'return=representation' },
+          headers: {
+            'apikey': supabaseAnonKey,
+            'Authorization': `Bearer ${supabaseAnonKey}`,
+            'Content-Type': 'application/json',
+            'Prefer': 'return=representation'
+          },
           body: JSON.stringify(payload)
         });
         if (res.ok) {

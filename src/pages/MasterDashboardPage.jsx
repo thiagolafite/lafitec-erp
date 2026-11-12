@@ -61,7 +61,7 @@ export const MasterDashboardPage = ({ showToast }) => {
       setGlobalUsers(allUsers || []);
     } catch (err) {
       console.error('Erro ao carregar dados Master:', err);
-      if (showToast) showToast('Erro ao carregar dados do painel Master.', 'danger');
+      if (showToast) showToast('error', 'Erro ao carregar dados do painel Master.');
     } finally {
       setLoading(false);
       setRefreshing(false);
@@ -81,10 +81,10 @@ export const MasterDashboardPage = ({ showToast }) => {
   const handleApprove = async (item) => {
     try {
       await supabaseService.approveCompanyAndUser(item.empresa.id, item.usuario?.id);
-      if (showToast) showToast(`Empresa "${item.empresa.nome}" e usuário aprovados com sucesso!`, 'success');
+      if (showToast) showToast('success', `Empresa "${item.empresa.nome}" e usuário aprovados com sucesso!`);
       loadMasterData();
     } catch (err) {
-      if (showToast) showToast('Erro ao aprovar cadastro.', 'danger');
+      if (showToast) showToast('error', 'Erro ao aprovar cadastro.');
     }
   };
 
@@ -95,10 +95,10 @@ export const MasterDashboardPage = ({ showToast }) => {
     }
     try {
       await supabaseService.rejectCompanyAndUser(item.empresa.id, item.usuario?.id, 'Recusado pelo Master');
-      if (showToast) showToast(`Solicitação de "${item.empresa.nome}" recusada.`, 'warning');
+      if (showToast) showToast('warning', `Solicitação de "${item.empresa.nome}" recusada.`);
       loadMasterData();
     } catch (err) {
-      if (showToast) showToast('Erro ao recusar cadastro.', 'danger');
+      if (showToast) showToast('error', 'Erro ao recusar cadastro.');
     }
   };
 
@@ -106,10 +106,10 @@ export const MasterDashboardPage = ({ showToast }) => {
   const handlePlanChange = async (empresaId, novoPlano) => {
     try {
       await supabaseService.updateCompanyPlan(empresaId, novoPlano);
-      if (showToast) showToast(`Plano atualizado para ${novoPlano} com sucesso!`, 'success');
+      if (showToast) showToast('success', `Plano atualizado para ${novoPlano} com sucesso!`);
       loadMasterData();
     } catch (err) {
-      if (showToast) showToast('Erro ao atualizar plano.', 'danger');
+      if (showToast) showToast('error', 'Erro ao atualizar plano.');
     }
   };
 
@@ -118,10 +118,10 @@ export const MasterDashboardPage = ({ showToast }) => {
     const novoStatus = !statusAtual;
     try {
       await supabaseService.toggleCompanyStatus(empresaId, novoStatus);
-      if (showToast) showToast(`Status da empresa alterado para ${novoStatus ? 'Ativa' : 'Bloqueada'}.`, 'info');
+      if (showToast) showToast('info', `Status da empresa alterado para ${novoStatus ? 'Ativa' : 'Bloqueada'}.`);
       loadMasterData();
     } catch (err) {
-      if (showToast) showToast('Erro ao alterar status.', 'danger');
+      if (showToast) showToast('error', 'Erro ao alterar status.');
     }
   };
 
