@@ -24,6 +24,7 @@ import {
 import { useAuth } from '../context/AuthContext';
 import { storage } from '../services/storage';
 import { Modal } from '../components/Modal';
+import { VinculosModal } from '../components/VinculosModal';
 
 export const FornecedoresPage = ({ showToast }) => {
   const { empresa, user } = useAuth();
@@ -33,6 +34,7 @@ export const FornecedoresPage = ({ showToast }) => {
   const [activeTab, setActiveTab] = useState('principal');
   const [cepLoading, setCepLoading] = useState(false);
   const [logModalForn, setLogModalForn] = useState(null);
+  const [vinculosTarget, setVinculosTarget] = useState(null);
 
   const initialFormState = {
     codigo: '',
@@ -298,6 +300,14 @@ export const FornecedoresPage = ({ showToast }) => {
                     <td style={{ color: '#64748B' }}>{forn.cidade || '-'}</td>
                     <td className="text-right">
                       <div style={{ display: 'inline-flex', gap: '4px' }}>
+                        <button
+                          className="btn-icon"
+                          onClick={() => setVinculosTarget(forn)}
+                          title="Ver Pedidos e Orçamentos Vinculados"
+                          style={{ color: '#1A1A1A' }}
+                        >
+                          <FileText size={16} />
+                        </button>
                         <button
                           className="btn-icon"
                           onClick={() => {
@@ -787,6 +797,14 @@ export const FornecedoresPage = ({ showToast }) => {
           </div>
         </div>
       </Modal>
+
+      <VinculosModal
+        isOpen={Boolean(vinculosTarget)}
+        onClose={() => setVinculosTarget(null)}
+        entityType="fornecedor"
+        entity={vinculosTarget}
+        empresaId={empresa.id}
+      />
     </div>
   );
 };

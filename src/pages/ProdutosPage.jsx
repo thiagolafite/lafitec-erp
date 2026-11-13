@@ -28,6 +28,7 @@ import {
 import { useAuth } from '../context/AuthContext';
 import { storage } from '../services/storage';
 import { Modal } from '../components/Modal';
+import { VinculosModal } from '../components/VinculosModal';
 
 export const ProdutosPage = ({ showToast }) => {
   const { empresa, user } = useAuth();
@@ -35,6 +36,7 @@ export const ProdutosPage = ({ showToast }) => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingProduto, setEditingProduto] = useState(null);
   const [activeTab, setActiveTab] = useState('basico');
+  const [vinculosTarget, setVinculosTarget] = useState(null);
 
   // Quick Fornecedor Modal
   const [quickFornModal, setQuickFornModal] = useState(false);
@@ -391,6 +393,14 @@ export const ProdutosPage = ({ showToast }) => {
                       </td>
                       <td className="text-right">
                         <div style={{ display: 'inline-flex', gap: '4px' }}>
+                          <button
+                            className="btn-icon"
+                            onClick={() => setVinculosTarget(prod)}
+                            title="Ver Pedidos e Orçamentos Vinculados"
+                            style={{ color: '#1A1A1A' }}
+                          >
+                            <FileText size={16} />
+                          </button>
                           <button className="btn-icon" onClick={() => handleOpenModal(prod)} title="Editar Produto">
                             <Edit2 size={16} />
                           </button>
@@ -1237,6 +1247,14 @@ export const ProdutosPage = ({ showToast }) => {
           </div>
         </form>
       </Modal>
+
+      <VinculosModal
+        isOpen={Boolean(vinculosTarget)}
+        onClose={() => setVinculosTarget(null)}
+        entityType="produto"
+        entity={vinculosTarget}
+        empresaId={empresa.id}
+      />
     </div>
   );
 };

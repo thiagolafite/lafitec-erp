@@ -29,6 +29,7 @@ import {
 import { useAuth } from '../context/AuthContext';
 import { storage, calculateIndiceRelacionamento } from '../services/storage';
 import { Modal } from '../components/Modal';
+import { VinculosModal } from '../components/VinculosModal';
 
 export const ClientesPage = ({ showToast }) => {
   const { empresa, user } = useAuth();
@@ -37,6 +38,7 @@ export const ClientesPage = ({ showToast }) => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingCliente, setEditingCliente] = useState(null);
   const [activeTab, setActiveTab] = useState('principal');
+  const [vinculosTarget, setVinculosTarget] = useState(null);
 
   // React State for Reactive Partner Table Updates
   const [todosParceiros, setTodosParceiros] = useState(() => storage.getAllParceiros(empresa?.id || ''));
@@ -466,6 +468,14 @@ export const ClientesPage = ({ showToast }) => {
                       </td>
                       <td className="text-right">
                         <div style={{ display: 'inline-flex', gap: '4px' }}>
+                          <button
+                            className="btn-icon"
+                            onClick={() => setVinculosTarget(p)}
+                            title="Ver Pedidos e Orçamentos Vinculados"
+                            style={{ color: '#1A1A1A' }}
+                          >
+                            <FileText size={16} />
+                          </button>
                           <button
                             className="btn-icon"
                             onClick={() => handleOpenMaps(p)}
@@ -1391,6 +1401,14 @@ export const ClientesPage = ({ showToast }) => {
           </div>
         </form>
       </Modal>
+
+      <VinculosModal
+        isOpen={Boolean(vinculosTarget)}
+        onClose={() => setVinculosTarget(null)}
+        entityType="cliente"
+        entity={vinculosTarget}
+        empresaId={empresa.id}
+      />
     </div>
   );
 };
