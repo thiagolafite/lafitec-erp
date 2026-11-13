@@ -373,35 +373,8 @@ export const ClientesPage = ({ showToast }) => {
       </div>
 
       <div className="card">
-        {/* Filters Bar: TODOS | CLIENTES | FORNECEDORES | TRANSPORTADORAS */}
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '1rem', marginBottom: '1.5rem' }}>
-          <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
-            <button
-              className={`btn btn-sm ${filterTipoList === 'ALL' ? 'btn-primary' : 'btn-outline'}`}
-              onClick={() => setFilterTipoList('ALL')}
-            >
-              <Filter size={14} /> Todos ({todosParceiros.length})
-            </button>
-            <button
-              className={`btn btn-sm ${filterTipoList === 'Clientes' ? 'btn-primary' : 'btn-outline'}`}
-              onClick={() => setFilterTipoList('Clientes')}
-            >
-              <Users size={14} /> Clientes ({todosParceiros.filter(p => p.tipo === 'Clientes' || p.tipo === 'Parceiro' || p.tipo === 'Prospect').length})
-            </button>
-            <button
-              className={`btn btn-sm ${filterTipoList === 'Fornecedores' ? 'btn-primary' : 'btn-outline'}`}
-              onClick={() => setFilterTipoList('Fornecedores')}
-            >
-              <Building2 size={14} /> Fornecedores ({todosParceiros.filter(p => p.tipo === 'Fornecedores').length})
-            </button>
-            <button
-              className={`btn btn-sm ${filterTipoList === 'Transportadoras' ? 'btn-primary' : 'btn-outline'}`}
-              onClick={() => setFilterTipoList('Transportadoras')}
-            >
-              <Truck size={14} /> Transportadoras ({todosParceiros.filter(p => p.tipo === 'Transportadoras').length})
-            </button>
-          </div>
-
+        {/* Search Bar */}
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-end', flexWrap: 'wrap', gap: '1rem', marginBottom: '1.5rem' }}>
           <div style={{ position: 'relative', minWidth: '280px' }}>
             <input
               type="text"
