@@ -323,6 +323,28 @@ export const ClientesPage = ({ showToast }) => {
     }
   };
 
+  const handleOpenMaps = (item) => {
+    const queryParts = [
+      item.endereco || item.logradouro,
+      item.numero,
+      item.bairro,
+      item.cidade,
+      item.uf || item.estado,
+      item.cep
+    ].filter(Boolean).join(', ');
+
+    if (!queryParts) {
+      if (showToast) showToast('warning', 'Nenhum endereço cadastrado para localizar no mapa.');
+      return;
+    }
+
+    window.open(
+      `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(queryParts)}`,
+      '_blank',
+      'noopener,noreferrer'
+    );
+  };
+
   const handleDelete = (cli) => {
     if (window.confirm(`Remover cadastro "${cli.nome}"?`)) {
       try {
@@ -444,6 +466,14 @@ export const ClientesPage = ({ showToast }) => {
                       </td>
                       <td className="text-right">
                         <div style={{ display: 'inline-flex', gap: '4px' }}>
+                          <button
+                            className="btn-icon"
+                            onClick={() => handleOpenMaps(p)}
+                            title="Localizar no Google Maps"
+                            style={{ color: '#C9A962' }}
+                          >
+                            <MapPin size={16} />
+                          </button>
                           <button className="btn-icon" onClick={() => handleOpenModal(p)} title="Editar Cadastro">
                             <Edit2 size={16} />
                           </button>

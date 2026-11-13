@@ -273,6 +273,28 @@ export const TransportadorasPage = ({ showToast }) => {
                     </td>
                     <td className="text-right">
                       <div style={{ display: 'inline-flex', gap: '4px' }}>
+                        <button
+                          className="btn-icon"
+                          onClick={() => {
+                            const queryParts = [
+                              t.endereco || t.logradouro,
+                              t.numero,
+                              t.bairro,
+                              t.cidade,
+                              t.uf || t.estado,
+                              t.cep
+                            ].filter(Boolean).join(', ');
+                            if (!queryParts) {
+                              if (showToast) showToast('warning', 'Nenhum endereço cadastrado para localizar no mapa.');
+                              return;
+                            }
+                            window.open(`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(queryParts)}`, '_blank', 'noopener,noreferrer');
+                          }}
+                          title="Localizar no Google Maps"
+                          style={{ color: '#C9A962' }}
+                        >
+                          <MapPin size={16} />
+                        </button>
                         <button className="btn-icon" onClick={() => handleOpenModal(t)} title="Editar Cadastro">
                           <Edit2 size={16} />
                         </button>

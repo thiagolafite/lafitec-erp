@@ -298,6 +298,28 @@ export const FornecedoresPage = ({ showToast }) => {
                     <td style={{ color: '#64748B' }}>{forn.cidade || '-'}</td>
                     <td className="text-right">
                       <div style={{ display: 'inline-flex', gap: '4px' }}>
+                        <button
+                          className="btn-icon"
+                          onClick={() => {
+                            const queryParts = [
+                              forn.endereco || forn.logradouro,
+                              forn.numero,
+                              forn.bairro,
+                              forn.cidade,
+                              forn.uf || forn.estado,
+                              forn.cep
+                            ].filter(Boolean).join(', ');
+                            if (!queryParts) {
+                              if (showToast) showToast('warning', 'Nenhum endereço cadastrado para localizar no mapa.');
+                              return;
+                            }
+                            window.open(`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(queryParts)}`, '_blank', 'noopener,noreferrer');
+                          }}
+                          title="Localizar no Google Maps"
+                          style={{ color: '#C9A962' }}
+                        >
+                          <MapPin size={16} />
+                        </button>
                         <button className="btn-icon" onClick={() => handleOpenModal(forn)} title="Editar Fornecedor">
                           <Edit3 size={16} />
                         </button>
