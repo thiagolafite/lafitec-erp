@@ -1,6 +1,7 @@
 import React from 'react';
 import { LogOut, ChevronRight, Plus, Building2 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
+import { AlertCenter } from './AlertCenter';
 
 export const Navbar = ({ currentTabTitle, setCurrentTab }) => {
   const { user, empresa, logout } = useAuth();
@@ -66,6 +67,13 @@ export const Navbar = ({ currentTabTitle, setCurrentTab }) => {
         >
           <Plus size={15} /> Novo Orçamento
         </button>
+
+        {/* Central de Avisos & Alertas */}
+        <AlertCenter
+          empresaId={empresa?.id}
+          currentTabTitle={currentTabTitle}
+          onNavigate={setCurrentTab}
+        />
 
         {/* Company Quick Badge */}
         <div style={{
