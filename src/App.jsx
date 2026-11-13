@@ -18,6 +18,7 @@ import { RelatoriosPage } from './pages/RelatoriosPage';
 import { SegurancaPage } from './pages/SegurancaPage';
 import { VisitasPage } from './pages/VisitasPage';
 import { EntradaEstoquePage } from './pages/EntradaEstoquePage';
+import { LotesPage } from './pages/LotesPage';
 import { OrcamentosPage } from './pages/OrcamentosPage';
 import { CondicoesPagamentoPage } from './pages/CondicoesPagamentoPage';
 import { MasterDashboardPage } from './pages/MasterDashboardPage';
@@ -90,6 +91,7 @@ const AppContent = () => {
     clientes: 'Gestão de Clientes',
     produtos: 'Produtos & Estoque',
     entradas_estoque: 'Entrada de Estoque & Rastreabilidade',
+    lotes_estoque: 'Lotes & Estoque por Lote',
     transportadoras: 'Cadastro de Transportadoras',
     fornecedores: 'Cadastro de Fornecedores',
     orcamentos: 'Gestão de Orçamentos Comerciais',
@@ -114,6 +116,7 @@ const AppContent = () => {
           {currentTab === 'clientes' && <ClientesPage showToast={showToast} />}
           {currentTab === 'produtos' && <ProdutosPage showToast={showToast} />}
           {currentTab === 'entradas_estoque' && <EntradaEstoquePage showToast={showToast} />}
+          {currentTab === 'lotes_estoque' && <LotesPage showToast={showToast} />}
           {currentTab === 'transportadoras' && <TransportadorasPage showToast={showToast} />}
           {currentTab === 'fornecedores' && <FornecedoresPage showToast={showToast} />}
           {currentTab === 'orcamentos' && <OrcamentosPage showToast={showToast} />}

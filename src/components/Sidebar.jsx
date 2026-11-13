@@ -22,7 +22,8 @@ import {
   Zap,
   Sparkles,
   LogOut,
-  Crown
+  Crown,
+  Layers
 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { storage } from '../services/storage';
@@ -237,6 +238,14 @@ export const Sidebar = ({ currentTab, setCurrentTab }) => {
               >
                 <ArrowDownLeft size={18} />
                 <span>Entrada de Estoque</span>
+              </button>
+
+              <button
+                className={`sidebar-item ${currentTab === 'lotes_estoque' ? 'active' : ''}`}
+                onClick={() => setCurrentTab('lotes_estoque')}
+              >
+                <Layers size={18} />
+                <span>Lotes & Estoque por Lote</span>
               </button>
 
               <button

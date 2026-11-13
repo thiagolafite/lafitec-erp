@@ -48,6 +48,18 @@ export const ProdutosPage = ({ showToast }) => {
   const [quickSubGrupoModal, setQuickSubGrupoModal] = useState(false);
   const [quickSubGrupoData, setQuickSubGrupoData] = useState({ grupoNome: '', nome: '' });
 
+  // Janela de Lote (ao marcar Sim ou gerenciar lotes do produto)
+  const [loteSelectorModal, setLoteSelectorModal] = useState(false);
+  const [lotesEmpresa, setLotesEmpresa] = useState(() => storage.getLotes(empresa?.id || ''));
+  const [pendingLotes, setPendingLotes] = useState([]);
+  const [novoLoteForm, setNovoLoteForm] = useState({
+    numeroLote: '',
+    dataFabricacao: '',
+    dataValidade: '',
+    quantidade: '0',
+    localizacao: ''
+  });
+
   const [fornecedores, setFornecedores] = useState(() => storage.getFornecedores(empresa?.id || ''));
   const [gruposProdutos, setGruposProdutos] = useState(() => storage.getGruposProdutos(empresa?.id || ''));
 
@@ -55,6 +67,7 @@ export const ProdutosPage = ({ showToast }) => {
     if (empresa) {
       setFornecedores(storage.getFornecedores(empresa.id));
       setGruposProdutos(storage.getGruposProdutos(empresa.id));
+      setLotesEmpresa(storage.getLotes(empresa.id));
     }
   };
 
@@ -157,6 +170,7 @@ export const ProdutosPage = ({ showToast }) => {
   const handleOpenModal = (prod = null) => {
     refreshListasAuxiliares();
     setActiveTab('basico');
+    setPendingLotes([]);
     if (prod) {
       setEditingProduto(prod);
       setFormData({
@@ -173,6 +187,106 @@ export const ProdutosPage = ({ showToast }) => {
       });
     }
     setIsModalOpen(true);
+  };
+
+  const openLoteModalWindow = () => {
+    refreshListasAuxiliares();
+    setNovoLoteForm({
+      numeroLote: `LT-${new Date().getFullYear().toString().slice(-2)}${String(Math.floor(1000 + Math.random() * 9000))}`,
+      dataFabricacao: '',
+      dataValidade: '',
+      quantidade: '0',
+      localizacao: ''
+    });
+    setLoteSelectorModal(true);
+  };
+
+  const handleToggleControlaLote = (sim) => {
+    setFormData(prev => ({ ...prev, controlaLote: sim }));
+    if (sim) {
+      openLoteModalWindow();
+    }
+  };
+
+  const lotesDoProdutoAtual = editingProduto
+    ? lotesEmpresa.filter(l => l.produtoId === editingProduto.id)
+    : pendingLotes;
+
+  const handleVincularLoteExistente = (lote) => {
+    if (editingProduto) {
+      storage.saveLote(
+        { ...lote, produtoId: editingProduto.id, produtoNome: formData.nome || editingProduto.nome },
+        empresa.id,
+        user.nome
+      );
+      refreshListasAuxiliares();
+      const lotesAtualizados = storage.getLotesByProduto(editingProduto.id, empresa.id);
+      const soma = lotesAtualizados.reduce((acc, item) => acc + (parseFloat(item.quantidade) || 0), 0);
+      setFormData(prev => ({ ...prev, controlaLote: true, estoque: String(soma) }));
+    } else {
+      const jaNaLista = pendingLotes.some(l => l.id === lote.id);
+      const novaLista = jaNaLista ? pendingLotes : [...pendingLotes, { ...lote, produtoNome: formData.nome || 'Novo Produto' }];
+      setPendingLotes(novaLista);
+      const soma = novaLista.reduce((acc, item) => acc + (parseFloat(item.quantidade) || 0), 0);
+      setFormData(prev => ({ ...prev, controlaLote: true, estoque: String(soma) }));
+    }
+    showToast('success', `Lote "${lote.numeroLote}" vinculado ao produto!`);
+    setLoteSelectorModal(false);
+  };
+
+  const handleCriarNovoLoteParaProduto = (e) => {
+    e.preventDefault();
+    if (!novoLoteForm.numeroLote.trim()) {
+      showToast('error', 'Informe o Número do Lote.');
+      return;
+    }
+    const qtd = parseFloat(novoLoteForm.quantidade) || 0;
+    if (editingProduto) {
+      storage.saveLote(
+        {
+          ...novoLoteForm,
+          produtoId: editingProduto.id,
+          produtoNome: formData.nome || editingProduto.nome,
+          quantidade: qtd
+        },
+        empresa.id,
+        user.nome
+      );
+      refreshListasAuxiliares();
+      const lotesAtualizados = storage.getLotesByProduto(editingProduto.id, empresa.id);
+      const soma = lotesAtualizados.reduce((acc, item) => acc + (parseFloat(item.quantidade) || 0), 0);
+      setFormData(prev => ({ ...prev, controlaLote: true, estoque: String(soma) }));
+    } else {
+      const novoPending = {
+        ...novoLoteForm,
+        id: 'lote-' + Date.now() + '-' + Math.random().toString(36).substring(2, 6),
+        quantidade: qtd,
+        produtoNome: formData.nome || 'Novo Produto'
+      };
+      const novaLista = [...pendingLotes, novoPending];
+      setPendingLotes(novaLista);
+      const soma = novaLista.reduce((acc, item) => acc + (parseFloat(item.quantidade) || 0), 0);
+      setFormData(prev => ({ ...prev, controlaLote: true, estoque: String(soma) }));
+    }
+    showToast('success', `Lote "${novoLoteForm.numeroLote}" criado e vinculado!`);
+    setLoteSelectorModal(false);
+  };
+
+  const handleUpdateLoteEstoqueInline = (lote, novoSaldo) => {
+    const qtd = Math.max(0, parseFloat(novoSaldo) || 0);
+    if (editingProduto) {
+      storage.saveLote({ ...lote, quantidade: qtd }, empresa.id, user.nome);
+      refreshListasAuxiliares();
+      const lotesAtualizados = storage.getLotesByProduto(editingProduto.id, empresa.id);
+      const soma = lotesAtualizados.reduce((acc, item) => acc + (parseFloat(item.quantidade) || 0), 0);
+      setFormData(prev => ({ ...prev, estoque: String(soma) }));
+    } else {
+      const novaLista = pendingLotes.map(l => l.id === lote.id ? { ...l, quantidade: qtd } : l);
+      setPendingLotes(novaLista);
+      const soma = novaLista.reduce((acc, item) => acc + (parseFloat(item.quantidade) || 0), 0);
+      setFormData(prev => ({ ...prev, estoque: String(soma) }));
+    }
+    showToast('success', `Estoque do lote "${lote.numeroLote}" atualizado para ${qtd}.`);
   };
 
   const handleCloseModal = () => {
@@ -271,7 +385,19 @@ export const ProdutosPage = ({ showToast }) => {
         ? { ...formData, id: editingProduto.id } 
         : { ...formData, id: undefined, codigo: 'PROD-' + Math.floor(100 + Math.random() * 900) };
 
-      storage.saveProduto(prodSaveData, empresa.id, user.nome);
+      const savedProd = storage.saveProduto(prodSaveData, empresa.id, user.nome);
+
+      // Se o usuário criou/vinculou lotes durante o cadastro do novo produto, persiste agora com o ID real do produto
+      if ((!editingProduto || duplicar) && pendingLotes.length > 0 && savedProd?.id) {
+        pendingLotes.forEach(l => {
+          storage.saveLote(
+            { ...l, produtoId: savedProd.id, produtoNome: savedProd.nome },
+            empresa.id,
+            user.nome
+          );
+        });
+      }
+
       showToast('success', duplicar ? 'Produto duplicado com sucesso!' : (editingProduto ? 'Produto atualizado!' : 'Produto cadastrado com sucesso!'));
       
       if (!duplicar) {
@@ -300,7 +426,8 @@ export const ProdutosPage = ({ showToast }) => {
     { id: 'estoquePesos', label: '2. Estoque, Dimensões & Custos' },
     { id: 'aplicacao', label: '3. Ficha Técnica & Aplicação' },
     { id: 'kit', label: '4. Composição de KIT' },
-    { id: 'materiaPrima', label: '5. Matéria-Prima & Insumos' }
+    { id: 'materiaPrima', label: '5. Matéria-Prima & Insumos' },
+    { id: 'lotes', label: `6. Estoque de Lotes (${lotesDoProdutoAtual.length})` }
   ];
 
   return (
@@ -665,6 +792,32 @@ export const ProdutosPage = ({ showToast }) => {
                   </div>
                 </div>
 
+                <div className="form-row">
+                  <div className="form-group">
+                    <label className="form-label">Controle de Lote</label>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
+                      <select
+                        className="form-select"
+                        style={{ maxWidth: '180px' }}
+                        value={formData.controlaLote ? 'sim' : 'nao'}
+                        onChange={(e) => handleToggleControlaLote(e.target.value === 'sim')}
+                      >
+                        <option value="nao">Não</option>
+                        <option value="sim">Sim (Controlar Lote)</option>
+                      </select>
+                      {formData.controlaLote && (
+                        <button
+                          type="button"
+                          className="btn btn-accent btn-sm"
+                          onClick={openLoteModalWindow}
+                        >
+                          <Layers size={15} /> Criar / Selecionar Lote ({lotesDoProdutoAtual.length})
+                        </button>
+                      )}
+                    </div>
+                  </div>
+                </div>
+
                 <div className="form-group" style={{ marginBottom: 0 }}>
                   <label className="form-label">Alerta Interno (Exibido automaticamente nas vendas)</label>
                   <div style={{ position: 'relative' }}>
@@ -880,16 +1033,27 @@ export const ProdutosPage = ({ showToast }) => {
                   </div>
 
                   <div className="form-group" style={{ display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
-                    <label className="form-label">Rastreabilidade de Lote</label>
-                    <label style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', cursor: 'pointer', marginTop: '4px' }}>
-                      <input
-                        type="checkbox"
-                        checked={formData.controlaLote}
-                        onChange={(e) => setFormData({ ...formData, controlaLote: e.target.checked })}
-                        style={{ width: '18px', height: '18px', accentColor: '#C9A962' }}
-                      />
-                      <span style={{ fontSize: '0.875rem', fontWeight: 700 }}>Controlar Lote & Validade</span>
-                    </label>
+                    <label className="form-label">Controla Lote?</label>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                      <select
+                        className="form-select"
+                        value={formData.controlaLote ? 'sim' : 'nao'}
+                        onChange={(e) => handleToggleControlaLote(e.target.value === 'sim')}
+                      >
+                        <option value="nao">Não</option>
+                        <option value="sim">Sim</option>
+                      </select>
+                      {formData.controlaLote && (
+                        <button
+                          type="button"
+                          className="btn btn-accent btn-sm"
+                          onClick={openLoteModalWindow}
+                          title="Criar ou Selecionar Lote"
+                        >
+                          <Layers size={15} />
+                        </button>
+                      )}
+                    </div>
                   </div>
                 </div>
               </div>
@@ -1083,6 +1247,79 @@ export const ProdutosPage = ({ showToast }) => {
             </div>
           )}
 
+          {/* TAB 6: ESTOQUE DE LOTES */}
+          {activeTab === 'lotes' && (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '0.75rem', padding: '1rem', backgroundColor: '#F8FAFC', borderRadius: '10px', border: '1px solid #E2E8F0' }}>
+                <div>
+                  <div style={{ fontWeight: 800, color: '#1A1A1A', fontSize: '0.95rem' }}>
+                    Saldo por Lote do Produto
+                  </div>
+                  <div style={{ fontSize: '0.8rem', color: '#64748B' }}>
+                    Informe ou ajuste o estoque de cada lote vinculado. Estoque total nos lotes:{' '}
+                    <strong style={{ color: '#1A1A1A' }}>
+                      {lotesDoProdutoAtual.reduce((acc, l) => acc + (parseFloat(l.quantidade) || 0), 0)}
+                    </strong>
+                  </div>
+                </div>
+                <button
+                  type="button"
+                  className="btn btn-accent btn-sm"
+                  onClick={openLoteModalWindow}
+                >
+                  <Plus size={15} /> Criar / Selecionar Lote
+                </button>
+              </div>
+
+              <div className="table-responsive">
+                <table className="table">
+                  <thead>
+                    <tr>
+                      <th>Nº do Lote</th>
+                      <th>Fabricação</th>
+                      <th>Validade</th>
+                      <th>Localização</th>
+                      <th style={{ width: '170px' }}>Estoque do Lote</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {lotesDoProdutoAtual.length === 0 ? (
+                      <tr>
+                        <td colSpan="5" style={{ textAlign: 'center', padding: '2.5rem', color: '#64748B' }}>
+                          Nenhum lote vinculado a este produto ainda. Clique em <strong>Criar / Selecionar Lote</strong>.
+                        </td>
+                      </tr>
+                    ) : (
+                      lotesDoProdutoAtual.map(lote => (
+                        <tr key={lote.id}>
+                          <td className="font-mono" style={{ fontWeight: 800 }}>{lote.numeroLote}</td>
+                          <td style={{ color: '#64748B' }}>
+                            {lote.dataFabricacao ? new Date(lote.dataFabricacao + 'T00:00:00').toLocaleDateString('pt-BR') : '-'}
+                          </td>
+                          <td style={{ color: '#64748B' }}>
+                            {lote.dataValidade ? new Date(lote.dataValidade + 'T00:00:00').toLocaleDateString('pt-BR') : '-'}
+                          </td>
+                          <td style={{ color: '#64748B' }}>{lote.localizacao || '-'}</td>
+                          <td>
+                            <input
+                              type="number"
+                              step="0.01"
+                              min="0"
+                              className="form-input font-mono"
+                              value={lote.quantidade ?? 0}
+                              onChange={(e) => handleUpdateLoteEstoqueInline(lote, e.target.value)}
+                              style={{ padding: '0.35rem 0.5rem', fontWeight: 800, width: '110px' }}
+                            />
+                          </td>
+                        </tr>
+                      ))
+                    )}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          )}
+
           {/* Rodapé de Ações Fiel ao Anexo */}
           <div className="modal-footer" style={{ padding: '1.25rem 0 0 0', borderTop: '1px solid #E2E8F0', marginTop: '1.5rem', backgroundColor: 'transparent' }}>
             <div style={{ display: 'flex', gap: '0.75rem', width: '100%', justifyContent: 'space-between', alignItems: 'center' }}>
@@ -1255,6 +1492,142 @@ export const ProdutosPage = ({ showToast }) => {
         entity={vinculosTarget}
         empresaId={empresa.id}
       />
+
+      {/* JANELA DE LOTE (ABRE AO MARCAR LOTE = SIM OU GERENCIAR LOTES) */}
+      <Modal
+        isOpen={loteSelectorModal}
+        onClose={() => setLoteSelectorModal(false)}
+        title={`Lotes do Produto — ${formData.nome || 'Novo Produto'}`}
+        maxWidth="780px"
+      >
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
+          {/* SEÇÃO A: SELECIONAR LOTE JÁ EXISTENTE */}
+          <div style={{ padding: '1rem', backgroundColor: '#F8FAFC', borderRadius: '10px', border: '1px solid #E2E8F0' }}>
+            <h4 style={{ fontSize: '0.9rem', fontWeight: 800, color: '#1A1A1A', marginBottom: '0.75rem' }}>
+              1. Selecionar Lote Já Existente
+            </h4>
+            {lotesEmpresa.length === 0 ? (
+              <div style={{ fontSize: '0.82rem', color: '#64748B' }}>
+                Nenhum lote cadastrado no sistema ainda. Crie um novo lote abaixo.
+              </div>
+            ) : (
+              <div className="table-responsive" style={{ maxHeight: '190px', overflowY: 'auto' }}>
+                <table className="table">
+                  <thead>
+                    <tr>
+                      <th>Nº Lote</th>
+                      <th>Produto Atual</th>
+                      <th>Validade</th>
+                      <th>Saldo</th>
+                      <th className="text-right">Ação</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {lotesEmpresa.map(l => {
+                      const jaVinculado = lotesDoProdutoAtual.some(lp => lp.id === l.id);
+                      return (
+                        <tr key={l.id}>
+                          <td className="font-mono" style={{ fontWeight: 800 }}>{l.numeroLote}</td>
+                          <td style={{ fontSize: '0.82rem', color: '#475569' }}>{l.produtoNome || '-'}</td>
+                          <td style={{ fontSize: '0.82rem', color: '#64748B' }}>
+                            {l.dataValidade ? new Date(l.dataValidade + 'T00:00:00').toLocaleDateString('pt-BR') : '-'}
+                          </td>
+                          <td className="font-mono" style={{ fontWeight: 700 }}>{l.quantidade || 0}</td>
+                          <td className="text-right">
+                            <button
+                              type="button"
+                              className={`btn btn-sm ${jaVinculado ? 'btn-outline' : 'btn-accent'}`}
+                              disabled={jaVinculado}
+                              onClick={() => handleVincularLoteExistente(l)}
+                            >
+                              {jaVinculado ? 'Vinculado' : 'Selecionar'}
+                            </button>
+                          </td>
+                        </tr>
+                      );
+                    })}
+                  </tbody>
+                </table>
+              </div>
+            )}
+          </div>
+
+          {/* SEÇÃO B: CRIAR NOVO LOTE PARA ESTE PRODUTO */}
+          <form onSubmit={handleCriarNovoLoteParaProduto} style={{ padding: '1rem', backgroundColor: '#FFFFFF', borderRadius: '10px', border: '1px solid #E2E8F0' }}>
+            <h4 style={{ fontSize: '0.9rem', fontWeight: 800, color: '#1A1A1A', marginBottom: '0.85rem' }}>
+              2. Criar Novo Lote para este Produto
+            </h4>
+
+            <div className="form-row">
+              <div className="form-group">
+                <label className="form-label">Número do Lote *</label>
+                <input
+                  type="text"
+                  className="form-input font-mono"
+                  required
+                  placeholder="Ex: LT-2601"
+                  value={novoLoteForm.numeroLote}
+                  onChange={(e) => setNovoLoteForm({ ...novoLoteForm, numeroLote: e.target.value })}
+                />
+              </div>
+
+              <div className="form-group">
+                <label className="form-label">Estoque do Lote *</label>
+                <input
+                  type="number"
+                  step="0.01"
+                  min="0"
+                  className="form-input font-mono"
+                  required
+                  value={novoLoteForm.quantidade}
+                  onChange={(e) => setNovoLoteForm({ ...novoLoteForm, quantidade: e.target.value })}
+                  style={{ fontWeight: 800 }}
+                />
+              </div>
+            </div>
+
+            <div className="form-row">
+              <div className="form-group">
+                <label className="form-label">Data de Fabricação</label>
+                <input
+                  type="date"
+                  className="form-input"
+                  value={novoLoteForm.dataFabricacao}
+                  onChange={(e) => setNovoLoteForm({ ...novoLoteForm, dataFabricacao: e.target.value })}
+                />
+              </div>
+
+              <div className="form-group">
+                <label className="form-label">Data de Validade</label>
+                <input
+                  type="date"
+                  className="form-input"
+                  value={novoLoteForm.dataValidade}
+                  onChange={(e) => setNovoLoteForm({ ...novoLoteForm, dataValidade: e.target.value })}
+                />
+              </div>
+
+              <div className="form-group">
+                <label className="form-label">Localização</label>
+                <input
+                  type="text"
+                  className="form-input"
+                  placeholder="Ex: Rua A / Prat. 2"
+                  value={novoLoteForm.localizacao}
+                  onChange={(e) => setNovoLoteForm({ ...novoLoteForm, localizacao: e.target.value })}
+                />
+              </div>
+            </div>
+
+            <div className="modal-footer" style={{ padding: '0.75rem 0 0 0', backgroundColor: 'transparent' }}>
+              <button type="button" className="btn btn-outline" onClick={() => setLoteSelectorModal(false)}>Fechar</button>
+              <button type="submit" className="btn btn-accent">
+                <Plus size={15} /> Criar & Vincular Lote
+              </button>
+            </div>
+          </form>
+        </div>
+      </Modal>
     </div>
   );
 };

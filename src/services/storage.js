@@ -20,6 +20,7 @@ const STORAGE_KEYS = {
   VISITAS: 'lafitec_visitas',
   ENTRADAS_ESTOQUE: 'lafitec_entradas_estoque', // Módulo de Entrada de Estoque
   MOVIMENTACOES_ESTOQUE: 'lafitec_movimentacoes_estoque', // Histórico de Movimentações
+  LOTES_ESTOQUE: 'lafitec_lotes_estoque', // Controle de Lotes e Validade por Produto
   AUDIT_LOGS: 'lafitec_audit_logs',
   CURRENT_USER: 'lafitec_current_user'
 };
@@ -1167,10 +1168,27 @@ export const storage = {
             const current = getTable(STORAGE_KEYS.PRODUTOS);
             const updated = current.map(p => p.id === targetProd.id ? { ...p, id: dbProd.id, empresaId: activeEmpresaId } : p);
             setTable(STORAGE_KEYS.PRODUTOS, updated);
+
+            if (dbProd.id !== targetProd.id) {
+              const allLotes = getTable(STORAGE_KEYS.LOTES_ESTOQUE);
+              let lotesChanged = false;
+              const updatedLotes = allLotes.map(l => {
+                if (l.produtoId === targetProd.id && l.empresaId === activeEmpresaId) {
+                  lotesChanged = true;
+                  return { ...l, produtoId: dbProd.id };
+                }
+                return l;
+              });
+              if (lotesChanged) {
+                setTable(STORAGE_KEYS.LOTES_ESTOQUE, updatedLotes);
+              }
+            }
           }
         })
         .catch(e => console.error('[Supabase sync produto error]:', e));
     }
+
+    return targetProd;
   },
 
   deleteProduto: (id, empresaId, usuarioNome) => {
@@ -1274,6 +1292,104 @@ export const storage = {
     const saved = storage.saveGrupoProduto(cleanGrupo, cleanSub, empresaId, usuarioNome);
     logAuditAction(empresaId, usuarioNome, `Cadastrou subgrupo "${cleanSub}" no grupo "${cleanGrupo}"`);
     return { grupo: saved.nome, subGrupo: cleanSub };
+  },
+
+  // --- LOTES & VALIDADE DE PRODUTOS ---
+  getLotes: (empresaId) => {
+    const lotes = getTable(STORAGE_KEYS.LOTES_ESTOQUE).filter(l => l.empresaId === empresaId);
+    const produtos = getTable(STORAGE_KEYS.PRODUTOS).filter(p => p.empresaId === empresaId);
+    return lotes.map(l => {
+      const prod = produtos.find(p => p.id === l.produtoId);
+      return {
+        ...l,
+        produtoNome: prod ? prod.nome : (l.produtoNome || 'Produto não vinculado'),
+        produtoCodigo: prod ? prod.codigo : (l.produtoCodigo || '')
+      };
+    }).sort((a, b) => new Date(b.atualizadoEm || b.criadoEm || 0) - new Date(a.atualizadoEm || a.criadoEm || 0));
+  },
+
+  getLotesByProduto: (produtoId, empresaId) => {
+    if (!produtoId) return [];
+    return storage.getLotes(empresaId).filter(l => l.produtoId === produtoId);
+  },
+
+  saveLote: (loteData, empresaId, usuarioNome) => {
+    const cleanNumero = (loteData.numeroLote || '').trim();
+    if (!cleanNumero) throw new Error('Informe o Número do Lote.');
+
+    const all = getTable(STORAGE_KEYS.LOTES_ESTOQUE);
+    const now = new Date().toISOString();
+    const qtd = parseFloat(loteData.quantidade) || 0;
+    let savedLote;
+
+    if (loteData.id && all.some(l => l.id === loteData.id && l.empresaId === empresaId)) {
+      const updated = all.map(l => {
+        if (l.id === loteData.id && l.empresaId === empresaId) {
+          savedLote = {
+            ...l,
+            ...loteData,
+            numeroLote: cleanNumero,
+            quantidade: qtd,
+            atualizadoEm: now,
+            atualizadoPor: usuarioNome
+          };
+          return savedLote;
+        }
+        return l;
+      });
+      setTable(STORAGE_KEYS.LOTES_ESTOQUE, updated);
+      logAuditAction(empresaId, usuarioNome, `Atualizou lote "${cleanNumero}" (Estoque: ${qtd})`);
+    } else {
+      savedLote = {
+        ...loteData,
+        id: loteData.id || ('lote-' + Date.now() + '-' + Math.random().toString(36).substring(2, 6)),
+        empresaId,
+        numeroLote: cleanNumero,
+        quantidade: qtd,
+        status: loteData.status || 'Ativo',
+        criadoEm: now,
+        atualizadoEm: now,
+        criadoPor: usuarioNome
+      };
+      setTable(STORAGE_KEYS.LOTES_ESTOQUE, [savedLote, ...all]);
+      logAuditAction(empresaId, usuarioNome, `Cadastrou lote "${cleanNumero}" (Estoque: ${qtd})`);
+    }
+
+    // Se o lote estiver vinculado a um produto com controlaLote=true, recalcula o estoque total do produto
+    if (savedLote?.produtoId) {
+      storage.syncProdutoEstoqueFromLotes(savedLote.produtoId, empresaId);
+    }
+
+    return savedLote;
+  },
+
+  deleteLote: (id, empresaId, usuarioNome) => {
+    const all = getTable(STORAGE_KEYS.LOTES_ESTOQUE);
+    const target = all.find(l => l.id === id && l.empresaId === empresaId);
+    if (target) {
+      setTable(STORAGE_KEYS.LOTES_ESTOQUE, all.filter(l => l.id !== id));
+      logAuditAction(empresaId, usuarioNome, `Excluiu lote "${target.numeroLote}"`);
+      if (target.produtoId) {
+        storage.syncProdutoEstoqueFromLotes(target.produtoId, empresaId);
+      }
+    }
+  },
+
+  syncProdutoEstoqueFromLotes: (produtoId, empresaId) => {
+    if (!produtoId) return;
+    const lotesProd = getTable(STORAGE_KEYS.LOTES_ESTOQUE).filter(l => l.empresaId === empresaId && l.produtoId === produtoId);
+    const produtos = getTable(STORAGE_KEYS.PRODUTOS);
+    const prod = produtos.find(p => p.id === produtoId && p.empresaId === empresaId);
+    if (!prod || !prod.controlaLote) return;
+
+    const somaLotes = lotesProd.reduce((acc, l) => acc + (parseFloat(l.quantidade) || 0), 0);
+    const updatedProdutos = produtos.map(p =>
+      p.id === produtoId && p.empresaId === empresaId ? { ...p, estoque: somaLotes } : p
+    );
+    setTable(STORAGE_KEYS.PRODUTOS, updatedProdutos);
+    if (supabaseService.isConfigured()) {
+      supabaseService.updateProductStock(produtoId, somaLotes, empresaId).catch(() => {});
+    }
   },
 
   // --- ORÇAMENTOS ---
