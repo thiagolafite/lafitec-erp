@@ -139,12 +139,8 @@ export const ClientesPage = ({ showToast }) => {
   if (!empresa) return null;
 
   const filteredParceiros = todosParceiros.filter(p => {
-    // Filter by type tab
-    if (filterTipoList !== 'ALL') {
-      if (filterTipoList === 'Clientes' && p.tipo !== 'Clientes' && p.tipo !== 'Parceiro' && p.tipo !== 'Prospect') return false;
-      if (filterTipoList === 'Fornecedores' && p.tipo !== 'Fornecedores') return false;
-      if (filterTipoList === 'Transportadoras' && p.tipo !== 'Transportadoras') return false;
-    }
+    // Exibir apenas Clientes nesta tela (Fornecedores e Transportadoras possuem telas próprias)
+    if (p.tipo === 'Fornecedores' || p.tipo === 'Transportadoras') return false;
 
     // Filter by search term
     const term = searchTerm.toLowerCase();
@@ -364,8 +360,8 @@ export const ClientesPage = ({ showToast }) => {
     <div>
       <div className="page-header">
         <div className="page-title-group">
-          <h1>Gestão de Parceiros Comerciais</h1>
-          <p>Cadastro único e inteligente de Clientes, Fornecedores e Transportadoras de {empresa.nome}</p>
+          <h1>Gestão de Clientes</h1>
+          <p>Cadastro completo e relacionamento com clientes de {empresa.nome}</p>
         </div>
         <button className="btn btn-accent" onClick={() => handleOpenModal()}>
           <Plus size={18} /> Novo Cadastro

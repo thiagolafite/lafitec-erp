@@ -881,8 +881,8 @@ export const supabaseService = {
             .select('id')
             .eq('empresa_id', validEmpresaId)
             .ilike('nome', localP.nome.trim())
-            .maybeSingle();
-          if (data && data.id) return data.id;
+            .limit(1);
+          if (Array.isArray(data) && data.length > 0 && data[0].id) return data[0].id;
         }
         const saved = await this.saveParceiro(localP, validEmpresaId, usuarioNome);
         if (saved && saved.id) return saved.id;
@@ -909,8 +909,8 @@ export const supabaseService = {
             .select('id')
             .eq('empresa_id', validEmpresaId)
             .ilike('nome', localProd.nome.trim())
-            .maybeSingle();
-          if (data && data.id) return data.id;
+            .limit(1);
+          if (Array.isArray(data) && data.length > 0 && data[0].id) return data[0].id;
         }
         const saved = await this.saveProduto(localProd, validEmpresaId, usuarioNome);
         if (saved && saved.id) return saved.id;
@@ -971,7 +971,7 @@ export const supabaseService = {
       try {
         delete dbPayload.id;
         const endpoint = isUpdate
-          ? `${supabaseUrl}/rest/v1/parceiros?id=eq.${encodeURIComponent(id)}&empresa_id=eq.${encodeURIComponent(validEmpresaId)}`
+          ? `${supabaseUrl}/rest/v1/parceiros?id=eq.${encodeURIComponent(parceiro.id)}&empresa_id=eq.${encodeURIComponent(validEmpresaId)}`
           : `${supabaseUrl}/rest/v1/parceiros`;
         const res = await fetch(endpoint, {
           method: isUpdate ? 'PATCH' : 'POST',
@@ -1072,7 +1072,7 @@ export const supabaseService = {
       try {
         delete dbPayload.id;
         const endpoint = isUpdate
-          ? `${supabaseUrl}/rest/v1/produtos?id=eq.${encodeURIComponent(id)}&empresa_id=eq.${encodeURIComponent(validEmpresaId)}`
+          ? `${supabaseUrl}/rest/v1/produtos?id=eq.${encodeURIComponent(prod.id)}&empresa_id=eq.${encodeURIComponent(validEmpresaId)}`
           : `${supabaseUrl}/rest/v1/produtos`;
         const res = await fetch(endpoint, {
           method: isUpdate ? 'PATCH' : 'POST',
