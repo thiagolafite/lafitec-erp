@@ -21,6 +21,7 @@ const STORAGE_KEYS = {
   ENTRADAS_ESTOQUE: 'lafitec_entradas_estoque', // Módulo de Entrada de Estoque
   MOVIMENTACOES_ESTOQUE: 'lafitec_movimentacoes_estoque', // Histórico de Movimentações
   LOTES_ESTOQUE: 'lafitec_lotes_estoque', // Controle de Lotes e Validade por Produto
+  LOCAIS_ESTOQUE: 'lafitec_locais_estoque', // Locais de Estoque (Galpões, Prateleiras, Salas)
   AUDIT_LOGS: 'lafitec_audit_logs',
   CURRENT_USER: 'lafitec_current_user'
 };
@@ -1390,6 +1391,73 @@ export const storage = {
     if (supabaseService.isConfigured()) {
       supabaseService.updateProductStock(produtoId, somaLotes, empresaId).catch(() => {});
     }
+  },
+
+  // ==================== LOCAIS DE ESTOQUE ====================
+  getLocaisEstoque: (empresaId) => {
+    const saved = getTable(STORAGE_KEYS.LOCAIS_ESTOQUE).filter(l => l.empresaId === empresaId);
+    const lotes = getTable(STORAGE_KEYS.LOTES_ESTOQUE).filter(l => l.empresaId === empresaId);
+    const nomesExistentes = new Set(saved.map(l => (l.nome || '').trim().toLowerCase()).filter(Boolean));
+    const extras = [];
+    lotes.forEach(l => {
+      const loc = (l.localizacao || '').trim();
+      if (loc && !nomesExistentes.has(loc.toLowerCase())) {
+        nomesExistentes.add(loc.toLowerCase());
+        extras.push({
+          id: `loc_auto_${loc.toLowerCase().replace(/[^a-z0-9]/g, '_')}`,
+          empresaId,
+          nome: loc,
+          descricao: 'Importado automaticamente de lotes existentes',
+          autoImported: true
+        });
+      }
+    });
+    return [...saved, ...extras].sort((a, b) => (a.nome || '').localeCompare(b.nome || ''));
+  },
+
+  saveLocalEstoque: (localData, empresaId, usuarioNome = 'Sistema') => {
+    const all = getTable(STORAGE_KEYS.LOCAIS_ESTOQUE);
+    const nomeTrim = (localData.nome || '').trim();
+    if (!nomeTrim) return null;
+
+    const existing = all.find(
+      l => l.empresaId === empresaId && (l.id === localData.id || (l.nome || '').trim().toLowerCase() === nomeTrim.toLowerCase())
+    );
+    const now = new Date().toISOString();
+
+    if (existing) {
+      const updated = {
+        ...existing,
+        nome: nomeTrim,
+        codigo: localData.codigo !== undefined ? localData.codigo : existing.codigo || '',
+        descricao: localData.descricao !== undefined ? localData.descricao : existing.descricao || '',
+        updatedAt: now
+      };
+      setTable(STORAGE_KEYS.LOCAIS_ESTOQUE, all.map(l => l.id === existing.id ? updated : l));
+      storage.logAuditAction(empresaId, usuarioNome, `Atualizou local de estoque: ${updated.nome}`);
+      return updated;
+    }
+
+    const newLocal = {
+      id: `loc_${Date.now()}_${Math.random().toString(36).slice(2, 6)}`,
+      empresaId,
+      nome: nomeTrim,
+      codigo: localData.codigo || '',
+      descricao: localData.descricao || '',
+      createdAt: now,
+      updatedAt: now
+    };
+    setTable(STORAGE_KEYS.LOCAIS_ESTOQUE, [...all, newLocal]);
+    storage.logAuditAction(empresaId, usuarioNome, `Cadastrou local de estoque: ${newLocal.nome}`);
+    return newLocal;
+  },
+
+  deleteLocalEstoque: (id, empresaId, usuarioNome = 'Sistema') => {
+    const all = getTable(STORAGE_KEYS.LOCAIS_ESTOQUE);
+    const target = all.find(l => l.id === id && l.empresaId === empresaId);
+    if (!target) return;
+    setTable(STORAGE_KEYS.LOCAIS_ESTOQUE, all.filter(l => !(l.id === id && l.empresaId === empresaId)));
+    storage.logAuditAction(empresaId, usuarioNome, `Removeu local de estoque: ${target.nome}`);
   },
 
   // --- ORÇAMENTOS ---

@@ -22,8 +22,11 @@ export const LotesPage = ({ showToast }) => {
   const [searchTerm, setSearchTerm] = useState('');
   const [filterStatus, setFilterStatus] = useState('todos'); // todos, saldo, vencendo, vencido, zerado
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isLocaisModalOpen, setIsLocaisModalOpen] = useState(false);
   const [editingLote, setEditingLote] = useState(null);
   const [lotes, setLotes] = useState(() => storage.getLotes(empresa?.id || ''));
+  const [locaisEstoque, setLocaisEstoque] = useState(() => storage.getLocaisEstoque(empresa?.id || ''));
+  const [novoLocalForm, setNovoLocalForm] = useState({ nome: '', codigo: '', descricao: '' });
 
   const produtos = storage.getProdutos(empresa?.id || '');
 
@@ -32,6 +35,7 @@ export const LotesPage = ({ showToast }) => {
     numeroLote: '',
     dataFabricacao: '',
     dataValidade: '',
+    semValidade: false,
     quantidade: '0',
     localizacao: '',
     observacoes: ''
@@ -59,13 +63,15 @@ export const LotesPage = ({ showToast }) => {
   };
 
   const handleOpenModal = (lote = null) => {
+    setLocaisEstoque(storage.getLocaisEstoque(empresa.id));
     if (lote) {
       setEditingLote(lote);
       setFormData({
         produtoId: lote.produtoId || '',
         numeroLote: lote.numeroLote || '',
         dataFabricacao: lote.dataFabricacao || '',
-        dataValidade: lote.dataValidade || '',
+        dataValidade: lote.semValidade ? '' : (lote.dataValidade || ''),
+        semValidade: Boolean(lote.semValidade || !lote.dataValidade),
         quantidade: lote.quantidade !== undefined ? String(lote.quantidade) : '0',
         localizacao: lote.localizacao || '',
         observacoes: lote.observacoes || ''
@@ -101,6 +107,8 @@ export const LotesPage = ({ showToast }) => {
         {
           ...(editingLote ? { id: editingLote.id } : {}),
           ...formData,
+          dataValidade: formData.semValidade ? '' : formData.dataValidade,
+          semValidade: Boolean(formData.semValidade),
           produtoNome: prod ? prod.nome : '',
           quantidade: parseFloat(formData.quantidade) || 0
         },
@@ -109,6 +117,7 @@ export const LotesPage = ({ showToast }) => {
       );
 
       refreshLotes();
+      setLocaisEstoque(storage.getLocaisEstoque(empresa.id));
       showToast('success', `Lote "${formData.numeroLote}" salvo com estoque de ${parseFloat(formData.quantidade) || 0}!`);
       setIsModalOpen(false);
     } catch (err) {
@@ -161,9 +170,21 @@ export const LotesPage = ({ showToast }) => {
           <h1>Lotes & Estoque por Lote</h1>
           <p>Cadastro de lotes, validade e controle de saldo por lote dos produtos de {empresa.nome}</p>
         </div>
-        <button className="btn btn-accent" onClick={() => handleOpenModal()}>
-          <Plus size={18} /> Novo Lote
-        </button>
+        <div style={{ display: 'flex', gap: '0.75rem', alignItems: 'center' }}>
+          <button
+            type="button"
+            className="btn btn-outline"
+            onClick={() => {
+              setLocaisEstoque(storage.getLocaisEstoque(empresa.id));
+              setIsLocaisModalOpen(true);
+            }}
+          >
+            <MapPin size={18} /> Locais de Estoque
+          </button>
+          <button className="btn btn-accent" onClick={() => handleOpenModal()}>
+            <Plus size={18} /> Novo Lote
+          </button>
+        </div>
       </div>
 
       {/* KPIs */}
@@ -394,25 +415,60 @@ export const LotesPage = ({ showToast }) => {
             </div>
 
             <div className="form-group">
-              <label className="form-label">Data de Validade</label>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.35rem' }}>
+                <label className="form-label" style={{ marginBottom: 0 }}>Data de Validade</label>
+                <label style={{ display: 'inline-flex', alignItems: 'center', gap: '0.35rem', fontSize: '0.78rem', fontWeight: 600, color: '#475569', cursor: 'pointer' }}>
+                  <input
+                    type="checkbox"
+                    checked={Boolean(formData.semValidade)}
+                    onChange={(e) => setFormData({
+                      ...formData,
+                      semValidade: e.target.checked,
+                      dataValidade: e.target.checked ? '' : formData.dataValidade
+                    })}
+                  />
+                  Sem validade
+                </label>
+              </div>
               <input
                 type="date"
                 className="form-input"
-                value={formData.dataValidade}
-                onChange={(e) => setFormData({ ...formData, dataValidade: e.target.value })}
+                disabled={Boolean(formData.semValidade)}
+                value={formData.semValidade ? '' : formData.dataValidade}
+                onChange={(e) => setFormData({ ...formData, dataValidade: e.target.value, semValidade: false })}
+                style={formData.semValidade ? { backgroundColor: '#F1F5F9', cursor: 'not-allowed', color: '#94A3B8' } : {}}
               />
             </div>
           </div>
 
           <div className="form-group">
-            <label className="form-label">Localização / Prateleira</label>
-            <input
-              type="text"
-              className="form-input"
-              placeholder="Ex: Galpão A • Rua 03 • Prateleira B"
-              value={formData.localizacao}
-              onChange={(e) => setFormData({ ...formData, localizacao: e.target.value })}
-            />
+            <label className="form-label">Local de Estoque / Prateleira</label>
+            <div style={{ display: 'flex', gap: '0.5rem' }}>
+              <select
+                className="form-select"
+                value={formData.localizacao}
+                onChange={(e) => setFormData({ ...formData, localizacao: e.target.value })}
+                style={{ flex: 1 }}
+              >
+                <option value="">Selecione um local de estoque...</option>
+                {locaisEstoque.map(loc => (
+                  <option key={loc.id} value={loc.nome}>
+                    {loc.codigo ? `${loc.codigo} — ${loc.nome}` : loc.nome}
+                  </option>
+                ))}
+              </select>
+              <button
+                type="button"
+                className="btn btn-accent"
+                title="Cadastrar novo local de estoque"
+                onClick={() => {
+                  setLocaisEstoque(storage.getLocaisEstoque(empresa.id));
+                  setIsLocaisModalOpen(true);
+                }}
+              >
+                <Plus size={16} />
+              </button>
+            </div>
           </div>
 
           <div className="form-group">
@@ -433,6 +489,142 @@ export const LotesPage = ({ showToast }) => {
             </button>
           </div>
         </form>
+      </Modal>
+
+      {/* Modal de Locais de Estoque */}
+      <Modal
+        isOpen={isLocaisModalOpen}
+        onClose={() => setIsLocaisModalOpen(false)}
+        title="Locais de Estoque"
+        maxWidth="620px"
+      >
+        <form
+          onSubmit={(e) => {
+            e.preventDefault();
+            if (!novoLocalForm.nome.trim()) {
+              showToast('error', 'Informe o nome do local de estoque.');
+              return;
+            }
+            const saved = storage.saveLocalEstoque(novoLocalForm, empresa.id, user.nome);
+            const listaAtualizada = storage.getLocaisEstoque(empresa.id);
+            setLocaisEstoque(listaAtualizada);
+            if (saved && isModalOpen) {
+              setFormData(prev => ({ ...prev, localizacao: saved.nome }));
+            }
+            setNovoLocalForm({ nome: '', codigo: '', descricao: '' });
+            showToast('success', `Local "${saved?.nome}" cadastrado!`);
+          }}
+          style={{ marginBottom: '1.25rem', padding: '1rem', backgroundColor: '#F8FAFC', borderRadius: '8px', border: '1px solid #E2E8F0' }}
+        >
+          <div style={{ fontSize: '0.85rem', fontWeight: 700, color: '#1E293B', marginBottom: '0.75rem', display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
+            <MapPin size={15} color="#C9A962" /> Cadastrar Novo Local de Estoque
+          </div>
+          <div className="form-row">
+            <div className="form-group" style={{ flex: 2 }}>
+              <label className="form-label">Nome do Local *</label>
+              <input
+                type="text"
+                className="form-input"
+                placeholder="Ex: Galpão A • Prateleira 03"
+                value={novoLocalForm.nome}
+                onChange={(e) => setNovoLocalForm({ ...novoLocalForm, nome: e.target.value })}
+                required
+              />
+            </div>
+            <div className="form-group" style={{ flex: 1 }}>
+              <label className="form-label">Código</label>
+              <input
+                type="text"
+                className="form-input font-mono"
+                placeholder="Ex: GAL-A03"
+                value={novoLocalForm.codigo}
+                onChange={(e) => setNovoLocalForm({ ...novoLocalForm, codigo: e.target.value })}
+              />
+            </div>
+          </div>
+          <div className="form-group">
+            <label className="form-label">Descrição / Observação</label>
+            <input
+              type="text"
+              className="form-input"
+              placeholder="Ex: Área climatizada, corredor central"
+              value={novoLocalForm.descricao}
+              onChange={(e) => setNovoLocalForm({ ...novoLocalForm, descricao: e.target.value })}
+            />
+          </div>
+          <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
+            <button type="submit" className="btn btn-accent btn-sm">
+              <Plus size={15} /> Adicionar Local
+            </button>
+          </div>
+        </form>
+
+        <div>
+          <div style={{ fontSize: '0.8rem', fontWeight: 700, color: '#64748B', textTransform: 'uppercase', marginBottom: '0.5rem' }}>
+            Locais Cadastrados ({locaisEstoque.length})
+          </div>
+          {locaisEstoque.length === 0 ? (
+            <div style={{ padding: '1.5rem', textAlign: 'center', color: '#94A3B8', border: '1px dashed #CBD5E1', borderRadius: '8px' }}>
+              Nenhum local de estoque cadastrado ainda.
+            </div>
+          ) : (
+            <div style={{ maxHeight: '260px', overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+              {locaisEstoque.map(loc => (
+                <div
+                  key={loc.id}
+                  style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'space-between',
+                    padding: '0.65rem 0.85rem',
+                    borderRadius: '8px',
+                    border: '1px solid #E2E8F0',
+                    backgroundColor: '#FFFFFF'
+                  }}
+                >
+                  <div>
+                    <div style={{ fontWeight: 700, color: '#1E293B', fontSize: '0.9rem', display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
+                      <MapPin size={14} color="#C9A962" />
+                      {loc.codigo && <span className="font-mono" style={{ fontSize: '0.75rem', backgroundColor: '#F1F5F9', padding: '1px 6px', borderRadius: '4px' }}>{loc.codigo}</span>}
+                      <span>{loc.nome}</span>
+                    </div>
+                    {loc.descricao && <div style={{ fontSize: '0.78rem', color: '#64748B', marginTop: '2px' }}>{loc.descricao}</div>}
+                  </div>
+                  <div style={{ display: 'flex', gap: '0.4rem', alignItems: 'center' }}>
+                    {isModalOpen && (
+                      <button
+                        type="button"
+                        className="btn btn-sm btn-outline"
+                        onClick={() => {
+                          setFormData(prev => ({ ...prev, localizacao: loc.nome }));
+                          setIsLocaisModalOpen(false);
+                        }}
+                      >
+                        Selecionar
+                      </button>
+                    )}
+                    {!loc.autoImported && (
+                      <button
+                        type="button"
+                        className="btn-icon delete"
+                        title="Excluir local"
+                        onClick={() => {
+                          if (window.confirm(`Excluir o local "${loc.nome}"?`)) {
+                            storage.deleteLocalEstoque(loc.id, empresa.id, user.nome);
+                            setLocaisEstoque(storage.getLocaisEstoque(empresa.id));
+                            showToast('warning', `Local "${loc.nome}" removido.`);
+                          }
+                        }}
+                      >
+                        <Trash2 size={14} />
+                      </button>
+                    )}
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
       </Modal>
     </div>
   );

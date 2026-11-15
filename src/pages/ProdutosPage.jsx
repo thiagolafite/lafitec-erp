@@ -51,11 +51,15 @@ export const ProdutosPage = ({ showToast }) => {
   // Janela de Lote (ao marcar Sim ou gerenciar lotes do produto)
   const [loteSelectorModal, setLoteSelectorModal] = useState(false);
   const [lotesEmpresa, setLotesEmpresa] = useState(() => storage.getLotes(empresa?.id || ''));
+  const [locaisEstoque, setLocaisEstoque] = useState(() => storage.getLocaisEstoque(empresa?.id || ''));
+  const [showQuickLocalInput, setShowQuickLocalInput] = useState(false);
+  const [quickLocalNome, setQuickLocalNome] = useState('');
   const [pendingLotes, setPendingLotes] = useState([]);
   const [novoLoteForm, setNovoLoteForm] = useState({
     numeroLote: '',
     dataFabricacao: '',
     dataValidade: '',
+    semValidade: false,
     quantidade: '0',
     localizacao: ''
   });
@@ -68,6 +72,7 @@ export const ProdutosPage = ({ showToast }) => {
       setFornecedores(storage.getFornecedores(empresa.id));
       setGruposProdutos(storage.getGruposProdutos(empresa.id));
       setLotesEmpresa(storage.getLotes(empresa.id));
+      setLocaisEstoque(storage.getLocaisEstoque(empresa.id));
     }
   };
 
@@ -191,10 +196,13 @@ export const ProdutosPage = ({ showToast }) => {
 
   const openLoteModalWindow = () => {
     refreshListasAuxiliares();
+    setShowQuickLocalInput(false);
+    setQuickLocalNome('');
     setNovoLoteForm({
       numeroLote: `LT-${new Date().getFullYear().toString().slice(-2)}${String(Math.floor(1000 + Math.random() * 9000))}`,
       dataFabricacao: '',
       dataValidade: '',
+      semValidade: false,
       quantidade: '0',
       localizacao: ''
     });
@@ -241,13 +249,18 @@ export const ProdutosPage = ({ showToast }) => {
       return;
     }
     const qtd = parseFloat(novoLoteForm.quantidade) || 0;
+    const payloadLote = {
+      ...novoLoteForm,
+      dataValidade: novoLoteForm.semValidade ? '' : novoLoteForm.dataValidade,
+      semValidade: Boolean(novoLoteForm.semValidade),
+      quantidade: qtd
+    };
     if (editingProduto) {
       storage.saveLote(
         {
-          ...novoLoteForm,
+          ...payloadLote,
           produtoId: editingProduto.id,
-          produtoNome: formData.nome || editingProduto.nome,
-          quantidade: qtd
+          produtoNome: formData.nome || editingProduto.nome
         },
         empresa.id,
         user.nome
@@ -258,9 +271,8 @@ export const ProdutosPage = ({ showToast }) => {
       setFormData(prev => ({ ...prev, controlaLote: true, estoque: String(soma) }));
     } else {
       const novoPending = {
-        ...novoLoteForm,
+        ...payloadLote,
         id: 'lote-' + Date.now() + '-' + Math.random().toString(36).substring(2, 6),
-        quantidade: qtd,
         produtoNome: formData.nome || 'Novo Produto'
       };
       const novaLista = [...pendingLotes, novoPending];
@@ -1598,24 +1610,85 @@ export const ProdutosPage = ({ showToast }) => {
               </div>
 
               <div className="form-group">
-                <label className="form-label">Data de Validade</label>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.35rem' }}>
+                  <label className="form-label" style={{ marginBottom: 0 }}>Data de Validade</label>
+                  <label style={{ display: 'inline-flex', alignItems: 'center', gap: '0.35rem', fontSize: '0.75rem', fontWeight: 600, color: '#475569', cursor: 'pointer' }}>
+                    <input
+                      type="checkbox"
+                      checked={Boolean(novoLoteForm.semValidade)}
+                      onChange={(e) => setNovoLoteForm({
+                        ...novoLoteForm,
+                        semValidade: e.target.checked,
+                        dataValidade: e.target.checked ? '' : novoLoteForm.dataValidade
+                      })}
+                    />
+                    Sem validade
+                  </label>
+                </div>
                 <input
                   type="date"
                   className="form-input"
-                  value={novoLoteForm.dataValidade}
-                  onChange={(e) => setNovoLoteForm({ ...novoLoteForm, dataValidade: e.target.value })}
+                  disabled={Boolean(novoLoteForm.semValidade)}
+                  value={novoLoteForm.semValidade ? '' : novoLoteForm.dataValidade}
+                  onChange={(e) => setNovoLoteForm({ ...novoLoteForm, dataValidade: e.target.value, semValidade: false })}
+                  style={novoLoteForm.semValidade ? { backgroundColor: '#F1F5F9', cursor: 'not-allowed', color: '#94A3B8' } : {}}
                 />
               </div>
 
               <div className="form-group">
-                <label className="form-label">Localização</label>
-                <input
-                  type="text"
-                  className="form-input"
-                  placeholder="Ex: Rua A / Prat. 2"
-                  value={novoLoteForm.localizacao}
-                  onChange={(e) => setNovoLoteForm({ ...novoLoteForm, localizacao: e.target.value })}
-                />
+                <label className="form-label">Local de Estoque</label>
+                <div style={{ display: 'flex', gap: '0.4rem' }}>
+                  <select
+                    className="form-select"
+                    value={novoLoteForm.localizacao}
+                    onChange={(e) => setNovoLoteForm({ ...novoLoteForm, localizacao: e.target.value })}
+                    style={{ flex: 1 }}
+                  >
+                    <option value="">Selecione um local...</option>
+                    {locaisEstoque.map(loc => (
+                      <option key={loc.id} value={loc.nome}>
+                        {loc.codigo ? `${loc.codigo} — ${loc.nome}` : loc.nome}
+                      </option>
+                    ))}
+                  </select>
+                  <button
+                    type="button"
+                    className="btn btn-accent btn-sm"
+                    title="Cadastrar novo local de estoque"
+                    onClick={() => setShowQuickLocalInput(v => !v)}
+                  >
+                    <Plus size={14} />
+                  </button>
+                </div>
+                {showQuickLocalInput && (
+                  <div style={{ display: 'flex', gap: '0.4rem', marginTop: '0.45rem' }}>
+                    <input
+                      type="text"
+                      className="form-input"
+                      placeholder="Nome do novo local (ex: Galpão B)"
+                      value={quickLocalNome}
+                      onChange={(e) => setQuickLocalNome(e.target.value)}
+                      style={{ flex: 1 }}
+                    />
+                    <button
+                      type="button"
+                      className="btn btn-primary btn-sm"
+                      onClick={() => {
+                        if (!quickLocalNome.trim()) return;
+                        const saved = storage.saveLocalEstoque({ nome: quickLocalNome.trim() }, empresa.id, user.nome);
+                        setLocaisEstoque(storage.getLocaisEstoque(empresa.id));
+                        if (saved) {
+                          setNovoLoteForm(prev => ({ ...prev, localizacao: saved.nome }));
+                        }
+                        setQuickLocalNome('');
+                        setShowQuickLocalInput(false);
+                        showToast('success', `Local "${saved?.nome}" cadastrado!`);
+                      }}
+                    >
+                      Salvar
+                    </button>
+                  </div>
+                )}
               </div>
             </div>
 
