@@ -188,34 +188,56 @@ export const LotesPage = ({ showToast }) => {
       </div>
 
       {/* KPIs */}
-      <div className="stats-grid" style={{ marginBottom: '1.5rem' }}>
-        <div className="stat-card">
-          <div className="stat-icon" style={{ backgroundColor: 'rgba(201, 169, 98, 0.15)', color: '#C9A962' }}>
-            <Layers size={22} />
-          </div>
+      <div className="stat-grid" style={{ marginBottom: '1.5rem' }}>
+        <div className="stat-card" style={{ borderLeft: '4px solid #C9A962' }}>
           <div>
             <div className="stat-label">Lotes Cadastrados</div>
-            <div className="stat-value">{lotes.length}</div>
+            <div className="stat-val" style={{ color: '#C9A962' }}>{lotes.length}</div>
+            <div style={{ fontSize: '0.75rem', color: '#64748B', marginTop: '4px' }}>Registros ativos no sistema</div>
+          </div>
+          <div className="stat-icon-wrapper" style={{ backgroundColor: 'rgba(201, 169, 98, 0.12)', color: '#C9A962' }}>
+            <Layers size={22} />
           </div>
         </div>
 
-        <div className="stat-card">
-          <div className="stat-icon" style={{ backgroundColor: 'rgba(16, 185, 129, 0.12)', color: '#10B981' }}>
-            <Boxes size={22} />
-          </div>
+        <div className="stat-card" style={{ borderLeft: '4px solid #10B981' }}>
           <div>
             <div className="stat-label">Saldo Total nos Lotes</div>
-            <div className="stat-value">{totalQuantidade}</div>
+            <div className="stat-val" style={{ color: '#10B981' }}>{totalQuantidade} un.</div>
+            <div style={{ fontSize: '0.75rem', color: '#64748B', marginTop: '4px' }}>Quantidade somada em estoque</div>
+          </div>
+          <div className="stat-icon-wrapper" style={{ backgroundColor: 'rgba(16, 185, 129, 0.12)', color: '#10B981' }}>
+            <Boxes size={22} />
           </div>
         </div>
 
-        <div className="stat-card">
-          <div className="stat-icon" style={{ backgroundColor: 'rgba(239, 68, 68, 0.12)', color: '#EF4444' }}>
+        <div className="stat-card" style={{ borderLeft: '4px solid #EF4444' }}>
+          <div>
+            <div className="stat-label" style={{ color: lotesAlerta > 0 ? '#EF4444' : undefined }}>Vencidos / Vencendo (30d)</div>
+            <div className="stat-val" style={{ color: lotesAlerta > 0 ? '#EF4444' : '#1E293B' }}>{lotesAlerta}</div>
+            <div style={{ fontSize: '0.75rem', color: '#64748B', marginTop: '4px' }}>Lotes que requerem atenção</div>
+          </div>
+          <div className="stat-icon-wrapper" style={{ backgroundColor: 'rgba(239, 68, 68, 0.12)', color: '#EF4444' }}>
             <AlertTriangle size={22} />
           </div>
+        </div>
+
+        <div
+          className="stat-card"
+          style={{ borderLeft: '4px solid #3B82F6', cursor: 'pointer' }}
+          onClick={() => {
+            setLocaisEstoque(storage.getLocaisEstoque(empresa.id));
+            setIsLocaisModalOpen(true);
+          }}
+          title="Clique para gerenciar locais de estoque"
+        >
           <div>
-            <div className="stat-label">Vencidos / Vencendo (30d)</div>
-            <div className="stat-value">{lotesAlerta}</div>
+            <div className="stat-label">Locais de Estoque</div>
+            <div className="stat-val" style={{ color: '#3B82F6' }}>{locaisEstoque.length}</div>
+            <div style={{ fontSize: '0.75rem', color: '#64748B', marginTop: '4px' }}>Clique para gerenciar locais</div>
+          </div>
+          <div className="stat-icon-wrapper" style={{ backgroundColor: 'rgba(59, 130, 246, 0.12)', color: '#3B82F6' }}>
+            <MapPin size={22} />
           </div>
         </div>
       </div>
@@ -321,7 +343,7 @@ export const LotesPage = ({ showToast }) => {
                                 handleQuickStockChange(lote, val);
                               }
                             }}
-                            style={{ padding: '0.35rem 0.5rem', fontWeight: 800, width: '95px' }}
+                            style={{ padding: '0.35rem 0.5rem', fontWeight: 800, width: '88px', textAlign: 'center' }}
                             title="Altere o saldo e saia do campo para salvar"
                           />
                           {parseFloat(lote.quantidade) > 0 ? (
