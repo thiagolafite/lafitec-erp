@@ -11,7 +11,9 @@ import {
   Info,
   RefreshCw,
   CheckCircle2,
-  ChevronRight
+  ChevronRight,
+  CheckCheck,
+  X
 } from 'lucide-react';
 import { storage, calculateIndiceRelacionamento } from '../services/storage';
 
@@ -22,7 +24,48 @@ export const AlertCenter = ({ empresaId, currentTabTitle, onNavigate }) => {
   const [isOpen, setIsOpen] = useState(false);
   const [filterCat, setFilterCat] = useState('todos'); // todos, estoque, clientes, financeiro, comercial
   const [refreshTick, setRefreshTick] = useState(0);
+  const [dismissedIds, setDismissedIds] = useState(() => {
+    if (!empresaId) return [];
+    try {
+      return JSON.parse(localStorage.getItem(`lafitec_alertas_lidos_${empresaId}`) || '[]');
+    } catch {
+      return [];
+    }
+  });
   const containerRef = useRef(null);
+
+  useEffect(() => {
+    if (!empresaId) {
+      setDismissedIds([]);
+      return;
+    }
+    try {
+      setDismissedIds(JSON.parse(localStorage.getItem(`lafitec_alertas_lidos_${empresaId}`) || '[]'));
+    } catch {
+      setDismissedIds([]);
+    }
+  }, [empresaId]);
+
+  const persistDismissed = (ids) => {
+    setDismissedIds(ids);
+    if (empresaId) {
+      localStorage.setItem(`lafitec_alertas_lidos_${empresaId}`, JSON.stringify(ids));
+    }
+  };
+
+  const markAsRead = (alertId) => {
+    if (dismissedIds.includes(alertId)) return;
+    persistDismissed([...dismissedIds, alertId]);
+  };
+
+  const markAllAsRead = (currentAlerts) => {
+    const merged = Array.from(new Set([...dismissedIds, ...currentAlerts.map(a => a.id)]));
+    persistDismissed(merged);
+  };
+
+  const restoreDismissed = () => {
+    persistDismissed([]);
+  };
 
   // Atualiza alertas ao trocar de aba ou abrir o sino
   useEffect(() => {
@@ -214,8 +257,13 @@ export const AlertCenter = ({ empresaId, currentTabTitle, onNavigate }) => {
     return list.sort((a, b) => ordemSev[a.severidade] - ordemSev[b.severidade]);
   }, [empresaId, refreshTick]);
 
-  const criticalCount = alerts.filter(a => a.severidade === 'critico').length;
-  const filteredAlerts = filterCat === 'todos' ? alerts : alerts.filter(a => a.categoria === filterCat);
+  const activeAlerts = useMemo(
+    () => alerts.filter(a => !dismissedIds.includes(a.id)),
+    [alerts, dismissedIds]
+  );
+  const dismissedActiveCount = alerts.length - activeAlerts.length;
+  const criticalCount = activeAlerts.filter(a => a.severidade === 'critico').length;
+  const filteredAlerts = filterCat === 'todos' ? activeAlerts : activeAlerts.filter(a => a.categoria === filterCat);
 
   const getSeverityStyle = (sev) => {
     if (sev === 'critico') {
@@ -264,7 +312,7 @@ export const AlertCenter = ({ empresaId, currentTabTitle, onNavigate }) => {
         }}
       >
         <Bell size={18} />
-        {alerts.length > 0 && (
+        {activeAlerts.length > 0 && (
           <span
             style={{
               position: 'absolute',
@@ -285,7 +333,7 @@ export const AlertCenter = ({ empresaId, currentTabTitle, onNavigate }) => {
               boxShadow: '0 2px 6px rgba(0,0,0,0.18)'
             }}
           >
-            {alerts.length > 99 ? '99+' : alerts.length}
+            {activeAlerts.length > 99 ? '99+' : activeAlerts.length}
           </span>
         )}
       </button>
@@ -331,25 +379,49 @@ export const AlertCenter = ({ empresaId, currentTabTitle, onNavigate }) => {
                   borderRadius: '999px'
                 }}
               >
-                {alerts.length} {alerts.length === 1 ? 'aviso' : 'avisos'}
+                {activeAlerts.length} {activeAlerts.length === 1 ? 'aviso' : 'avisos'}
               </span>
             </div>
-            <button
-              type="button"
-              onClick={() => setRefreshTick(t => t + 1)}
-              title="Atualizar avisos"
-              style={{
-                background: 'transparent',
-                border: 'none',
-                color: '#CBD5E1',
-                cursor: 'pointer',
-                display: 'flex',
-                alignItems: 'center',
-                padding: '4px'
-              }}
-            >
-              <RefreshCw size={14} />
-            </button>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+              {activeAlerts.length > 0 && (
+                <button
+                  type="button"
+                  onClick={() => markAllAsRead(activeAlerts)}
+                  title="Marcar todas como lidas"
+                  style={{
+                    background: 'rgba(201, 169, 98, 0.14)',
+                    border: '1px solid rgba(201, 169, 98, 0.35)',
+                    borderRadius: '5px',
+                    color: '#C9A962',
+                    cursor: 'pointer',
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    gap: '4px',
+                    padding: '3px 7px',
+                    fontSize: '0.7rem',
+                    fontWeight: 700
+                  }}
+                >
+                  <CheckCheck size={13} /> Limpar
+                </button>
+              )}
+              <button
+                type="button"
+                onClick={() => setRefreshTick(t => t + 1)}
+                title="Atualizar avisos"
+                style={{
+                  background: 'transparent',
+                  border: 'none',
+                  color: '#CBD5E1',
+                  cursor: 'pointer',
+                  display: 'flex',
+                  alignItems: 'center',
+                  padding: '4px'
+                }}
+              >
+                <RefreshCw size={14} />
+              </button>
+            </div>
           </div>
 
           {/* Filtros de Categoria */}
@@ -364,11 +436,11 @@ export const AlertCenter = ({ empresaId, currentTabTitle, onNavigate }) => {
             }}
           >
             {[
-              { id: 'todos', label: `Todos (${alerts.length})` },
-              { id: 'estoque', label: `Estoque (${alerts.filter(a => a.categoria === 'estoque').length})` },
-              { id: 'clientes', label: `Clientes (${alerts.filter(a => a.categoria === 'clientes').length})` },
-              { id: 'financeiro', label: `Financeiro (${alerts.filter(a => a.categoria === 'financeiro').length})` },
-              { id: 'comercial', label: `Comercial (${alerts.filter(a => a.categoria === 'comercial').length})` }
+              { id: 'todos', label: `Todos (${activeAlerts.length})` },
+              { id: 'estoque', label: `Estoque (${activeAlerts.filter(a => a.categoria === 'estoque').length})` },
+              { id: 'clientes', label: `Clientes (${activeAlerts.filter(a => a.categoria === 'clientes').length})` },
+              { id: 'financeiro', label: `Financeiro (${activeAlerts.filter(a => a.categoria === 'financeiro').length})` },
+              { id: 'comercial', label: `Comercial (${activeAlerts.filter(a => a.categoria === 'comercial').length})` }
             ].map(tab => (
               <button
                 key={tab.id}
@@ -406,12 +478,21 @@ export const AlertCenter = ({ empresaId, currentTabTitle, onNavigate }) => {
                   const sev = getSeverityStyle(alert.severidade);
                   const CatIcon = alert.icon;
                   return (
-                    <button
+                    <div
                       key={alert.id}
-                      type="button"
                       onClick={() => {
+                        markAsRead(alert.id);
                         if (onNavigate) onNavigate(alert.tab);
                         setIsOpen(false);
+                      }}
+                      role="button"
+                      tabIndex={0}
+                      onKeyDown={(e) => {
+                        if (e.key === 'Enter' || e.key === ' ') {
+                          markAsRead(alert.id);
+                          if (onNavigate) onNavigate(alert.tab);
+                          setIsOpen(false);
+                        }
                       }}
                       style={{
                         width: '100%',
@@ -439,13 +520,67 @@ export const AlertCenter = ({ empresaId, currentTabTitle, onNavigate }) => {
                           {alert.descricao}
                         </div>
                       </div>
-                      <ChevronRight size={15} style={{ color: '#94A3B8', flexShrink: 0, alignSelf: 'center' }} />
-                    </button>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '4px', flexShrink: 0, alignSelf: 'center' }}>
+                        <button
+                          type="button"
+                          title="Dispensar aviso"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            markAsRead(alert.id);
+                          }}
+                          style={{
+                            background: 'transparent',
+                            border: 'none',
+                            color: '#94A3B8',
+                            cursor: 'pointer',
+                            padding: '2px',
+                            display: 'flex',
+                            alignItems: 'center',
+                            borderRadius: '4px'
+                          }}
+                        >
+                          <X size={14} />
+                        </button>
+                        <ChevronRight size={15} style={{ color: '#94A3B8' }} />
+                      </div>
+                    </div>
                   );
                 })}
               </div>
             )}
           </div>
+
+          {dismissedActiveCount > 0 && (
+            <div
+              style={{
+                padding: '0.55rem 0.85rem',
+                backgroundColor: '#F8FAFC',
+                borderTop: '1px solid #E2E8F0',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'space-between',
+                fontSize: '0.74rem',
+                color: '#64748B'
+              }}
+            >
+              <span>{dismissedActiveCount} {dismissedActiveCount === 1 ? 'aviso já lido' : 'avisos já lidos'}</span>
+              <button
+                type="button"
+                onClick={restoreDismissed}
+                style={{
+                  background: 'transparent',
+                  border: 'none',
+                  color: '#B45309',
+                  fontWeight: 700,
+                  cursor: 'pointer',
+                  fontSize: '0.74rem',
+                  textDecoration: 'underline'
+                }}
+              >
+                Reexibir todos
+              </button>
+            </div>
+          )}
         </div>
       )}
     </div>
