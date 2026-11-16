@@ -30,7 +30,10 @@ import { storage } from '../services/storage';
 
 export const Sidebar = ({ currentTab, setCurrentTab }) => {
   const { empresa, user, switchDemoEmpresa, logout } = useAuth();
-  const empresas = storage.getAllEmpresas();
+  const rawEmpresas = storage.getAllEmpresas();
+  const empresas = empresa && !rawEmpresas.some(e => e.id === empresa.id)
+    ? [empresa, ...rawEmpresas]
+    : rawEmpresas;
   const isMaster = user?.email === 'thiago_lafite@hotmail.com' || user?.tipo === 'Master';
 
   // Accordion open states
@@ -126,34 +129,36 @@ export const Sidebar = ({ currentTab, setCurrentTab }) => {
           )}
         </div>
         
-        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontWeight: 700, fontSize: '0.85rem', color: '#FFFFFF', marginBottom: '10px' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontWeight: 700, fontSize: '0.85rem', color: '#FFFFFF', marginBottom: empresas.length > 1 ? '10px' : '0' }}>
           <Building2 size={16} style={{ color: '#C9A962', flexShrink: 0 }} />
           <span style={{ whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
             {empresa ? empresa.nome : 'Sem Empresa'}
           </span>
         </div>
 
-        {/* Demo Switcher */}
-        <select 
-          className="form-select"
-          value={empresa ? empresa.id : ''}
-          onChange={(e) => switchDemoEmpresa(e.target.value)}
-          style={{
-            padding: '5px 8px',
-            fontSize: '0.75rem',
-            backgroundColor: '#121212',
-            color: '#FFFFFF',
-            borderColor: 'rgba(255, 255, 255, 0.15)',
-            borderRadius: '4px',
-            fontWeight: 600
-          }}
-        >
-          {empresas.map(emp => (
-            <option key={emp.id} value={emp.id}>
-              {emp.nome} ({emp.plano})
-            </option>
-          ))}
-        </select>
+        {/* Demo Switcher (exibido apenas quando há mais de uma empresa disponível) */}
+        {empresas.length > 1 && (
+          <select 
+            className="form-select"
+            value={empresa ? empresa.id : ''}
+            onChange={(e) => switchDemoEmpresa(e.target.value)}
+            style={{
+              padding: '5px 8px',
+              fontSize: '0.75rem',
+              backgroundColor: '#121212',
+              color: '#FFFFFF',
+              borderColor: 'rgba(255, 255, 255, 0.15)',
+              borderRadius: '4px',
+              fontWeight: 600
+            }}
+          >
+            {empresas.map(emp => (
+              <option key={emp.id} value={emp.id}>
+                {emp.nome} ({emp.plano})
+              </option>
+            ))}
+          </select>
+        )}
       </div>
 
       {/* Navigation Links */}
